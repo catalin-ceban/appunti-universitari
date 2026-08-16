@@ -1,0 +1,1776 @@
+\documentclass[12pt]{report}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[inline]{enumitem}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{anyfontsize}
+\input{../stile_appunti.sty}
+
+\newcommand{\whitespace}{\text{ }}
+\newcommand{\taleche}{\text{ tale che }}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\V}{\mathbb{V}}
+\newcommand{\W}{\mathbb{W}}
+\newcommand{\vectorspace}[1]{\mathbb{#1}}
+\newcommand{\genericvector}[1]{(#1_1, \dots, #1_n)}
+\newcommand{\vectors}[1]{#1_1, \dots, #1_n}
+\newcommand{\associatedmatrix}[2]{M^{\mathbb{#1}}_{\mathbb{#2}}}
+\newcommand{\rg}{\operatorname{rg}}
+\newcommand{\nullvector}{\underline{0}}
+\newcommand{\Zmod}[1]{\Z_{\backslash(#1)}}
+\newcommand{\Fmod}[1]{\mathbb{F}_{(#1)}}
+
+% Ridefinimento del comportamento di paragraph in modo da farlo comportare
+% come una subsection ma senza il nome formale
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+	{-3.25ex\@plus -1ex \@minus -.2ex}%
+	{1.5ex \@plus .2ex}%
+	{\normalfont\normalsize\bfseries}}
+\makeatother
+
+\begin{document}
+	
+	\generaFrontespizio{Algebra lineare e Geometria}{2026}{O'Grady Kieran Gregory}{m}
+	
+	
+	\setlength{\parindent}{0pt}
+	\setlength{\parskip}{1ex}
+	
+	\chapter{Anelli e campi}
+	Negli insiemi $\Z$, $\Q$, $\R$ sono definite due operazioni: \textit{somma} e \textit{prodotto}.
+	
+	\section{Anelli}
+	Sia $R$ un insieme in cui sono definite le operazioni di somma e prodotto come le conosciamo, dunque:
+	
+	\[
+		\begin{aligned}
+			\text{somma: } R \times R &\to R \\
+			(a, b) &\mapsto a + b
+		\end{aligned}
+	\]
+	
+	\[
+		\begin{aligned}
+			\text{prodotto: } R \times R &\to R \\
+			(a, b) &\mapsto a \cdot b
+		\end{aligned}
+	\]
+	
+	\begin{definizione}{Definizione di anello commutativo con unità}{anello}
+		Un insieme $R$ definito con le operazioni di somma e prodotto come sopra è detto un \textbf{anello commutativo con unità} se soddisfa le seguenti 8 proprietà:
+		
+		\begin{enumerate}
+			
+			\item \textbf{Elemento neutro per la somma:} $ 0 + a = a,\whitespace\forall a \in R $
+			
+			\item \textbf{Elemento neutro per il prodotto:} $ 1 \times a = a,\whitespace \forall a \in R $
+			
+			\item \textbf{Associatività per la somma:} $ a + (b + c) = (a + b) + c,\whitespace \forall a, b, c \in R $
+			
+			\item \textbf{Associatività per il prodotto:} $ a \cdot (b \cdot c) = (a \cdot b) \cdot c,\whitespace \forall a, b, c \in R $
+			
+			\item \textbf{Commutatività della somma:} $ a + b = b + a, \whitespace \forall a, b \in R $
+			
+			\item \textbf{Commutatività del prodotto:} $ a \cdot b = b \cdot a, \whitespace \forall a, b \in R $
+			
+			\item \textbf{Elemento inverso per la somma:} $ \forall a \in R, \whitespace \exists b \in R \taleche a + b = 0 $
+			
+			\item \textbf{Distributività del prodotto:} $ a + (b \cdot c) = a \cdot b + a \cdot c, \whitespace \forall a, b, c \in R $
+			
+		\end{enumerate}
+	\end{definizione}
+	
+	Ad esempio, $\Z$, $\Q$, $\R$ sono anelli, mentre $N$ no, in quanto viola la proprietà 7.
+	
+	In particolare, per quanto riguarda le proprietà 1 e 2, gli elementi neutri per somma e prodotto sono \textbf{unici}.
+	
+	\section{Campi}
+	
+	\begin{definizione}{Definizione di campo}{campo}
+		Un anello $K$ è un \textbf{campo} se $ \forall a \neq 0,\whitespace \exists b \in K \taleche a \cdot b = 1 $.	
+	\end{definizione}
+	
+	Sostanzialmente, un campo è un \textbf{anello nel quale è definito anche l'elemento inverso per il prodotto}.
+	
+	Ad esempio, $\Q$ e $\R$ sono campi, al contrario di $\Z$.
+	
+	
+	\section{Classi di resto modulo n}
+	Se volessimo definire un \textbf{anello di cardinalità finita}, potremmo procedere nel seguente modo, definendo le cosiddette \textbf{classi di resto modulo n}.
+	
+	Sia $ n \in \N, \whitespace n \geq 2 $: 
+	\[
+		\Zmod{n} = \{ [0], [1], \dots, [n-1] \}
+	\]
+	che, come si può dedurre dal nome, contiene tutti i possibili resti di una divisione tra un numero $ a \in \Z $ ed $n$.
+	
+	Definiamo anche qui le operazioni di somma e prodotto:
+	\[
+		\begin{aligned}
+			\text{somma: } \Zmod{n} \times \Zmod{n} &\to \Zmod{n} \\
+			([a], [b]) &\mapsto
+				\begin{cases}
+					a + b & \text{se } a + b < n \\
+					(a + b) \pmod n & \text{se } a + b \geq n
+				\end{cases}
+		\end{aligned}
+	\]
+	
+	\[
+		\begin{aligned}
+			\text{prodotto: } \Zmod{n} \times \Zmod{n} &\to \Zmod{n} \\
+			([a], [b]) &\mapsto
+			\begin{cases}
+				a \cdot b & \text{se } a \cdot b < n \\
+				(a \cdot b) \pmod n & \text{se } a \cdot b \geq n
+			\end{cases}
+		\end{aligned}
+	\]
+	
+	Definite queste operazioni in questo modo, ci rendiamo semplicemente conto di come $\Zmod{n}$ sia un \textbf{anello} ma NON un campo.\\
+	In generale, $\Zmod{n}$ è un campo sse. $n$ è un \textbf{numero primo}. In tal caso, indichiamo la classe di resto non più come $\Zmod{n}$, bensì $\Fmod{n}$.
+	
+	\section{Numeri complessi}
+	L'insieme dei numeri complessi è definito come segue:
+	\[
+		\begin{aligned}
+			\C = \{ z = a + bi \mid a, b \in \R \}
+		\end{aligned}
+	\]
+	dove $a$ è detta \textbf{parte reale} di $z$ ($\operatorname{Re}(z)$), mentre $b$ viene detta \textbf{parte immaginaria} di $z$ ($\operatorname{Im}(z)$).
+	
+	Nuovamente, procediamo vedendo come sono definite le due operazioni di somma e prodotto:
+	
+	\[
+		\begin{aligned}
+			&\text{somma: } \C \times \C \to \C \\
+			&\hspace{0.7cm}(a+bi, c+di) \mapsto (a+c) + (b+d)i \\[0.4cm]
+			&\text{prodotto: } \C \times \C \to \C \\
+			&\hspace{0.7cm}(a+bi, c+di) \mapsto (ac - bd) + (ad + bc)i
+		\end{aligned}
+	\]
+	
+	Definiamo adesso anche l'elemento neutro, sia per la somma che per il prodotto:
+	
+	\begin{enumerate}
+		\item \textbf{Somma:} $0 = 0 + 0i$.
+		\item \textbf{Prodotto:} $1 = 1 + 0i$
+	\end{enumerate}
+	
+	Definiamo adesso alcune notazioni fondamentali nell'ambito dei numeri complessi:
+	
+	\begin{enumerate}
+		\item \textbf{Coniugato di z:} $\bar{z} = a - bi$ 
+		\item \textbf{Modulo di z:} $\left|z\right| = \sqrt{z \cdot \bar{z}} = \sqrt{a^2 + b^2}$
+	\end{enumerate}
+	
+	Il modulo di un numero complesso indica la sua effettiva distanza dall'origine del piano.
+	
+	Volendo ora verificare che $\C$ sia un campo, rimane dunque da dimostrare che esiste l'inverso moltiplicativo per un generico $z = a + bi$, dunque un numero $w = c + di$ tale che $ (a + bi) \cdot (c + di) = 1$.\\
+	Sappiamo che moltiplicare $z$ per il suo coniugato ci risulta in $a^2 + b^2$, dunque per ottenere questo inverso moltiplicativo sarà sufficiente moltiplicare $z$ per il suo coniugato e in seguito dividere tutto per $a^2 + b^2$.\\
+	Ne risulta che:
+	\begin{center}
+		$z \cdot \frac{\bar{z}}{a^2 + b^2} = 1$
+	\end{center}
+	e dunque l'\textbf{inverso moltiplicativo} di $z$, che indichiamo come $z^{-1}$, è proprio uguale a $\frac{\bar{z}}{a^2 + b^2}$.
+	
+	\newpage
+	\subsection{Rappresentazione grafica dei numeri complessi} 
+	La rappresentazione dei numeri complessi sul piano cartesiano risulta molto semplice e diretta, in quanto la parte reale del numero $\mathbf{\operatorname{Re}(z)}$ rappresenterà l'ascissa del punto, mentre quella immaginaria $\mathbf{\operatorname{Im}(z)}$ sarà l'ordinata.
+	Inoltre, nell'ottica della rappresentazione di un numero complesso sul piano cartesiano, definiamo anche un ulteriore parametro, chiamato \textbf{argomento di $\mathbf{z}$}, che indichiamo come $\operatorname{Arg}(z)$ ed è definito come il minimo angolo formato tra l'asse delle ascisse e il punto individuato da $z$.
+	
+	\begin{center}
+		
+		\begin{tikzpicture}[scale=1.5]
+			
+			\draw[->] (-0.1, 0) -- (2, 0) node[right] {\small$\operatorname{Re}$};
+			\draw[->] (0, -0.1) -- (0, 2) node[above] {\small$\operatorname{Im}$};
+			\draw[->] (0, 0) -- (1.46, 0.96) node[above right] {\small$z$};
+			
+			\fill[black] (1.5, 1) circle (1.5pt);
+			\draw[dashed, lightgray] (1.5, 0.95) -- (1.5, 0) node[below] {\small$\frac{3}{2}$};
+			\draw[dashed, lightgray] (1.45, 1) -- (0, 1) node[left] {\small$1$};
+			
+			\draw (0.5, 0) arc (0:33.69:0.5) node[right] {\tiny$\operatorname{Arg}(z)$};
+			
+			\node[below left] at (0, 0) {$0$};
+			
+		\end{tikzpicture}
+		
+	\end{center}
+	
+	Per quanto riguarda la somma e il prodotto di numeri complessi, anche per queste due operazioni possiamo individuarne una rappresentazione grafica. \\
+	
+	\begin{figure}[h!]
+			
+			\centering
+		
+			\begin{subfigure}[b]{0.45\textwidth}
+				\centering
+				\begin{tikzpicture}[scale=1.2]
+					
+					% Disegniamo gli assi cartesiani
+					\draw[->] (-0.1, 0) -- (3.5, 0) node[right] {\small$\operatorname{Re}$};
+					\draw[->] (0, -0.1) -- (0, 3.5) node[above] {\small$\operatorname{Im}$};
+					
+					% Disegnamo i punti che ci interessano
+					\fill[black] (1, 2) circle (1.5pt);
+					\fill[black] (2, 1) circle (1.5pt);
+					\fill[red] (3, 3) circle (1.5pt);
+					
+					% Disegnamo le frecce che vanno dall'origine ai punti
+					\draw[->] (0, 0) -- (0.96, 1.96);	
+					\draw[->] (0, 0) -- (1.96, 0.96);
+					\draw[->, red] (0, 0) -- (2.96, 2.96);
+					
+					% Disegnamo le linee tratteggiate che vanno dai punti agli assi
+					\draw[dashed, lightgray] (2, 0.95) -- (2, 0) node[below] {\tiny$2$};
+					\draw[dashed, lightgray] (1.95, 1) -- (0, 1) node[left] {\tiny$1$};
+					\draw[dashed, lightgray] (0.95, 2) -- (0, 2) node[left] {\tiny$2$};
+					\draw[dashed, lightgray] (1, 1.95) -- (1, 0) node[below] {\tiny$1$};
+					
+					\draw[dashed, lightgray] (3, 2.95) -- (3, 0) node[below] {\tiny$3$};
+					\draw[dashed, lightgray] (2.95, 3) -- (0, 3) node[left] {\tiny$3$};
+					
+					% Disegnamo le linee tratteggiate che rappresentano la somma
+					% vettoriale tra i vettori dei due numeri
+					\draw[dashed, thin, gray] (2.05, 1.05) -- (2.95, 2.95);
+					\draw[dashed, thin, gray] (1.05, 2.05) -- (2.95, 2.95);
+					
+				\end{tikzpicture}
+				
+				\caption{Rappresentazione grafica della somma di due numeri complessi.}
+				\label{fig:somma_complessi}
+				
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[b]{0.45\textwidth}
+				\centering
+				\begin{tikzpicture}[scale=1.2]
+					
+					% Disegniamo gli assi cartesiani
+					\draw[->] (-0.1, 0) -- (3.5, 0) node[right] {\small$\operatorname{Re}$};
+					\draw[->] (0, -0.1) -- (0, 3.5) node[above] {\small$\operatorname{Im}$};
+					
+					% Disegnamo i punti che ci interessano
+					\fill[black] (1, 1) circle (1.5pt);
+					\fill[black] (2, 1) circle (1.5pt);
+					\fill[red] (1, 3) circle (1.5pt);
+					
+					% Disegnamo le frecce che vanno dall'origine ai punti
+					\draw[->] (0, 0) -- (0.96, 0.96);	
+					\draw[->] (0, 0) -- (1.96, 0.96);
+					\draw[->, red] (0, 0) -- (0.98, 2.96);
+					
+					% Disegnamo le linee tratteggiate che vanno dai punti agli assi
+					\draw[dashed, lightgray] (2, 0.95) -- (2, 0) node[below] {\tiny$2$};
+					\draw[dashed, lightgray] (1.95, 1) -- (0, 1) node[left] {\tiny$1$};
+					\draw[dashed, lightgray] (0.95, 3) -- (0, 3) node[left] {\tiny$3$};
+					\draw[dashed, lightgray] (1, 2.95) -- (1, 0) node[left] {\tiny$3$};
+					
+				\end{tikzpicture}
+				
+				\caption{Rappresentazione grafica del prodotto di due numeri complessi.}
+				\label{fig:prodotto_complessi}
+				
+			\end{subfigure}
+		
+	\end{figure}
+	
+	Per quanto riguarda la somma, si può vedere grazie al grafico in \ref{fig:somma_complessi} come questa sia simile alla somma vettoriale affrontata alle scuole superiori, seguendo la regola del parallelogramma.
+	
+	\newpage
+	Per il prodotto occorre invece spendere qualche parola in più, osservando come l'argomento del prodotto sia la somma degli argomenti dei due numeri ($\operatorname{Arg}(z \cdot w) = \operatorname{Arg}(z) + \operatorname{Arg}(w)$), mentre il modulo risulta essere il prodotto dei due moduli ($\mathbf{\left|z \cdot w\right| = \left|z\right| \cdot \left|w\right|}$).
+	
+	Inoltre, grazie alla formula di Eulero e al piano di Gauss, pè possibile stabilire un'importante relazione tra un numero complesso, il suo modulo e il suo argomento.\\
+	Sia $z = a + bi$ un numero complesso e $\theta$ il suo argomento. Abbiamo allora che:
+	\begin{itemize}
+		\item $a = \left|z\right| \cdot \cos{\theta}$
+		\item $b = \left|z\right| \cdot sin{\theta}$
+	\end{itemize}
+	
+	\subsection{Teorema fondamentale dell'Algebra}
+	
+	\begin{teorema}{Teorema fondamentale dell'Algebra}{fondamentale-algebra}
+		Ogni polinomio di grado $n$ a coefficienti complessi ha esattamente $n$ radici complesse.
+	\end{teorema}
+	
+	Da ciò segue che ogni equazione del tipo $z^n = w$ ha $n$ soluzioni complesse.
+	In particolare, in una semplice equazione come quella scritta sopra, le soluzioni sono individuabili con la seguente formula:
+	\[
+		z_k = \sqrt[n]{\left|w\right|} \cdot \left(\cos\left(\frac{\operatorname{Arg}(w) + 2k\pi}{n}\right) + i\sin\left(\frac{\operatorname{Arg}(w) + 2k\pi}{n}\right)\right), k \in \{0, 1, \dots, n-1\}
+	\]
+	
+	E non è finita qui: anche graficamente questo teorema può stupirci.
+	
+	\begin{figure}[h!]
+		\centering
+		\begin{tikzpicture}[scale=1.2]
+			
+			% Disegniamo gli assi cartesiani
+			\draw[->] (-1.5, 0) -- (1.5, 0) node[right] {\small$\operatorname{Re}$};
+			\draw[->] (0, -1.5) -- (0, 1.5) node[above] {\small$\operatorname{Im}$};
+			
+			\fill[black] (1, 0) circle (1.5pt);
+			\fill[black] (-0.5, 0.866) circle (1.5pt);
+			\fill[black] (-0.5, -0.866) circle (1.5pt);
+			
+			\draw[very thin, black] (1, 0) -- (-0.5, 0.866);
+			\draw[very thin, black] (1, 0) -- (-0.5, -0.866);
+			\draw[very thin, black] (-0.5, 0.866) -- (-0.5, -0.866);
+			
+		\end{tikzpicture}
+		
+		\caption{In figura le soluzioni all'equazione $z^3 = 1$. Come vediamo, se il polinomio ha $n$ radici distinte, queste formeranno una figura regolare con $n$ lati}
+		\label{fig:radici_complesse_no_molteplicita}
+	\end{figure}
+	
+	\newpage
+	\chapter{Spazi vettoriali}
+	Sia $\K$ un campo. Sia $\K^n := \{\mathbb{X} = \genericvector{x} \mid x_i \in \K\}$, sostanzialmente l'insieme delle n-uple di elementi presi in $\K$.
+	
+	Definiamo poi le operazioni di somma e prodotto su $\K^n$:
+	\[
+		\begin{aligned}
+			&\text{Somma tra elementi: } \K^n \times \K^n \to \K^n \\
+			&\hspace{0.7cm}(\genericvector{x}, \genericvector{y}) \mapsto (x_1 + y_1, \dots, x_n + y_n) \\[0.4cm]
+			&\text{Prodotto per uno scalare: } \K \times \K^n \to \K^n \\
+			&\hspace{0.7cm}(\lambda, \genericvector{x}) \mapsto (\lambda x_1, \dots, \lambda x_n)
+		\end{aligned}
+	\]
+	
+	Un esempio di $\K^n$ può essere $\R^3$, cioè l'insieme di tutte le triple di numeri presi in $\R$.
+	
+	\begin{definizione}{Definizione di spazio vettoriale}{spazio-vettoriale}
+		Uno \textbf{spazio vettoriale} è un insieme $\V$ fornito delle operazioni di somma e prodotto per scalare definite come sopra, per i cui elementi valgono anche le stesse 8 proprietà che deve rispettare un campo (che ricordiamo essere commutatività della somma e del prodotto, esistenza univoca dell'elemento neutro per la somma e per il prodotto, \dots), ovviamente adattate alle n-uple dell'insieme.
+		Gli elementi di uno spazio vettoriale (vale a dire le n-uple) sono dette \textbf{vettori}.
+		In particolare, l'elemento neutro per la somma si indica con $\mathbf{\nullvector}$ ed è anche detto \textbf{vettore nullo}.
+	\end{definizione}
+	
+	
+	\begin{definizione}{Definizione di sottospazio vettoriale}{sottospazio-vettoriale}
+		Un insieme $\W \subseteq \V$ è un sottospazio vettoriale se:
+		\begin{itemize}
+			\item $\W \neq \emptyset$.
+			\item Se $v_1, v_2 \in \W$ allora $(v_1 + v_2) \in \W$  
+			\item Se $\lambda \in \K$ e $v \in \W$ allora $(\lambda v) \in \W$
+			\item $\nullvector \in \W$
+			\item Se $v \in \W$ allora $-v \in \W$
+		\end{itemize}
+	\end{definizione}
+	
+	Facciamo degli esempi:
+	\begin{itemize}
+		\item $\W = \{\genericvector{x} \in \K^n \mid \sum_{i=1}^{n}x_i = 0\} \subset \K^n$ si può facilmente dimostrare essere un sottospazio vettoriale in quanto è presente il vettore nullo e sono rispettate tutte le altre proprietà (verificare per esercizio).
+		\item $\vectorspace{U} = \{\genericvector{x} \in \K^n \mid \sum_{i=1}^{n}x_i = 1\}$, a sua volta, \textbf{non} è un sottospazio vettoriale, in quanto il vettore nullo non rispetta la condizione di definizione dell'insieme e dunque non è contenuto in esso.
+	\end{itemize}
+	
+	Data la definizione di sottospazio vettoriale, non risulterà sorprendente dire che \textbf{anche un sottospazio vettoriale è a sua volta uno spazio vettoriale}.
+	
+	Inoltre, in ogni spazio vettoriale $\V$, esistono \textit{sempre} due sottospazi detti \textit{banali} (o \textit{triviali}):
+	\begin{itemize}
+		\item $\emptyset$, l'insieme vuoto, che è sempre contenuto in ogni insieme e rispetta paradossalmente tutte le proprietà di uno spazio vettoriale.
+		\item $\V$ stesso, per ovvie ragioni.
+	\end{itemize}	
+	
+	\section{Combinazioni lineari}
+	Sia $\K$ un campo. Sia $\V$ uno spazio vettoriale su $\K$.\\
+	Siano $\{\vectors{v}\} \in \V$ vettori appartenenti a $\V$.\\
+	Sia poi $v \in \V$ un generico vettore di $\V$.
+	
+	Il vettore $v$ si dice \textbf{combinazione lineare di} $\mathbf{\{\vectors{v}\}}$ se è possibile riscrivere $v$ come:
+	\[
+		v = \lambda_1 \cdot v_1 + \lambda_2 \cdot v_2 + \dots + \lambda_n \cdot v_n
+	\]
+	Ovvero come somma della lista di vettori di $\V$, ognuno dei quali moltiplicato per uno scalare $\lambda_i \in \K$.
+	
+	Per maggiore chiarezza, facciamo due esempi:
+	\begin{itemize}
+		\item Avendo già scritta la seguente uguaglianza $2(1, 1) - 3(0, 2) = (2, 2) + (0, -6) = (2, -4)$ possiamo dire che il vettore $v = (2, -4)$ è combinazione lineare dei vettori $v_1 = (1, 1) \text{ e } v_2 = (0, 2)$, moltiplicati rispettivamente per i coefficienti $2 \text{ e } 3$.
+		\item Data invece la seguente lista di vettori $\{v_1 = (9, 5), v_2 = (2, 3)\}$ vogliamo scoprire se il vettore $v = (16, 7)$ è combinazione lineare di $v_1 \text{ e } v_2$, per qualche $\lambda_1, \lambda_2 \in \K$. \\
+		Impostando la generica uguaglianza che prendiamo dalla definizione di combinazione lineare otteniamo $(16, 7) = \lambda_1(9,5) + \lambda_2(2, 3)$.\\
+		Adesso dobbiamo semplicemente risolvere il sistema che otteniamo da questa uguaglianza, che sarà il seguente:
+		\[
+			\begin{cases}
+				9\lambda_1 + 2\lambda_2 = 16\\
+				5\lambda_1 + 3\lambda_2 = 7
+			\end{cases}
+		\]
+		Risolvendolo, otteniamo che $\lambda_1 = 2, \lambda_2 = -1$.
+	\end{itemize}
+	
+	Adattiamo adesso la definizione di combinazione lineare anche al caso limite, cioè quello in cui la lista di vettori scelti è vuota (dunque $n = 0$). In tal caso, diciamo che \textbf{solo} il vettore nullo $\nullvector$ può essere combinazione lineare di una lista vuota.
+	
+	\begin{teorema}{Caratterizzazione di un sottospazio vettoriale}{caratterizzazione-sottospazio}
+		Un sottoinsieme $\W \subseteq \V$ è un sottospazio vettoriale sse. contiene le combinazioni lineari di \textit{qualsiasi} lista di vettori ottenibile da $\V$.
+	\end{teorema}
+	
+	\section{Vettori generatori}
+	Sia $\K$ un campo. Sia $\V$ uno spazio vettoriale su $\K$.\\
+	Siano $\{\vectors{v}\} \in \V$ vettori appartenenti a $\V$.\\
+	Diciamo che i vettori $\{\vectors{v}\}$ sono dei \textbf{generatori dello spazio vettoriale} $\mathbf{\V}$ se è possibile riscrivere \textit{ogni} vettore $v \in \V$ come combinazione lineare di $\{\vectors{v}\}$.
+	
+	Nel pratico, per scoprire se una lista di vettori $\{\vectors{v}\}$ è generatrice di uno spazio vettoriale $\V$ è sufficiente impostare la combinazione lineare del generico vettore appartenente allo spazio vettoriale, ricavarne il sistema associato e verificare che questo abbia almeno una soluzione.
+	\[
+		\genericvector{x} = \lambda_1(y_1, \dots, y_n) + \dots + \lambda_n(z_1, \dots, z_n) \to
+		\begin{cases}
+			x_1 = \lambda_1y_1 + \dots + \lambda_nz_1\\
+			\dots\\
+			x_n = \lambda_1y_n + \dots + \lambda_nz_n\\
+		\end{cases}
+	\]
+	
+	\begin{definizione}{Definizione di Span}{span}
+		
+		Sia $\mathbb{S} \subseteq \V$ un sottoinsieme di $\V$. Essendo un semplice sottoinsieme dunque non è detto che $\mathbb{S}$ sia un sottospazio vettoriale: è sufficiente che sia un insieme di vettori, cioè di n-uple.\\
+		Definiamo come $\mathbb{\langle S\rangle} \text{ oppure } Span(\mathbb{S})$ l'insieme delle combinazioni lineari date dai vettori in $\mathbb{S}$. \\
+		Formalmente scriviamo:
+		\[
+			\langle\mathbb{S}\rangle = Span(\mathbb{S}) := \{ \lambda_1v_1 + \dots + \lambda_nv_n \mid \vectors{v} \in \mathbb{S} \}
+		\]
+		
+	\end{definizione}
+	
+	Risultano poi ovvie le seguenti proposizioni:
+	\begin{enumerate}
+		\item $\mathbb{S} \subseteq \langle\mathbb{S}\rangle$ in quanto, ovviamente, tra i vettori generati dallo Span ci saranno anche i vettori stessi che lo generano.
+		\item $\langle\mathbb{S}\rangle \subseteq \V$.
+	\end{enumerate}
+	
+	Non è tuttavia ovvio il fatto che $\langle\mathbb{S}\rangle$ sia il più piccolo spazio vettoriale di $\V$ che contiene $\mathbb{S}$.
+	
+	\begin{definizione}{Definizione di somma di due sottospazi}{somma-di-sottospazi}
+		Siano $\vectorspace{U}, \W \subseteq \V$.\\
+		La somma $\vectorspace{U}+\W$ è il sottospazio definito come segue:
+		\[
+			\vectorspace{U}+\W := \langle\vectorspace{U}\cup\W\rangle = \{u+w \mid u\in\vectorspace{U}, w \in \W\}
+		\]
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di spazio vettoriale finitamente generato}{spazio-finitamente-generato}
+		Uno spazio vettoriale $\V$ si dice \textbf{finitamente generato} se esiste un \textbf{insieme finito} $\mathbb{S} \subseteq \V$ tale che:
+		\[
+			\V = \langle\mathbb{S}\rangle
+		\]
+	\end{definizione}
+	Stiamo dunque dicendo che uno spazio vettoriale $\V$ è finitamente generato se esiste una lista di vettori $\{\vectors{v}\} \in \V$ tale che ogni vettore $v \in \V$ si possa scrivere come combinazione lineare dei vettori di quella lista.
+	
+	\begin{proposizione}{}{sottospazio-finitamente-generato}
+		Sia $\V$ uno spazio vettoriale su $\K$ finitamente generato da una lista di $n$ vettori.\\
+		Se $\W \subset \V$ è un sottospazio vettoriale, allora anche $\W$ è finitamente generato, stavolta però da una lista di \textit{al più} $n$ vettori.
+	\end{proposizione}
+	Questa proposizione può sembrare banale, in quanto si potrebbe pensare che gli stessi generatori di $\V$ possano essere riutilizzati, seppur in quantità minore, per generare anche $\W$. Tuttavia questo non è sempre vero, in quanto non è detto che i vettori generatori di $\V$ rispettino le restrizioni secondo le quali è definito $\W$.
+	
+	\section{Relazioni lineari}
+	Una relazione lineare su una lista di vettori $\{\vectors{v}\}$ è un'uguaglianza che pone la combinazione lineare dei vettori della lista uguale al vettore nullo. Si presenta dunque come segue:
+	\[
+		\lambda_1v_1 + \dots + \lambda_nv_n = \nullvector
+	\]
+	Ci rendiamo conto di come questa relazione sia \textit{\textbf{banale}} se $\lambda_i = 0, \forall i \in \{1, \dots, n\}$, dunque se tutti i coefficienti sono nulli.\\
+	Simmetricamente, la relazione si dice \textit{\textbf{non banale}} se esiste \textit{almeno} un coefficiente non nullo.
+	
+	Forniamo di seguito due tra le definizioni più importanti di tutta l'algebra lineare.
+	
+	\begin{definizione}{Definizione di dipendenza lineare}{dipendenza-lineare}
+		Diciamo che $\vectors{v}$ sono \textbf{linearmente dipendenti} se esiste una relazione lineare \textit{non banale} che coinvolge la lista dei vettori.\\
+		Vuol dire dunque che, se i vettori sono linearmente dipendenti, esiste almeno un modo di far risultare al vettore nullo la loro combinazione lineare, senza necessariamente porre tutti i coefficienti a $0$.
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di indipendenza lineare}{indipendenza-lineare}
+		Simmetricamente, diciamo che $\vectors{v}$ sono \textbf{linearmente indipendenti} se l'unica relazione lineare possibile tra la lista di vettori è quella \textit{banale}.\\
+		In altre parole, vuol dire che l'unico modo per ottenere il vettore nullo come combinazione dei vettori della lista è ponendo a $0$ tutti i coefficienti.
+	\end{definizione}
+	
+	\begin{proposizione}{}{dipendenza-lineare}
+		$\vectors{v}$ sono linearmente dipendenti sse. $\exists i \in \{1, \dots, n\}$ tale che
+		\[
+			v_i = \lambda_1v_1 + \dots + \lambda_{i-1}v_{i-1} + \lambda_{i+1}v_{i+1}, \dots, \lambda_nv_n
+		\]
+	\end{proposizione}
+	Dunque una lista di vettori è linearmente dipendente se, preso un qualsiasi vettore della lista, questo può essere scritto come combinazione lineare dei restanti vettori.
+	
+	\section{Basi di uno spazio vettoriale}
+	Una lista di vettori $\{\vectors{v}\} \in \V$ si dice una base di $\V$ se rispetta i seguenti requisiti:
+	\begin{enumerate}
+		\item $\{\vectors{v}\}$ è una lista di generatori di $\V$.
+		\item $\vectors{v}$ sono linearmente indipendenti.
+	\end{enumerate}
+	Di seguito enunciamo la base più importante per ogni spazio vettoriale del tipo $\V \subseteq \K^n$, la cosiddetta \textbf{base canonica}, composta dai seguenti vettori:
+	\[
+		\underline{e}_1 = \{1, 0, \dots, 0\}, \whitespace\underline{e}_2 = \{0, 1, 0, \dots, 0\},\whitespace \dots, \whitespace\underline{e}_n = \{0, 0, \dots, 0, 1\}
+	\]
+	
+	Si nota che uno spazio vettoriale può assolutamente avere più di una lista di generatori e più di una base.
+	
+	\begin{definizione}{Definizione di coordinate di un vettore rispetto ad una base}{coordinate}
+		Definiamo inizialmente l'applicazione che, data una lista di vettori generatori $\{\vectors{v}\}$, associa ad una lista di coefficienti $\lambda_1, \dots, \lambda_n$ il vettore generato come combinazione lineare dei vettori della lista, ognuno col suo coefficiente.
+		
+		\[
+			\begin{aligned}
+				f: \K^n &\to \V\\
+				\genericvector{x} &\mapsto \sum_{i=1}^{n} x_i \cdot v_i
+			\end{aligned}
+		\]
+		
+		Si fanno qui sotto due osservazioni:
+		\begin{enumerate}
+			\item $f$ è suriettiva sse. $\langle \vectors{v}\rangle= \V$, dunque la lista di vettori genera $\V$.
+			\item $f$ è iniettiva sse. $\{\vectors{v}\}$ sono linearmente indipendenti.
+		\end{enumerate}
+		Ne segue dunque che la funzione $f$ è \textit{biunivoca} sse. la lista è una base di $\V$.
+		
+		Essendo $f$ biunivoca, vuol dire che essa ammette una funzione inversa. La definiamo di seguito come segue:
+		\[
+			\mathbb{X}_B: \V \to \K_n
+		\]
+		che, come ci si potrebbe aspettare, associa al vettore $v$ generato come combinazione lineare dei vettori della base $\mathbb{B} = \{\vectors{v}\}$ gli scalari $\lambda_1, \dots, \lambda_n$ attribuiti a ciascun vettore della lista.
+		La n-upla di scalari $\genericvector{\lambda}$ rappresenta dunque le \textbf{coordinate del vettore} $\mathbf{v}$ \textbf{all'interno della base} $\mathbb{B}$.
+	
+	\end{definizione}
+	
+	Si nota come le coordinate di un vettore siano ottenibili solo ed esclusivamente \textit{in riferimento ad una base}. E' infatti impossibile ottenere le coordinate di un vettore se non ci viene data la base di riferimento, in quanto a basi diverse corrispondono coordinate diverse anche per lo stesso vettore.
+	
+	Di seguito due esempi di uso delle basi all'interno degli esercizi:
+	\begin{itemize}
+		\item Se l'esercizio richiede, date le coordinate di un vettore rispetto ad una data base $\mathbb{B}$ di trovare il vettore in questione, il tutto risulta molto semplice.\\
+		Supponiamo che la coppia di scalari $(3, 2)$ rappressnti le coordinate di un vettore $v$ rispetto alla base $\mathbb{B} = \{v_1 = (1, 1), v_2 = (0, 2)\}$.\\
+		Per trovare il vettore in questione, è molto semplice, in quanto bisogna sostanzialmente ricostruire la combinazione lineare dei vettori della base ponendo come coefficienti le coordinate fornite, dunque:
+		\[
+			v = 3v_1 + 2v_2 = 3 \cdot (1, 1) + 2 \cdot (0, 2) = (3, 7)
+		\]
+		\item Se invece ci venisse richiesto, dato un vettore $v = (3, 7)$ di trovarne le coordinate rispetto alla base $\mathbb{B} = \{v_1 = (1, 1), v_2 = (0, 2)\}$, basterà innanzitutto impostare la combinazione lineare dei vettori della base e ricavarne i coefficienti tramite sistema:
+		\[
+			(3, 7) = \lambda_1(1,1) + \lambda_2(0,2) \to
+			\begin{cases}
+				1 \cdot \lambda_1 + 0 \cdot \lambda_2 = 3\\
+				1 \cdot \lambda_1 + 2 \cdot \lambda_2 = 7
+			\end{cases}
+		\]
+	\end{itemize}
+	
+	\begin{proposizione}{}{completamento-ad-una-base-1}
+		Se $\langle \vectors{v}\rangle = \V, \whitespace \exists 1 \leq i_1 < i_2 < \dots < i_n \leq n$ tale che $\{v_{i_1}, \dots, v_{i_n}\}$ è una base.
+	\end{proposizione}
+	In parole povere stiamo dicendo che, data una lista di $n$ generatori, possiamo scartare alcuni vettori della lista per ottenere una base.
+	
+	\begin{proposizione}{}{}
+		Sia $\V$ uno spazio vettoriale finitamente generato. Se $v_1, \dots, v_m \in \V$ sono linearmente indipendenti, $\exists v_{m+1}, \dots, v_{m+q} \in \V$ tali che $\{v_1, \dots, v_m, v_{m+1}, \dots, v_{m+q}\}$ sia una base di $\V$.
+	\end{proposizione}
+	Qui stiamo dicendo una cosa simile: da una lista di vettori linearmente indipendenti, possiamo aggiungerne altri $q$ per far sì che tale lista diventi una base dello spazio vettoriale.\\
+	Nota: è ammesso anche il caso per $q = 0$, il quale indica che la lista di partenza $v_1, \dots, v_m$ era già una base.
+	
+	\section{Dimensione di uno spazio vettoriale}
+	Prima di fornire la definizione effettiva del concetto di \textit{dimensione}, dobbiamo fare un appunto per quanto riguarda la basi di uno spazio vettoriale.
+	
+	\begin{proposizione}{}{}
+		Sia $\V$ uno spazio vettoriale su $\K$ finitamente generato, cioè che possiamo scrivere $\V = \langle v_1, \dots, v_m\rangle$.
+		Prendendo in esempio la seguente lista di vettori $\{\vectors{w}\}$, valgono entrambe le seguenti considerazioni:
+		\begin{enumerate}
+			\item Se $ \in \V$ sono linearmente indipendenti, allora $n \leq m$.
+			\item Se $\vectors{w} \in \V$ e $n > m$, allora necessariamente $\{\vectors{w}\}$ è una lista di vettori linearmente dipendenti.
+		\end{enumerate}
+	\end{proposizione}
+	Questa proposizione ci sta dicendo che, se uno spazio è generato da un numero minimo di $n$ vettori, una qualsiasi lista di \textit{generatori} con più di $n$ elementi non può essere linearmente indipendente. Diciamo che il numero di elementi della lista dei generatori è il \textit{tetto massimo} per una lista di vettori che siano contemporaneamente linearmente indipendenti e generatori: abbiamo appena dato la proposizione che ci conferma che \textit{tutte} le basi di uno spazio vettoriale $\V$ hanno lo \textbf{stesso numero di elementi}.\\
+	Possiamo dunque procedere con la definizione di dimensione.
+	
+	\begin{definizione}{Definizione di dimensione}{dimensione}
+		La \textbf{dimensione} di uno spazio vettoriale $\V$ è uguale alla cardinalità di una sua qualsiasi base.
+	\end{definizione}
+	
+	Forniamo di seguito alcuni esempi di dimensione:
+	\begin{itemize}
+		\item Forse l'esempio più banale consiste nel generico spazio vettoriale $\K^n$ dove la dimensione è, come si potrebbe immaginare, proprio $n$, in quanto si prende in considerazione come base la base canonica ($\{\underline{e}_1, \dots, \underline{e}_n\}$).
+		\item Non è sempre così semplice, in quanto ad esempio per lo spazio dei polinomi fino ad un dato grado $d$ a coefficienti in $\K$ (che si indica come $\K[x]_{\leq d}$) la dimensione \textit{non} sarà $d$, bensì $d+1$.\\
+		Questo perché ricordiamo che un polinomio di grado $d$ contiene (anche se eventualmente con coefficiente nullo) tutti monomi di grado $< d$ e un termine noto. Se scegliessimo come base $\{x, x^2, \dots, x^d\}$ non avremmo modo di ottenere il termine noto da una combinazione lineare di variabili. Dobbiamo dunque aggiungere il coefficiente $1$ alla lista sopra enunciata, ottenendo così la cosiddetta \textbf{base canonica dello spazio dei polinomi}:
+		\[
+			\{1, x, x^2, \dots, x^d\}
+		\]
+	\end{itemize}
+	
+	\begin{proposizione}{}{}
+		Sia $V$ uno spazio vettoriale con dimensione $n$.\\
+		Se $\W \subseteq \V$ è un sottospazio, allora:
+		\[
+			\dim(\W) \leq n
+		\]
+		e si ha uguaglianza sse. $\W = \V$.
+	\end{proposizione}
+	
+	\begin{teorema}{Formula di Grassmann}{grassmann}
+		Sia $\V$ uno spazio vettoriale.\\
+		Siano $\vectorspace{U}, \W \subseteq \V$ sottospazi vettoriali finitamente generati.\\
+		Allora:
+		\[
+			\dim(\vectorspace{U} + \W) + \dim(\vectorspace{U} \cap \W) = \dim(\vectorspace{U}) + \dim(\W)
+		\]
+	\end{teorema}
+	
+	\newpage
+	\chapter{Applicazioni lineari}
+	
+	Siano $\V, \W$ spazi vettoriali su $\K$.
+	
+	\begin{definizione}{Definizione di applicazione lineare}{applicazione-lineare}
+		Un'applicazione $f: \V \to \W$ si dice lineare se rispetta i seguenti requisiti:
+		\begin{enumerate}
+			\item $f(v_1+v_2) = f(v_1) + f(v_2), \whitespace \forall v_1, v_2 \in \V$
+			\item $f(\lambda\cdot v) = \lambda \cdot f(v), \whitespace \forall \lambda \in \K, \whitespace \forall v \in \V$
+		\end{enumerate}
+	\end{definizione}
+	
+	Notiamo adesso una cosa, applicabile grazie a queste proprietà delle applicazioni lineari appena enunciate:
+	\begin{enumerate}
+		\item Sappiamo che, presa una base $\mathbb{B} = \{\vectors{v}\}$ di un generico spazio vettoriale $\V$, possiamo riscrivere ogni vettore dello spazio come combinazione lineare dei vettori della base:
+		\[
+			v = \lambda_1v_1 + \dots + \lambda_nv_n
+		\]
+		\item Vale dunque l'uguaglianza
+		\[
+			f(v) = f(\lambda_1v_1 + \dots + \lambda_nv_n)
+		\]
+		\item Per la proprietà 1, sappiamo che l'immagine della somma è la somma delle immagini, dunque possiamo scrivere
+		\[
+			f(v) = f(\lambda_1v_1 + \dots + \lambda_nv_n) = f(\lambda_1v_1) + \dots + f(\lambda_nv_n)
+		\]
+		\item Possiamo dunque riscrivere il tutto in modo più compatto con una sommatoria, ottenendo il seguente risultato
+		\[
+			f(v) = \sum_{i=1}^{n} \lambda_i \cdot v_i
+		\]
+	\end{enumerate}
+	I passaggi appena compiuti ci stanno dicendo che \textbf{un'applicazione lineare è sempre determinata dalle basi scelte per lo spazio di partenza e di arrivo} e, cosa ancora più importante \textbf{è unica per la scelta della data base} $\mathbb{B}$.
+	Infatti, scegliendo una base, potremmo riscrivere ogni vettore dello spazio come combinazione lineare dei vettori della base: sarà dunque sufficiente, nella definizione di un'applicazione lineare, attribuire l'immagine ai vettori della base (dunque, data una base $\mathbb{B} = \{\vectors{v}\}$, definire arbitrariamente i valori $f(v_1), \dots, f(v_n)$).
+	
+	\subsection{Proprietà delle applicazioni lineari}
+	Per le seguenti definizioni, sia $f: \V \to \W$ lineare.
+	
+	\begin{definizione}{Nucleo di un'applicazione lineare}{nucleo}
+		Il Kernel (o nucleo) di $f$ è definito come:
+		\[
+		\ker(f) := \{v \in \V \mid f(v) = \nullvector\}
+		\]
+	\end{definizione}
+	Il nucleo contiene dunque tutti quei vettori del dominio la cui corrispondente immagine nel codominio è il vettore nullo.
+	Si nota una cosa molto importante, ossia che \textbf{il nucleo è un sottospazio vettoriale del dominio} (verificare per esercizio).
+	\[
+	\ker(f) \subseteq \V
+	\]
+	
+	Analogamente, possiamo inoltre dire che \textbf{l'immagine della funzione è un sottospazio vettoriale del codominio}:
+	\[
+	\operatorname{Im}(f) \subseteq \W
+	\]
+	
+	\begin{proposizione}{}{}
+		$f$ è iniettiva sse. $\ker(f) = \{\nullvector\}$
+	\end{proposizione}
+	
+	\begin{proposizione}{}{}
+		Siano $\V, \W$ spazi vettoriali finitamente generati e sia $f$ definita come sopra.
+		Allora $\dim(\V) = \dim(\ker(f)) + \dim(\operatorname{Im}(f))$
+	\end{proposizione}
+	
+	\begin{corollario}{}{}
+		Se $\dim(\V) = \dim(\W)$ ed è definita $f$ lineare, allora $f$ è biunivoca sse. $\ker(f) = \{\nullvector\}$
+	\end{corollario}
+	
+	\begin{corollario}{}{}
+		Sia $f$ lineare definita come sopra e siano $\V, \W$ finitamente generati.
+		Allora $\dim(\ker(f)) \geq \dim(\V) - \dim(\W)$
+	\end{corollario}
+	
+	\subsection{Composizione di applicazioni lineari}
+	Siano $f: \vectorspace{U} \to \V$ e $g: \V \to \W$ due applicazioni lineari. Allora $(f \circ g): \vectorspace{U} \to \W$ è a sua volta lineare (dimostrare per esercizio, è molto semplice).
+	
+	Definiamo di seguito l'applicazione lineare più semplice, cioè quella \textit{identità}, dove dominio e codominio partenza, e che si limita ad associare ad un vettore se stesso:
+	\[
+	\begin{aligned}
+		Id_{\K^n}: \K^n &\to \K^n\\
+		v &\mapsto v
+	\end{aligned}
+	\]
+	
+	\begin{definizione}{Definizione di isomorfismo}{isomorfismo}
+		$f: \V \to \W$ lineare è un \textbf{isomorfismo} se $\exists g: \W \to \V$ lineare tale che:
+		\begin{itemize}
+			\item $g \circ f = g(f(v)) = Id_V$
+			\item $f \circ g = f(g(v)) = Id_W$
+		\end{itemize}
+	\end{definizione}
+	
+	Come si potrebbe immaginare, se esiste un isomorfismo $f: \V \to \W$ allora i due spazi $\V \text{ e } \W$ si dicono \textbf{isomorfi}.
+	In matematica, dire che due cose sono isomorfe equivale a dire che queste \textit{sono strutturalmente identiche}.
+	
+	\begin{osservazione}{}{}
+		Siano $\{\vectors{v}\}$ una base di $\V$. Se $\exists f$ isomorfismo, allora $\{f(v_1), \dots, f(v_n)\}$ è una base di $\W$, e dunque $\dim(\V) = \dim(\W)$.
+	\end{osservazione}
+	
+	\begin{osservazione}{}{}
+		Se $\dim(\V) = \dim(\W)$ allora $\V$ è isomorfo a $\W$.
+	\end{osservazione}
+	
+	\section{Matrici}
+	\begin{definizione}{Definizione di matrice}{matrice}
+		Una matrice $m \times n$ con entrate in $\K$ è una funzione definita come segue:
+		\[
+			a : \{(i, j) \mid 1 \leq i \leq m, \whitespace 1 \leq j \leq n\} \to \K
+		\]
+		cioè una funzione che associa ad una coppia di valori ($i, j$) un generico elemento di $\K$.
+	\end{definizione}
+	
+	Per notazione, tendiamo a chiamare le matrici non con la lettera minuscola, bensì con la maiuscola. Ad esempio, la matrice della funzione definita sopra verrà chiamata $A$ e non $a$.\\
+	Utilizziamo tuttavia la notazione $a_{ij}$ per indicare l'elemento della matrice alla riga $i$ e sulla colonna $j$.
+	
+	Invece, se volessimo fare riferimento ad un'intera riga $i$-esima di una matrice, dovremmo usare la notazione $A^i$, mentre per fare riferimento ad un'intera colonna useremo la notazione $A_j$.
+	
+	Di conseguenza, un altro modo per definire una matrice è $A = (a_{ij})$, che definisce una matrice "iterabile" secondo gli indici $i$ e $j$.
+	Di seguito un esempio grafico di matrice:
+	\[
+		A = \begin{bmatrix}
+			a_{11} & a_{12} & \dots & \dots & a_{1n}\\
+			a_{21} & a_{22} & \dots & \dots & a_{2n}\\
+			\dots & \dots & \dots & \dots &\dots \\
+			a_{i1} & \dots & a_{ij} & \dots a_{in}\\
+			a_{n1} & a_{12} & \dots & \dots & a_{nn}\\
+		\end{bmatrix}
+	\]
+	Definiamo inoltre $M_{m, n}(\K)$ l'insieme delle matrici di dimensione $m \times n$ ad entrate in $\K$.
+	
+	\subsection{Operazioni tra matrici}
+	\begin{itemize}
+		\item \textbf{Somma tra matrici}, consiste nella somma componente per componente, sommando dunque tra loro solo gli elementi che hanno contemporaneamente lo stesso indice di riga e colonna.\\
+		Formalmente è definito come segue:
+		\[
+			\begin{aligned}
+				M_{m,n}(\K) \times M_{m,n}(\K) &\to M_{m,n}(\K)\\
+				(a_{ij}, b_{ij}) &\mapsto (c_{ij})	
+			\end{aligned}
+		\]
+		con $c_{ij} := a_{ij} + b_{ij}$\\
+		Un esempio di somma tra due matrici (che, per definizione, è esiste solo tra matrici dello stesso ordine):
+		\[
+			\begin{bmatrix}
+				\textcolor{Red}{1} & \textcolor{BurntOrange}{2} & \textcolor{NavyBlue}{3} \\
+				\textcolor{Cyan}{4} & \textcolor{Purple}{5} & \textcolor{ForestGreen}{6}
+			\end{bmatrix}
+			+
+			\begin{bmatrix}
+				\textcolor{Red}{7} & \textcolor{BurntOrange}{8} & \textcolor{NavyBlue}{9} \\
+				\textcolor{Cyan}{0} & \textcolor{Purple}{1} & \textcolor{ForestGreen}{2}
+			\end{bmatrix}
+			=
+			\begin{bmatrix}
+				\textcolor{Red}{8} & \textcolor{BurntOrange}{10} & \textcolor{NavyBlue}{12} \\
+				\textcolor{Cyan}{4} & \textcolor{Purple}{6} & \textcolor{ForestGreen}{8}
+			\end{bmatrix}
+		\]
+		
+		\item \textbf{Prodotto per scalare}, che consiste semplicemente nel moltiplicare ogni entrata della matrice per un dato scalare $\lambda \in \K$.\\
+		Formalmente è definito come segue:
+		\[
+			\begin{aligned}
+				\K \times M_{m,n}(\K) &\to M_{m,n}(\K)\\
+				(\lambda, a_{ij}) &\mapsto (b_{ij})
+			\end{aligned}
+		\]
+		con $b_{ij} := \lambda \cdot a_{ij}$.\\
+		Di seguito un esempio:
+		\[
+			\textcolor{Red}{\lambda} \cdot
+			\begin{bmatrix}
+				1 & 2 & 3\\
+				4 & 5 & 6
+			\end{bmatrix}
+			= 
+			\begin{bmatrix}
+				\textcolor{Red}{\lambda} \cdot1 & \textcolor{Red}{\lambda} \cdot2 & \textcolor{Red}{\lambda} \cdot3\\
+				\textcolor{Red}{\lambda} \cdot4 & \textcolor{Red}{\lambda} \cdot5 & \textcolor{Red}{\lambda} \cdot6
+			\end{bmatrix}
+		\]
+		
+		\item \textbf{Prodotto tra matrici}. Si tratta dell'operazione più complessa ed intricata, in quanto presenta anche numerose restrizioni riguardo alle matrici coinvolte.\\
+		L'operazione è formalmente definita come segue:
+		\[
+			\begin{aligned}
+				M_{m,n}(\K) \times M_{n,p}(\K) &\to M_{m, p}(\K)\\
+				(a_{ij}, b_{ij}) &\mapsto (c_{ih})	
+			\end{aligned}
+		\]
+		con $c_{ih} = \sum_{j = 1}^{n} a_{ij} \cdot b_{jh}$.\\
+		Notiamo innanzitutto come il prodotto sia definito tra due matrici in cui \textbf{il numero di colonne della prima corrisponde al numero di righe della seconda}. Non a caso quest'operazione è detta anche \textbf{prodotto riga per colonna}.\\
+		Per maggiore chiarezza, si seguito presentiamo un esempio :
+		\[
+			\begin{bmatrix}
+				1 & 2 & 3\\
+				4 & 5 & 6
+			\end{bmatrix}
+			\cdot
+			\begin{bmatrix}
+				1 & 2\\
+				3 & 4\\
+				5 & 6
+			\end{bmatrix}
+			=
+			\begin{bmatrix}
+				22 & 28\\
+				49 & 64
+			\end{bmatrix}
+		\]
+		Vediamo il perché di questo risultato. Per comodità chiamiamo $A$ la prima matrice, $B$ la seconda e $C$ quella risultante:
+		\begin{enumerate}
+			\item Per ottenere $c_{11}$ dobbiamo moltiplicare $A^1$ con $B_1$. Il prodotto tra vettori viene definito come visto sopra, ovverosia come somma tra il prodotto componente per componente. Più nello specifico vediamo essere il prodotto tra $[1, 2, 3]$ e $[1, 3, 5]$, che si sviscera nel seguente modo:
+			\[
+				1 \cdot 1 + 2 \cdot 3 + 3 \cdot 5 = 22
+			\]
+			\item Per ottenere invece $c_{12}$ dobbiamo moltiplicare sempre $A^1$ ma stavolta con $B_2$. Vediamo infatti come il primo indice della cella nella matrice risultante corrisponda alla \textit{riga della prima matrice che dobbiamo prendere}, mentre il secondo indice della cella nella matrice risultante corrisponde alla \textit{colonna della seconda matrice che dobbiamo prendere}.\\
+			Applicando il prodotto come abbiamo imparato:
+			\[
+				[1, 2, 3] \cdot [2, 4, 6] = 1 \cdot 2 + 2 \cdot 4 + 3 \cdot 6 = 28
+			\]
+			\item E così via anche per la seconda riga di $A$, che dovrà "moltiplicare" tutte le colonne della matrice $B$.
+		\end{enumerate}
+		
+	\end{itemize}
+	
+	\begin{definizione}{Definizione di matrice unità}{matrice-unita}
+		La matrice unità (o identità) è quella matrice quadrata $n \times n$ che ha tutte entrate $1 \in \K$ (cioè l'elemento neutro per il prodotto) sulla diagonale principale, ed entrate $0 \in \K$ (cioè l'elemento neutro per la somma) nel resto della matrice.\\
+		Si indica con $1_n$ e graficamente si presenta così:
+		\[
+			1_n = 
+			\begin{bmatrix}
+				1 & 0 & \dots & \dots & 0\\
+				0 & 1 & \dots & \dots & 0\\
+				0 & \dots & 1 & \dots & 0\\
+				\dots & \dots & \dots & \dots & \dots\\
+				0 & 0 & \dots & 0 & 1
+			\end{bmatrix}
+		\]
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di matrice scalare e diagonale}{matrice-scalare-diagonale}
+		Una matrice $A$ si dice:
+		\begin{itemize}
+			\item \textbf{Scalare} se $A = \lambda \cdot 1_n$ e si rappresenta graficamente come:
+			\[
+				A = \lambda \cdot 1_n = 
+				\begin{bmatrix}
+					\lambda & 0 & \dots & \dots & 0\\
+					0 & \lambda & \dots & \dots & 0\\
+					0 & \dots & \lambda & \dots & 0\\
+					\dots & \dots & \dots & \dots & \dots\\
+					0 & 0 & \dots & 0 & \lambda
+				\end{bmatrix}
+			\]
+			
+			\item \textbf{Diagonale} se gli elementi della diagonale principale sono tutti scalari (non necessariamente uguali, altrimenti sarebbe scalare) e tutto il resto uguale a $0$.\\
+			Graficamente:
+			\[
+				A = 
+				\begin{bmatrix}
+					\lambda_1 & 0 & \dots & \dots & 0\\
+					0 & \lambda_2 & \dots & \dots & 0\\
+					0 & \dots & \lambda_i & \dots & 0\\
+					\dots & \dots & \dots & \dots & \dots\\
+					0 & 0 & \dots & 0 & \lambda_n
+				\end{bmatrix}
+			\]
+		\end{itemize}
+	\end{definizione}
+	
+	Vediamo ora alcune proprietà algebriche per quanto riguarda il prodotto tra matrici (che ricordiamo \textbf{NON} essere commutativo nella maggior parte dei casi):
+	\begin{itemize}
+		\item $(\lambda \cdot 1_n) \cdot A = \lambda \cdot A = A \cdot (\lambda \cdot 1_n)$
+		\item $A \cdot (B \cdot C) = (A \cdot B) \cdot C$
+		\item $A \cdot (B + C) = A \cdot B + A \cdot C$
+	\end{itemize}
+	
+	\newpage
+	\section{Matrici e applicazioni lineari}
+	Prima di stabilire l'importantissimo collegamento che intercorre tra matrici e applicazioni lineari, introduciamo una convenzione utilizzata.\\
+	Parlare dello spazio $\K^n$ è equivalente al parlare dello spazio $M_{n,1}(\K)$, in quanto:
+	\[
+		\K^n \ni \genericvector{x} = 
+		\begin{pmatrix}
+			x_1\\
+			\dots\\
+			x_n
+		\end{pmatrix}
+		\in M_{n, 1}(\K)
+	\]
+	questo modo di scrivere un vettore come matrice ad $n$ righe ed una colonna è anche detto \textit{vettore colonna}.
+	
+	Dunque, per la definizione appena fornita, possiamo definire la seguente applicazione lineare:
+	\[
+		\begin{aligned}
+			L_A : \K^n &\to \K^m\\
+			X &\mapsto A \cdot X
+		\end{aligned}
+	\]
+	dove $X$ è il generico vettore colonna che si scrive come visto prima.
+	
+	\begin{proposizione}{}{}
+		Siano $\V, \W$ spazi vettoriali su $\K$.\\
+		Sia $\V$ finitamente generato.
+		Siano $\vectors{v} \in \V$ linearmente indipendenti e $\vectors{w} \in \W$, allora $\exists f: \V \to \W$ tale che $f(v_i) = w_i$.
+	\end{proposizione}
+	
+	\begin{proposizione}{}{}
+		Sia $f: \K^n \to \K^m$ lineare.
+		Esiste sicuramente $A \in M_{m,n}(\K)$ tale che $f = L_A$ e tale matrice è \textbf{unica}.
+	\end{proposizione}
+	Questa proposizione è molto forte, e ci sta dicendo che ad ogni applicazione lineare è strettamente collegata una matrice, che si chiamerà in particolare \textbf{matrice associata all'applicazione} $\mathbf{f}$.\\
+	Infatti data un applicazione lineare chiamata ad esempio $f$, la proposizione ci dice che una volta trovata la matrice associata all'applicazione (supponiamo questa matrice si chiami $A$) possiamo chiamare l'applicazione non più $f$ bensì $L_A$.
+	
+	In particolare questo concetto può essere formalizzato nel seguente modo.
+	\begin{definizione}{Definizione di matrice associata}{matrice-associata}
+		Sia $f: \V \to \W$ lineare. Sia $\mathbb{B} = \{\vectors{v}\}$ una base di $\V$ e $\mathbb{C} = \{\vectors{w}\}$ una base di $\W$.\\
+		Allora $\associatedmatrix{B}{C}(f)$, la matrice associata ad $f$, è così definita:
+		\[
+			M^{\mathbb{B}}_{\mathbb{C}}(f) = A = (a_{ij}) \in M_{m,n}(\K)
+		\]
+		e dove $A_j = \mathbb{X}_C(f(v_j))$.
+	\end{definizione}
+	
+	Andiamo ad analizzare la definizione di questa matrice associata e come si costruisce:
+	\begin{itemize}
+		\item Il fatto che la matrice associata appartenga allo spazio $M_{m,n}(\K)$ ci dice che la matrice associata è una matrice $m \times n$, dove $m$ è la \textbf{dimensione del dominio}, mentre $n$ è la \textbf{dimensione del codominio}.\\
+		Dunque ogni matrice associata ha tante righe quante indica la dimensione del dominio, e tante colonne quante ne indica la dimensione del codominio.
+		\item La relazione $A_j = \mathbb{X}_C(f(v_j))$ è importantissima, in quanto ci dice precisamente \textit{come} è costruita questa matrice. Ricordiamo che la notazione $A_j$ indica la colonna $j$-esima della matrice. Quest'uguaglianza ci sta dicendo che la colonna $j$-esima della matrice contiene le coordinate dell'immagine del $j$-esimo vettore della base del dominio nella base del codominio.\\
+		Il processo è intricato, ma molto semplice:
+		
+		\begin{enumerate}
+			\item Data $\mathbb{B} = \{\vectors{v}\}$ base del \textbf{dominio} $V$, prendiamo ogni singolo vettore e ne calcoliamo l'immagine, ottenendo così $\{f(v_1), \dots, f(v_n)\}$.
+			\item A questo punto prendiamo questi valori appena ottenuti, e per ogni immagine ne calcoliamo le coordinate nella base $\C$, base del \textbf{codominio} $\W$.
+			\item Calcolando le coordinate della prima immagine nella base $\C$ otteniamo dunque $\mathbb{X}_C(f(v_1))$. Questi valori ottenuti vanno disposto \textit{ordinatamente} nella prima colonna della matrice associata che stiamo costruendo.
+			\item Calcolando le coordinate della seconda immagine nella base $\C$ otteniamo dunque $\mathbb{X}_C(f(v_2))$. Questi valori ottenuti vanno disposto \textit{ordinatamente} nella seconda colonna della matrice associata che stiamo costruendo.
+			\item $\dots$ e così via finché non arriviamo all'ultima colonna.
+		\end{enumerate}
+		
+		Per semplificare la visualizzazione del processo, forniamo di seguito un esempio.
+		Consideriamo la seguente applicazione lineare:
+		\[
+			\begin{aligned}
+				f: \R^3 &\to \R^2\\
+				(x, y, z) &\mapsto (x+2y, 3y-z)
+			\end{aligned}
+		\]
+		E siano $\mathbb{B} = \{v_1 = (1, 0, 0), v_2 = (1, 1, 0), v_3 = (0, 0, 1)\} \textbf{ e } \C = \{w_1 = (1, 1), w_2 = (1, 0)\}$ rispettivamente le basi del dominio $\R^3$ e del codominio $\R^2$. 
+		
+		\begin{enumerate}
+			
+			\item Come primissima cosa utilizziamo la definizione dell'applicazione per calcolare le immagini dei vettori della base $\mathbb{B}$:
+			\begin{enumerate}
+				\item $f(v_1) = f(1, 0, 0) = (1, 0)$
+				\item $f(v_2) = f(1, 1, 0) = (3, 3)$
+				\item $f(v_3) = f(0, 0, 1) = (0, -1)$
+			\end{enumerate}
+			
+			\item Per ogni immagine trovata, dobbiamo esprimerla come combinazione lineare dei vettori della base $\C$. Come già visto, questo si risolve impostando 3 semplici uguaglianze da cui deriveranno altrettanti sistemi.
+			\begin{enumerate}
+				
+				\item $
+					(1, 0) = x_1(1,1) + x_2(1,0) \to
+					\begin{cases}
+						x_1 + x_2 = 1\\
+						x_1 = 0
+					\end{cases}
+					\to 
+					\begin{cases}
+						x_1 = 0\\
+						x_2 = 1
+					\end{cases}
+				$\\\\
+				Ciò vuol dire che nella \textcolor{BrickRed}{prima colonna} della matrice associata dovremo mettere verticalmente in ordine la tupla $(0, 1)$.
+				
+				\item $
+					(3, 3) = x_1(1,1) + x_2(1,0) \to
+					\begin{cases}
+						x_1 + x_2 = 3\\
+						x_1 = 3
+					\end{cases}
+					\to 
+					\begin{cases}
+						x_1 = 3\\
+						x_2 = 0
+					\end{cases}
+				$\\\\
+				Ciò vuol dire che nella \textcolor{RoyalBlue}{seconda colonna} della matrice associata dovremo mettere verticalmente in ordine la tupla $(3, 0)$.
+				
+				\item $
+					(0, -1) = x_1(1,1) + x_2(1,0) \to
+					\begin{cases}
+						x_1 + x_2 = 0\\
+						x_1 = -1
+					\end{cases}
+					\to 
+					\begin{cases}
+						x_1 = -1\\
+						x_2 = 1
+					\end{cases}
+				$\\\\
+				Ciò vuol dire che nella \textcolor{ForestGreen}{terza colonna} della matrice associata dovremo mettere verticalmente in ordine la tupla $(-1, 1)$.
+			
+			\end{enumerate}
+			
+			In seguito a tutti questi calcoli, possiamo costruire la matrice associata all'applicazione $f$:
+			\[
+				\associatedmatrix{B}{C} = A = 
+				\begin{bmatrix}
+				\textcolor{BrickRed}{0} & \textcolor{RoyalBlue}{3} & \textcolor{ForestGreen}{-1}\\
+				\textcolor{BrickRed}{1} & \textcolor{RoyalBlue}{0} & \textcolor{ForestGreen}{1}
+				\end{bmatrix}
+			\]
+				
+		\end{enumerate}
+		
+	\end{itemize}
+	
+	\begin{proposizione}{}{}
+		Se $v \in \V$, allora:
+		\[
+			\mathbb{X}_\C(f(v)) = \associatedmatrix{B}{C}(f) \cdot \mathbb{X}_\mathbb{B}(v)
+		\]
+	\end{proposizione}
+	
+	Questa proposizione è molto forte, in quanto ci sta dicendo sostanzialmente che è possibile ottenere la legge dell'applicazione (che nella formula sarebbe $\mathbb{X}_\C(f(v))$) semplicemente conoscendo la matrice associata e le coordinate di un generico vettore $v$ rispetto alla base del dominio.
+	Questo ci dice anche che riferirci ad un'applicazione lineare rispetto al suo nome (ad esempio chiamandola $f$) o alla sua matrice associata è completamente equivalente, anche perché si è già visto come la matrice associata sia unica per ogni applicazione lineare ben definita.
+	
+	\begin{definizione}{Definizione di insieme di applicazioni lineari}{insieme-applicazioni-lineari}
+		Siano $\V, \W$ spazi vettoriali su $\K$.
+		Definiamo \textit{L}$(\V, \W) := \{f: \V \to \W \mid f \text{ lineare }\}$.
+	\end{definizione}
+	\textit{L} è dunque l'insieme di tutte le applicazioni lineari che vanno da un certo spazio vettoriale $\V$ ad un altro spazio $\W$.
+	Definendo le operazioni di somma e prodotto tra applicazioni lineari si può anche dimostrare come questo insieme sia a sua volta uno spazio vettoriale.
+	
+	\begin{proposizione}{}{}
+		Siano $g: \vectorspace{U} \to \V$ e $f: \V \to \W$ due applicazioni lineari. Sia $A$ base di $\vectorspace{U}$, $\mathbb{B}$ base di $\V$ e $\C$ base di $\W$.
+		Allora $\associatedmatrix{A}{C}(f \circ g) = \associatedmatrix{B}{C}(f) \cdot \associatedmatrix{A}{B}$
+	\end{proposizione}
+	
+	\begin{definizione}{Definizione di rango di un'applicazione lineare}{rango}
+		Il \textbf{rango} di un'applicazione lineare $f$ è definito come:
+		\[
+			\rg(f) := \dim(\operatorname{Im}(f))
+		\]
+	\end{definizione}
+	
+	\subsection{Operazioni elementari su colonne e righe di una matrice}
+	Prima di discutere le operazioni elementari sulle righe o colonne di una matrice, è necessario introdurre due importanti classi di matrici:
+	\begin{itemize}
+		\item \textbf{Matrici a scala per colonna}, una particolare classe di matrici dove a partire dalla prima colonna tutti i valori sulla riga sono nulli, fino ad arrivare ad un certo valore alla riga $i$-esima, che sarà $\neq 0$ (sono tuttavia ammesse colonne nulle, e anzi queste sono anche molto importanti). Questi valori sono detti \textbf{pivot}.
+		La particolarità sta nel fatto che una matrice, per essere definita a scala per colonna, deve avere i pivot sempre almeno una riga sotto l'altro, dunque se due pivot si trovano sulla stessa riga quella \textbf{non} è una matrice a scala per colonna.
+		Graficamente si rappresenta come segue:
+		\[
+			\begin{bmatrix}
+				0 & 0 & 0 & 0\\
+				1 & 0 & 0 & 0\\
+				3 & 0 & 0 & 0\\
+				4 & 2 & 0 & 0
+			\end{bmatrix}
+		\]
+		Questo è un esempio di matrice a scala per colonna, in quanto il primo pivot si trova all'elemento $a_{2,1} = 1$ mentre il secondo si trova su $a_{4,2} = 2$. Siccome l'indice di riga del secondo è strettamente maggiore del primo, questa è una matrice a scala per colonna valida. Notare anche come, una volta trovato il pivot su una colonna, non sia importante il valore degli elementi sottostanti.
+		
+		\item \textbf{Matrici a scala per riga}, una particolare classe di matrici dove a partire dalla prima riga tutti i valori sono nulli fino ad una certa colonna $j$-esima. A quel punto per le successive righe dovranno esserci tutti valori nulli almeno fino alla colonna $j$-esima e in seguito potrà esserci un qualsiasi valore. Anche qui sono ammesse righe nulle, e anche qui il primo valore non nullo su una riga è detto \textbf{pivot}.
+		Di seguito un esempio grafico:
+		\[
+			\begin{bmatrix}
+				1 & 2 & 3 & 4\\
+				0 & 0 & 7 & 0\\
+				0 & 0 & 0 & 9\\
+				0 & 0 & 0 & 0
+			\end{bmatrix}
+		\]
+		In questo caso i pivot saranno i valori $1, 7, 9$, in quanto saranno i primi elementi non nulli di ciascuna riga. Si noti che se, ad esempio, il 7 fosse stato posizionato in posizione $a_{2,1}$ la matrice \textit{non} sarebbe stata a scala per riga.
+		
+	\end{itemize}
+	
+	Definiamo adesso le operazioni elementari, che valgono sia tra righe che tra colonne, ma \textbf{MAI} contemporaneamente. Infatti, quando si lavora con una matrice, bisogna decidere se applicare operazioni sulle righe \textit{oppure} sulle colonne. Tali operazioni, dette appunto \textbf{operazioni elementari}, aiutano a trasformare la matrice in una matrice a scala per colonna (nel caso delle operazioni sulle colonne), oppure in scala per riga (nel caso di operazioni sulle righe).
+	
+	Di seguito enunciate le operazioni elementari per le colonne:
+	
+	\begin{enumerate}
+		\item Scambiare due colonne, dunque passare da così $[A_1, \dots, A_{j-1}, A_j, A_{j+1}, \dots, A_n]$ a così $[A_j, \dots, A_{j-1}, A_1, A_{j+1}, \dots, A_n]$.
+		\item Aggiungere ad una colonna il multiplo di un'altra colonna, dunque "sovrascrivere" il valore di una colonna con uno nuovo, ottenuto dalla seguente relazione: $A_j = A_j + \lambda \cdot A_k$, ovviamente con $\lambda \neq 0$ e $j \neq k$.
+		\item Moltiplicare una colonna per uno scalare $\lambda \neq 0$, dunque nuovamente sovrascrivere il valore di una colonna nel seguente modo: $A_j = \lambda \cdot A_j$.
+	\end{enumerate}
+	
+	Le operazioni sulle colonne hanno la fantastica proprietà di \textbf{non modificare lo spazio vettoriale dell'immagine dell'applicazione lineare associata alla matrice}.
+	Dunque se a seguito di una serie di operazioni elementari passiamo da $A \to B \to \dots Z$ abbiamo che $\operatorname{Im}(L_A) = \operatorname{Im}(L_Z)$.
+	E anzi, dopo aver ridotto la matrice a scala per colonna, le colonne non nulle rappresentano una \textbf{base dell'immagine dell'applicazione lineare associata}. Nell'ottica dell'esempio precedente di matrice a scala per colonna, una base dell'immagine sarà costituita dai vettori $(0, 1, 3, 4)$ e $(0, 0, 0, 2)$.\\
+	
+	Di seguito enunciate le operazioni elementari per le righe
+	
+	\begin{enumerate}
+		\item Scambiare due righe, dunque passare da così $[A^1, \dots, A^{j-1}, A^j, A_{j+1}, \dots, A^n]$ a così $[A^j, \dots, A^{j-1}, A^1, A^{j+1}, \dots, A^n]$.
+		\item Aggiungere ad una riga il multiplo di un'altra riga, dunque "sovrascrivere" il valore di una riga con uno nuovo, ottenuto dalla seguente relazione: $A^j = A^j + \lambda \cdot A^k$, ovviamente con $\lambda \neq 0$ e $j \neq k$.
+		\item Moltiplicare una riga per uno scalare $\lambda \neq 0$, dunque nuovamente sovrascrivere il valore di una riga nel seguente modo: $A^j = \lambda \cdot A^j$.
+	\end{enumerate}
+	
+	Le operazioni sulle righe hanno la fantastica proprietà di \textbf{non modificare lo spazio vettoriale dell'nucleo dell'applicazione lineare associata alla matrice}.
+	Dunque se a seguito di una serie di operazioni elementari passiamo da $A \to B \to \dots Z$ abbiamo che $\ker(L_A) = \ker{Im}(L_Z)$.
+	Stavolta non possiamo semplicemente dire che le righe non nulle sono dei vettori della base, in quanto per ottenere queste bisogna effettuare un'operazione intermedia strutturata in vari passaggi. Di seguito un esempio di procedimento:
+	
+	Sia data la matrice $A = \begin{bmatrix}
+		1 & 2 & 3 & 4\\
+		0 & 0 & 7 & 0\\
+		0 & 0 & 0 & 9\\
+		0 & 0 & 0 & 0
+	\end{bmatrix}$ ridotta a scala per riga.
+	
+	\begin{enumerate}
+		\item Moltiplichiamo la matrice $A$ per il generico vettore colonna del dominio. Ricordando come è definito il prodotto tra matrici, essendo $A \in M_{4, 4}$, il vettore per cui moltiplicare sarà chiaramente $v \in M_{4,1}$, che indichiamo con componenti generiche come $v = (x, y, z, t)$. Inoltre, siccome vogliamo trovare una base del nucleo dell'applicazione, ci ricordiamo che ad appartenere al nucleo sono \textit{tutti i vettori del dominio la cui immagine è nulla}. E ricordandoci che l'immagine di un generico vettore di un'applicazione lineare si può ottenere anche moltiplicando la matrice associata all'applicazione per il vettore, segue naturalmente la seguente formula:
+		\[
+			A \cdot v = \nullvector \to 
+			\begin{bmatrix}
+				1 & 2 & 3 & 4\\
+				0 & 0 & 7 & 0\\
+				0 & 0 & 0 & 9\\
+				0 & 0 & 0 & 0
+			\end{bmatrix} \cdot 
+			\begin{bmatrix}
+				x\\
+				y\\
+				z\\
+				t
+			\end{bmatrix} = 
+			\begin{bmatrix}
+				0\\
+				0\\
+				0\\
+				0
+			\end{bmatrix}
+		\]
+		\item Procediamo svolgendo il prodotto, ottenendo come risultato il vettore colonna $4 \times 1$ strutturato come segue:
+		\[
+			\begin{bmatrix}
+				x + 2y + 3z + 4t\\
+				7z\\
+				9t\\
+				0
+			\end{bmatrix} = 
+			\begin{bmatrix}
+				0\\
+				0\\
+				0\\
+				0
+			\end{bmatrix}
+		\]
+		\item Da questa uguaglianza possiamo impostare il sistema lineare:
+		\[
+			\begin{cases}
+				x+2y+3z+4t = 0\\
+				7z = 0\\
+				9t = 0
+			\end{cases}
+		\]
+		Da cui ovviamente otteniamo che $z = 0, t = 0$. A questo punto rimane da sostituire nella prima equazione con i valori appena trovati, ottenendo:
+		\[
+		\begin{cases}
+			x+2y = 0\\
+			z = 0\\
+			t = 0
+		\end{cases}
+		\]
+		Possiamo fare una considerazione: il numero di righe nulle nella matrice a scala per riga indica il numero di variabili libere che avremo nel sistema: siccome avevamo una riga nulla, abbiamo una variabile libera, che per stavolta scegliamo essere y.
+		Esplicitando y come variabile libera e scrivendo tutto in funzione di essa, otteniamo finalmente il seguente sistema risolto:
+		\[
+			\begin{cases}
+				x = -2y\\
+				y = y\\
+				z = 0\\
+				t = 0
+			\end{cases}
+		\]
+		\item A questo punto riscriviamo il generico vettore $v \in \ker(f)$ con i suoi parametri, come visto prima, e poi sostituiamo con gli effettivi valori dei parametri ricavati dal sistema:
+		\[
+			v = 
+			\begin{bmatrix}
+				x\\
+				y\\
+				z\\
+				t
+			\end{bmatrix} = 
+			\begin{bmatrix}
+				-2y\\
+				y\\
+				0\\
+				0
+			\end{bmatrix}
+		\]
+		Adesso, genericamente, si dovrebbe spezzare il generico vettore come somma di altri vettori, uno per ogni parametro libero. Siccome qui abbiamo solo un parametro libero, possiamo lasciare questo singolo vettore e limitarci a raccogliere il parametro $y$:
+		\[
+			v = 
+			\begin{bmatrix}
+				-2y\\
+				y\\
+				0\\
+				0
+			\end{bmatrix} = 
+			y \cdot 
+			\begin{bmatrix}
+				-2\\
+				1\\
+				0\\
+				0
+			\end{bmatrix}
+		\]
+		I vettori che vedremo, senza parametri ma composti da soli numeri, saranno i vettori della base del nucleo. In questo specifico caso, la base è costituita da un solo vettore, $(-2, 1, 0, 0)$.
+		
+	\end{enumerate}
+	
+	Grazie al risultato dell'esempio, possiamo anche fare un'accorta osservazione: la dimensione del dominio nella matrice di partenza (che chiamiamo $n$ per comodità) era $4$, mentre il numero di pivot (sia $r$ per comodità) era $3$. La dimensione del kernel si può semplicemente ottenere con la formula:
+	\[
+		\dim(\ker(f)) = n - r
+	\]
+	e infatti nel nostro esempio il kernel ha solo un elemento nella base, e dunque ha come dimensione $1$.
+	
+	\begin{definizione}{Definizione di matrice trasposta}{matrice-trasposta}
+		Sia $A \in M_{m,n}(\K)$. La trasposta di A si indica con $A^T$ e appartiene a $M_{n,m}(\K)$, ed è la matrice che si ottiene dove la riga $i$-esima di $A$ diventa la \textbf{colonna} $i$-esima di $A^T$.
+	\end{definizione}
+	Dunque ogni riga viene scambiata con la colonna di corrispondente indice, ecco perché la trasposta di una matrice $m \times n$ è una matrice $n \times m$.
+	Di seguito un esempio:
+	\[
+		A = 
+		\begin{bmatrix}
+			2 & 1\\
+			4 & 5\\
+			7 & 9
+		\end{bmatrix}, A^T = 
+		\begin{bmatrix}
+			2 & 4 & 7\\
+			1 & 5 & 9
+		\end{bmatrix}
+	\]
+	
+	\begin{proposizione}{}{}
+		Sia $A \in M_{m,n}(\K)$, allora $\rg(A) = \rg(A^T)$.
+	\end{proposizione}
+	
+	\newpage
+	\begin{definizione}{Definizione di matrice inversa}{matrice-inversa}
+		Sia $A = M_{n,n}(\K)$ una matrice quadrata. La matrice inversa si indica con $A^{-1}$ ed è quella matrice per cui vale $A \cdot A^{-1} = 1_n$. Si tratta di uno dei pochi casi in cui il prodotto matriciale commuta.
+		L'inversa di una matrice \textbf{non} è sempre ammessa, ma la matrice di partenza deve rispettare i seguenti requisiti:
+		
+		\begin{itemize}
+			\item Deve essere una matrice \textbf{quadrata} (di \textbf{ordine n}).
+			\item Il rango della matrice deve essere massimo, dunque $\rg(A) = n$ oppure, analogamente, la dimensione del nucleo deve essere $0$ ($\dim(\ker(A)) = 0$).
+		\end{itemize}
+		
+	\end{definizione}
+	
+	Esistono vari metodi per calcolare l'inversa (se esiste) di una data matrice $A$: al lettore il compito di scegliere quello che preferisce.
+	
+	\section{Matrici del cambiamento di base}
+	Sia $\V$ uno spazio vettoriale su $\K$, e siano $\mathbb{B}, \mathbb{C}$ basi di $\V$.
+	Per la definizione della matrice associata ad un'applicazione lineare $f$ vale la seguente relazione:
+	\[
+		\mathbb{X}_\C(f(v)) = \associatedmatrix{B}{C}(f) \cdot \mathbb{X}_\mathbb{B}(v)
+	\]
+	Se utilizziamo come $f = \operatorname{Id}$, cioè consideriamo come applicazione lineare l'identità, l'uguaglianza si modifica nel seguente modo:
+	\[
+		\mathbb{X}_\C(v) = \associatedmatrix{B}{C}(\operatorname{Id}_\V) \cdot \mathbb{X}_\mathbb{B}(v)
+	\]
+	La matrice $\associatedmatrix{B}{C}(\operatorname{Id}_\V)$ è detta proprio \textbf{matrice del cambiamento di base} ed è quella matrice che, appoggiandosi all'applicazione identità, permette di esprimere la matrice associata ad $f$ nelle coordinate di una data base in un'altra base, sempre dello stesso spazio vettoriale di partenza.\\
+	Vale la pena inoltre dire che tale matrice è invertibile, e anzi vale una proprietà abbastanza importante per l'inversa:
+	\[
+		\left(\associatedmatrix{B}{C}(\operatorname{Id_\V})\right)^{-1} = \associatedmatrix{C}{B}(\operatorname{Id}_\V)
+	\]
+	
+	Supponiamo dunque di avere un \textbf{endomorfismo} $f$, cioè un'\textbf{applicazione lineare che ha come dominio e codominio lo stesso spazio vettoriale}. Supponiamo poi di avere la matrice associata ad $f$ dalla scelta di una data base $\mathbb{B}$ di $\V$: $\associatedmatrix{B}{B}(f)$. Presa adesso un'altra base $\C$ sempre dello spazio $\V$, supponiamo di voler esprimere la matrice associata non più in funzione della base $\mathbb{B}$, ma in funzione di questa nuova base $\C$.
+	Il discorso fatto precedentemente ci aiuta a stabilire una formula per passare semplicemente a questa nuova matrice $\associatedmatrix{C}{C}(f)$ senza dover manualmente calcolare le coordinate dei vettori della base di partenza in quella di arrivo, bensì semplicemente effettuando operazioni tra matrici:
+	\[
+		\associatedmatrix{C}{C}(f) = \associatedmatrix{B}{C}(\operatorname{Id}_\V) \cdot \associatedmatrix{B}{B}(f) \cdot \associatedmatrix{C}{B}(\operatorname{Id}_\V)
+	\]
+	
+	\begin{definizione}{Definizione di matrici coniugate}{coniugio}
+		Due matrici $A, B$ si dicono coniugate se $\exists P$ matrice invertibile tale che vale la seguente uguaglianza:
+		\[
+			B = P^{-1} \cdot A \cdot P
+		\]
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di base diagonalizzante}{base-diagonalizzante}
+		Sia $f$ un endomorfismo su $\V$. Si dice che una base $\mathbb{B}$ \textbf{diagonalizza} $\V$ sse. $\associatedmatrix{B}{B}(f)$ è diagonale.
+		Analogamente, $f$ è \textbf{diagonalizzabile} sse. $\exists \mathbb{B}$ che la diagonalizza.
+		Oppure, un altro modo per esprimerlo, possiamo dire che $f$ è diagonalizzabile se la matrice associata ad $f$ nella base canonica dello spazio è coniugata ad una matrice diagonale.
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di autovalori e autovettori}{autovalori-autovettori}
+		Sia $f$ un endomorfismo su $\V$. Sia $\lambda \in \K$ e $v \in \V$.\\
+		Diciamo che $\lambda$ è un \textbf{autovalore} e $v$ il suo \textbf{autovettore} se si ha che $f(v) = \lambda \cdot v$.
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di autospazio}{autospazio}
+		Definiamo $\V_\lambda(f) := \ker(\lambda \cdot \operatorname{Id}_\V - f)$ l'\textbf{autospazio} associato a $\lambda$, cioè l'insieme di tutti gli autovettori che hanno come autovalore $\lambda$.
+	\end{definizione}
+	Questa definizione di autospazio viene da una precisa formula.
+	Per la definizione di autovalore e autovettore, sappiamo che $f(v) = \lambda \cdot v$. Se esprimiamo tutto come funzione e non lasciamo valori "volanti", otterremo che dovremo sostituire $v$ con $\operatorname{Id}_\V(v)$. A quel punto la formula diventerà $f(v) = \lambda \cdot \operatorname{Id}_\V(v)$.\\
+	Se portiamo tutto al primo membro, otteniamo $f(v) - \lambda \cdot \operatorname{Id}_\V(v) = \nullvector$, che è molto simile all'applicazione del quale si vuole trovare il nucleo per definire l'autospazio. Cambia solo un segno, e in effetti l'autospazio può essere definito in entrambi i modi, cioè mediante entrambe le applicazioni.
+	L'ultimo dettaglio: perché si sceglie di prendere proprio il nucleo di quella applicazione? Beh, questo accade perché, se torniamo alla formula di prima, esprimendo tutto in funzione della variabile $v$ otteniamo la seguente uguaglianza:
+	\[
+		(f - \operatorname{Id}_\V)(v) = \nullvector
+	\]
+	e chiederci quando un'applicazione lineare mappa un elemento al vettore nullo è come chiedere \textit{tutti i vettori che fanno parte del nucleo di quell'applicazione}.
+	
+	Ma a cosa serve la diagonalizzazione?
+	Ad esempio a due scopi:
+	\begin{itemize}
+		\item Per calcolare la potenza $n$-esima di una matrice. Sapere che una matrice è diagonalizzabile equivale a dire che tale matrice è \textit{coniugata ad una matrice diagonale}. Significa dunque che possiamo scrivere $A = G^{-1} \cdot D \cdot G$.
+		Inoltre, richiedere di calcolare $A^n$ equivale a fare $A \cdot A \cdot \dots \cdot A$ per un totale di $n$ volte.
+		Se al posto della normale $A$ scriviamo la formula del coniugio, ci accorgeremo di una cosa interessante (prendiamo per esempio il calcolo di $A^3$):
+		\[
+			A^3 = (G^{-1} \cdot D \cdot G)(G^{-1} \cdot D \cdot G)(G^{-1} \cdot D \cdot G)
+		\]
+		tuttavia...per la definizione di matrice inversa sappiamo che il $G^{-1} \cdot G = G \cdot G^{-1} = 1_n$, dunque la formula diventa semplicemente:
+		\[
+			A^3 = (G^{-1} \cdot D)(1_n \cdot D)(1_n \cdot D \cdot G)
+		\]
+		che può essere infine semplificata come
+		\[
+			A^3 = G^{-1} \cdot D^3 \cdot G
+		\]
+		Vediamo dunque come calcolare la potenza $n$ di una matrice che sappiamo essere diagonalizzabile si riduce al calcolo della seguente formula:
+		\[
+			A^n = G^{-1} \cdot D^n \cdot G
+		\]
+		Ma a sua volta la potenza di una matrice diagonale è molto semplice, in quanto è sufficiente elevare alla $n$-esima ogni singolo elemento sulla diagonale della matrice.
+		
+		\item Per calcolare l'esponenziale di una matrice, vale a dire $e^A$. Sembra una cosa estremamente complicata, ma anche stavolta ci si limita ad utilizzare gli sviluppi notevoli di Taylor per l'esponenziale, arrivando ad ottenere la seguente formula:
+		\[
+			e^A = G^{-1} \cdot e^D \cdot G
+		\]
+		e anche qui il fatto che stiamo elevando l'esponenziale ad una matrice diagonale rende il tutto molto semplice, in quanto sarà sufficiente creare una matrice diagonale che ha sulla diagonale principale l'esponenziale elevato all'elemento corrispondente della matrice diagonale. Ad esempio...
+		\[
+			D = 
+			\begin{bmatrix}
+				1 & 0\\
+				0 & 2
+			\end{bmatrix}, 
+			e^D = 
+			\begin{bmatrix}
+				e^1 & 0\\
+				0 & e^2x
+			\end{bmatrix}
+		\]
+		
+	\end{itemize}
+	
+	\newpage
+	\section{Determinanti}
+	Definiamo, per ogni $n \in \N_+$ l'applicazione
+	\[
+		\det_n: M_{n,n}(\R) \to \R
+	\]
+	ricorsivamente, nel seguente modo:
+	\begin{itemize}
+		\item $n = 1: \det_1(A) = a_{1,1}$, dato che una matrice $1 \times 1$ consiste in un solo elemento , il determinante sarà proprio quell'elemento.
+		\item $n > 1: \det_n(A) = \sum_{j=1}^{n} (-1)^{n+j} \cdot a_{nj} \cdot \det_{n-1}(A^{n}_{j})$.
+		La dicitura $(A^{n}_{j}$ indica che stiamo prendendo la matrice $A$ dalla quale però rimuoviamo la riga $n$-esima e la colonna $j$-esima.
+	\end{itemize}
+	
+	Di seguito vengono elencate alcune proprietà algebriche del determinante:
+	\begin{enumerate}
+		\item Se la matrice $A$ ha una colonna nulla oppure due colonne uguali, il determinante è uguale a $0$ (vale anche per le righe).
+		\item Se $A$ è una matrice triangolare inferiore, ossia una matrice in cui gli elementi sopra la diagonale principale (esclusi) sono tutti nulli, il determinante si calcola molto semplicemente come il prodotto dei valori sulla diagonale principale.
+		\item $A$ è invertibile sse. $\det(A) \neq 0$.
+		\item $\det(1_n) = 1$
+		\item $\det(A) = \det(A^T)$
+		\item Se, nell'ottica di operazioni elementari sulla matrice, scambio due righe/colonne, il determinante cambia di segno.
+		\item Se, nell'ottica di operazioni elementari sulla matrice, aggiungo ad una riga/colonna il multiplo di un altra, il determinante non cambia.
+		\item \item Se, nell'ottica di operazioni elementari sulla matrice, moltiplico una riga/colonna per uno scalare $\lambda$, il determinante viene moltiplicato per $\lambda$.
+	\end{enumerate}
+	
+	\newpage
+	\chapter{Applicazioni multilineari}
+	Siano $\V_1, \dots, \V_m$ spazi vettoriali su $\K$.
+	\begin{definizione}{Definizione di applicazione multilineare}{applicazione-multilineare}
+		Un'applicazione $\phi: \V_1, \dots, \V_m \to \K$ è \textbf{multilineare} se $\forall v_1, \dots, v_{j-1}, v_{j+1}, \dots, v_m$ (dove l'indice di ogni vettore corrisponde allo spazio di provenienza) l'applicazione $\V_j \to \K$ definita come $v \mapsto \phi(v_1, \dots, v_{j-1}, v_{j+1}, \dots, v_n)$ è lineare.
+	\end{definizione}
+	In parole, per quanto possibili, più semplici, stiamo dicendo che fissati $m-1$ spazi e di conseguenza $m-1$ vettori, per ogni scelta possibile dell'unico vettore mancante nello spazio non considerato, l'applicazione costruita su quello spazio fissando gli $m-1$ vettori deve essere lineare.
+	
+	Definiamo anche l'insieme delle applicazioni multilineari:
+	\[
+		\operatorname{Multilin}(\V_1, \dots, \V_m, \K) := \{\phi: \V_1, \dots, \V_m \to \K \mid \phi \text{ multilineare}\}
+	\]
+	che si può dimostrare essere a sua volta uno spazio vettoriale definendo opportunamente le operazioni di somma e prodotto per scalare.
+	
+	Consideriamo adesso lo speciale caso per cui tutti i $\V_i$ del dominio dell'applicazione sono uguali.
+	\begin{definizione}{Definizione di applicazione multilineare alternante}{multilineare-alternante}
+		$\phi: \V \times \dots \times \V \to \K$ si dice alternante se vale che se $v_i = v_j$ allora $\phi(v_1, \dots, v_n) = 0$.
+	\end{definizione}
+	E' possibile anche definire l'insieme delle applicazioni multilineari alternanti $\operatorname{Alt}(\V^m, \K)$.
+	
+	\begin{osservazione}{}{}
+		Se $\phi: \V^m \to \K$ è multilineare e alternante, allora:
+		\[
+			\phi(v_1, v_2, \dots, v_n) = -\phi(v_2, v_1, \dots, v_n)
+		\]
+		e, se $\vectors{v}$ sono linearmente dipendenti allora $\phi(v_1, \dots, v_n) = 0$.
+	\end{osservazione}
+	
+	\begin{teorema}{Teorema di Binet}{binet}
+		Se $A, B\in M_{n,n}(\K)$ allora $\det(A \cdot B) = \det(A) \cdot \det(B)$
+	\end{teorema}
+	
+	\begin{corollario}{}{}
+		Sia $\V$ uno spazio vettoriale su $\K$ finitamente generato e sia $f$ un endomorfismo su $\V$. Se $\mathbb{B}$ e $\C$ sono basi di $\V$ allora:
+		\[
+			\det(\associatedmatrix{B}{B}(f)) = \det(\associatedmatrix{C}{C}(f))
+		\] 
+	\end{corollario}
+	
+	\begin{teorema}{Sviluppo di Laplace}{laplace}
+		Si tratta di un modo più semplice per calcolare il determinante, fissando e rimuovendo non sempre la $n$-esima riga, bensì una riga o una colonna a scelta. La formula di calcolo del determinante diventa dunque:
+		\[
+			\det(A) = \sum_{j=i}^{n} (-1)^{i+j} \cdot a_{ij} \cdot \det(A^{i}_{j})
+		\]
+	\end{teorema}
+	
+	Si introduce di seguito della notazione al fine di poter fornire un metodo più semplificato per il calcolo della matrice inversa.
+	Sia $A \in M_{n,n}(\K)$, il \textbf{cofattore} $(i, j)$ di $A$ è definito come:
+	\[
+		A_{ij} := (-1)^{i+j} \cdot \det(A^{i}_{j})
+	\]
+	La \textbf{matrice dei cofattori di} $\mathbf{A}$, che indichiamo con $A^C$, è la matrice $n \times n$ che ha, al posto di ogni entrata $a_{ij}$ il corrispondente cofattore $A_{ij}$.
+	
+	\begin{proposizione}{}{}
+			$A \cdot A^C = A^C \cdot A = \det(A) \cdot 1_n$
+	\end{proposizione}
+	
+	\begin{teorema}{Formula di Cramer}{inversa-cramer}
+		Dalla proposizione segue la seguente formula per trovare la matrice inversa di $A$:
+		\[
+			A^{-1} = (\det(A))^{-1} \cdot A^C
+		\]
+	\end{teorema}
+	
+	\newpage
+	\chapter{Polinomio caratteristico}
+	Vogliamo trovare un modo più semplice e algoritmico per stabilire se una data applicazione $f$ sia diagonalizzabile o meno.
+	Ricordando il discorso fatto nella sezione degli autovalori e autovettori, ricordiamo che la definizione di autovettore era quel vettore per cui vale $(\lambda \cdot \operatorname{Id}_\V- f)(v) = 0$.
+	L'autospazio veniva poi definito come il nucleo di questa applicazione lineare. Tuttavia noi sappiamo che se il nucleo di un'applicazione lineare \textbf{nono è banale}, allora il determinante di quell'applicazione è pari a $0$.
+	
+	Dunque, impostando e calcolando $\det(\lambda \cdot 1_n - A)$ otteniamo il cosiddetto \textbf{polinomio caratteristico}, cioè un polinomio monico di grado $n$ le cui radici rappresentano \textbf{tutti gli autovalori} dell'applicazione $f$ (che ha matrice associata $A$).
+	Tale polinomio si indica con $P_A$ oppure analogamente $P_f$.
+	
+	Definiamo anche il concetto di \textit{traccia} di una matrice, cioè la somma di tutti gli elementi sulla diagonale principale. Si indica con $\operatorname{Tr}(A)$.
+	
+	Grazie al polinomio caratteristico e al calcolo degli autovalori, possiamo stabilire ulteriori vincoli per quanto riguarda la relazione di coniugio tra due matrici:
+	\begin{itemize}
+		\item Due matrici devono avere lo stesso polinomio caratteristico.
+		\item Due matrici devono avere gli stessi autovalori, sia per molteplicità algebrica (\textit{quante volte un certo autovalore appare come radice del polinomio}) che per molteplicità geometrica (\textit{la dimensione dell'autospazio associato a quell'autovalore}).
+		\item Le tracce delle due matrici devono essere uguali.
+	\end{itemize}
+	
+	\begin{proposizione}{}{}
+		Sia $f$ un endomorfismo su $\V$. Se $\vectors{v}$ sono autovettori di $f$ con autovalori $\vectors{\lambda}$ distinti, allora $\vectors{v}$ sono linearmente indipendenti, e dunque formano anche una base di $\V$.
+		Inoltre, se $n = \dim(\V)$, allora $f$ è diagonalizzabile.
+	\end{proposizione}
+	
+	\begin{proposizione}{}{}
+		$f$ è diagonalizzabile sse. $P_f$ ha $n$ radici in $\K$ (contate ognuna con la rispettiva molteplicità) e per ogni autovalore la molteplicità algebrica deve coincidere con quella geometrica.
+	\end{proposizione}
+	
+	\newpage
+	\chapter{Spazi affini}
+	Ricordiamo che $E^2$ è il piano euclideo, cioè l'insieme dei punti identificati da due coordinate. Per motivi simili, $E^3$ è il piano euclideo.
+	Individuiamo ora $V(E^3)$, cioè lo spazio dei vettori geometrici che vanno da un punto $P$ ad un punto $Q$.
+	
+	Definiamo ora la seguente applicazione:
+	\[
+		\begin{aligned}
+			E^3 \times V(E^3) &\to E^3\\
+			(P, v) &\mapsto Q = P + v
+		\end{aligned}
+	\]
+	che come si vede prende un punto e un vettore, e da questi costruisce un nuovo punto che rappresenta l'\textbf{unico} punto ottenibile dalla somma del punto di partenza $P$ con il vettore $v$.
+	Possiamo dunque indicare $v = \overrightarrow{PQ}$, ossia a sua volta l'\textbf{unico} vettore che manda $P$ in $Q$.
+	
+	Valgono dunque le seguenti proprietà:
+	\begin{itemize}
+		\item $P + \nullvector = P$
+		\item $P + (v + w) = (P + v) + w$
+	\end{itemize}
+	
+	\begin{definizione}{Definizione di spazio affine}{spazio-affine}
+		Sia $\V$ uno spazio vettoriale su $\K$. Uno \textbf{spazio affine con gruppo delle traslazioni} $\V$ è un insieme $S$ non vuoto provvisto di un'applicazione:
+		\[
+			\begin{aligned}
+				S \times \V &\to S\\
+				(P, v) &\mapsto Q = P + v
+			\end{aligned}
+		\]
+		che gode delle stesse proprietà viste prima.
+	\end{definizione}
+	
+	Gli elementi di $S$, come nel piano o nello spazio euclideo, sono detti \textbf{punti}. Denotiamo con $V(S)$ il gruppo delle traslazioni di $S$, cioè $V(S) = \V$.
+	
+	Per notazione, definiamo $A^n(\K) := K^n$, cioè il generico spazio affine che ha come gruppo delle traslazioni sé stesso.
+	In uno spazio affine valgono inoltre le seguenti proprietà:
+	\begin{itemize}
+		\item Presi tre punti $P, Q, R \in S$, vale che $\overrightarrow{PQ} + \overrightarrow{QR} = \overrightarrow{PR}$
+		\item Presi due punti $P, Q$, vale che $\overrightarrow{PQ} = -\overrightarrow{QP}$
+	\end{itemize}
+	
+	\begin{proposizione}{}{}
+		La \textbf{dimensione} di $S$ è la dimensione del gruppo delle traslazioni associato (che essendo sostanzialmente uno spazio vettoriale, è ben definita).
+	\end{proposizione}
+	
+	\begin{teorema}{Combinazione affine tra punti}
+		Sia $S$ uno spazio affine su $K$. Siano $\lambda_0, \dots, \lambda_d \in \K$ tali che $\lambda_0 + \dots \lambda_d = 1$.
+		Se $Q, R, P_0, \dots, P_d \in S$, allora:
+		\[
+			Q + \sum_{i=0}^{d} \lambda_i \cdot \overrightarrow{QP_i} = R + \sum_{i=0}^{d} \lambda_i \cdot \overrightarrow{RP_i}
+		\] 
+	\end{teorema}
+	
+	\begin{definizione}{Definizione di combinazione affine tra punti}{combinazione-affine}
+		$\sum_{i=0}^{d} \lambda_i \cdot P_i := Q + \sum_{i=0}^{d} \lambda_i \cdot \overrightarrow{QP_i}$
+	\end{definizione}
+	
+	Il teorema e la definizione sopra enunciati dicono qualcosa di importantissimo: ci forniscono uno strumento per determinare la somma tra $d+1$ punti. Ricordiamo infatti che in uno spazio affine è definita la somma tra un punto e un vettore, ma \textbf{non} tra un punto e un altro.
+	
+	Ed è proprio ciò che qui abbiamo definito, dicendo che la combinazione affine di $d+1$ punti viene definita come la somma tra un punto $Q$ (scelto arbitrariamente, è molto importante capire che la scelta \textbf{non} influenza il risultato finale) e un vettore (perché alla fine la sommatoria non è altro che la combinazione lineare tra i vari vettori spostamento che vanno dal punto arbitrario $Q$ che abbiamo scelto e progressivamente uno dei $P_i$ punti).
+	
+	\begin{definizione}{Definizione di punti affinamente indipendenti}{indipendenza-affine}
+		Dei punti $P_0, \dots, P_d$ si dicono \textbf{affinamente indipendenti} se, preso come riferimento un punto $P_j$, i vettori ottenuti da $\overrightarrow{P_jP_i}$ con $i \neq j$ sono tra loro linearmente indipendenti.
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di sottospazio affine}{sottospazio-affine}
+		Un sottoinsieme $T \subseteq S$ è un sottospazio affine se $\exists W \subseteq V(S)$ e un punto $P_0 \in S$ tali che:
+		\[
+			T = P_0 + \W = {P_0 + w \mid w \in \W}
+		\]
+	\end{definizione}
+	Dunque un sottospazio affine è a sua volta uno spazio affine, definito a partire da un punto contenuto all'interno dell'insieme ambiente e da un sottospazio vettoriale del gruppo delle traslazioni.
+	
+	\begin{definizione}{Definizione di applicazione affine}{applicazione-affine}
+		Un'applicazione $F: S \to T$ si dice \textbf{affine} se $\exists f: V(S) \to V(T)$ lineare tale che $\forall P, Q \in S$
+		\[
+			\overrightarrow{F(P)F(Q)} = f(\overrightarrow{PQ})
+		\]
+	\end{definizione}
+	
+	La seguente definizione vale solo per gli spazi affini la cui dimensione è $< \infty$.
+	\begin{definizione}{Definizione di riferimento affine}{riferimento-affine}
+		Un \textbf{riferimento affine} per $S$ è dato da una coppia $R = (0, \mathbb{B})$ dove $0 \in S$ è un punto detto \textbf{origine} e $\mathbb{B}$ è una base di $V(S)$.
+	\end{definizione}
+	Informalmente, possiamo dire che un riferimento affine in uno spazio affine è l'equivalente di una base all'interno di uno spazio vettoriale: come negli spazi vettoriali possiamo avere più basi, dunque possono cambiare le coordinate di uno stesso vettore rispetto a basi diverse, lo stesso discorso vale per i punti espressi in riferimenti affini diversi. Infatti, per gli spazi affini, il riferimento affine standard è dato da $R = (0, \mathbb{E})$, dove $0 \in S$ è l'origine (possiamo pensare all'origine cartesiana, il punto in cui tutte le entrate sono pari a $0$) e $\mathbb{E} = \{\underline{e}_1, \dots, \underline{e}_n\}$ è la base standard di $V(S)$.
+	
+	\begin{definizione}{Definizione di prodotto scalare euclideo}{prodotto-scalare}
+		Se consideriamo $\V = V(E^3)$ e scegliamo un'unità di misura, possiamo definire il prodotto scalare euclideo come segue:
+		\[
+			\begin{aligned}
+				V(E^3) \times V(E^3) &\to \R\\
+				(v, w) &\mapsto \langle v, w\rangle = ||v|| \cdot ||w|| \cdot \cos(\theta)
+			\end{aligned}
+		\]
+		dove:
+		\begin{itemize}
+			\item $||v||$ è la lunghezza di $v$ rispetto all'origine.
+			\item $\theta$ è il minore angolo formato tra $v$ e $w$.
+		\end{itemize}
+	\end{definizione}
+	
+	\newpage
+	\chapter{Forme quadratiche}
+	\begin{definizione}{Definizione di forma quadratica}{forma-quadratica}
+		Sia $\V$ uno spazio vettoriale su $\K$ finitamente generato.
+		Una forma quadratica su $\V$ è un'applicazione $Q: \V \to \K$ tale che, scelta $\mathbb{B} = \{\vectors{v}\}$ base di $\V$ vale che:
+		\[
+			Q(v) = Q(x_1v_1 + \dots + x_nv_n) = \sum_{1 \geq i \geq j \geq n} a_{ij} \cdot x_i \cdot x_j
+		\]
+		e tale sommatoria risulta in un polinomio omogeneo di secondo grado (per questo il nome "quadratica").\\
+		Nota che, preso lo stesso vettore $v$, se vale l'espressione riportata sopra, la sua immagine sotto $Q$ sarà sempre una forma quadratica, indipendentemente dalla base scelta.
+	\end{definizione}
+	
+	\section{Forme bilineari simmetriche e forme quadratiche}
+	Si può ricondurre lo studio delle forme quadratiche a quello delle forme bilineari simmetriche.\\
+	Sia $F: \V \times \V \to \K$ una forma bilineare. Definiamo poi $q_F: \V \to \K$ che associa ad un vettore la corrispondente immagine sotto $F$, cioè $v \mapsto F(v, v)$. Si può verificare come $q_F$ sia una forma quadratica (si dimostra semplicemente sviluppando la formula $F(v, v)$ e applicando le proprietà di bilinearità dell'applicazione).
+	
+	\begin{definizione}{Definizione di simmetria di una forma bilineare}{bilineare-simmetrica}
+		Una forma bilineare su $\V$ si dice \textbf{simmetrica} sse.
+		\[
+			F(v, w) = F(w, v), \whitespace \forall v,w \in \V
+		\]
+	\end{definizione}
+	
+	Come fatto precedentemente con le varie classi di applicazioni lineari o multilineari, definiamo come $\operatorname{Bil}(\V)$ l'insieme di tutte le applicazioni bilineari su $\V$ e con $\operatorname{Bil}^+(\V)$ l'insieme di quelle bilineari simmetriche.
+	$Q(\V)$ è invece l'insieme delle forme quadratiche su $\V$.\\
+	Si può dimostrare come tutti questi insiemi siano degli spazi vettoriali.
+	
+	\begin{proposizione}{}{}
+		L'applicazione $\phi: \operatorname{Bil}^+(\V) \to Q(\V)$è un isomorfismo. Ciò vuol dire che vi è una corrispondenza biunivoca tra una forma quadratica e la forma bilineare associata.
+	\end{proposizione}
+	
+	\begin{definizione}{Definizione di matrice di Gram}{matrice-gram}
+		Sia $\mathbb{B} = \{\vectors{v}\}$ una base di $\V$ e sia $F \in \operatorname{Bil}(\V)$ una forma bilineare su $\V$.
+		La matrice di Gram associata \textit{dalla scelta della base $\mathbb{B}$} è matrice fatta nel seguente modo:
+		\[
+			M_\mathbb{B}(F) \in M_{n,n}(\K) \text{ con entrata } (i, j) = F(v_i, v_j)
+		\]
+		\[
+			M_\mathbb{B}(F) = 
+			\begin{bmatrix}
+				F(v_1, v_1) & \dots & F(v_1, v_n)\\
+				\dots & F(v_i, v_j) & \dots\\
+				F(v_n, v_1) & \dots & F(v_n, v_n)
+			\end{bmatrix}
+		\]
+		
+		Analogamente alle applicazioni lineari classiche, anche $F$ è univocamente determinata dalla matrice associata secondo la seguente relazione:
+		\[
+			F(v, w) = \mathbb{X}_\mathbb{B}(v)^T \cdot M_\mathbb{B}(F) \cdot X_\mathbb{B}(v)
+		\]
+	\end{definizione}
+	
+	\begin{osservazione}{}{}
+		$F$ è simmetrica sse. $M_\mathbb{B}(F)$ è simmetrica.
+	\end{osservazione}
+	
+	Se invece cerchiamo la matrice di Gram associata ad un'applicazione del tipo $\phi: \operatorname{Bil}^+(\V) \to Q(\V)$, cioè l'isomorfismo che associa ad un'applicazione bilineare la corrispondente forma quadratica, la matrice di Gram sarà fatta nel seguente modo:
+	\[
+		\begin{bmatrix}
+			a_{11} & \frac{1}{2}a_{12} & \dots & \frac{1}{2}a_{1n}\\
+			\frac{1}{2}a_{12} & \dots & \dots & \dots\\
+			\dots & \dots & a_{ii} & \dots\\
+			\frac{1}{2}a_{1n} & \frac{1}{2}a_{2n} & \dots & a_{nn}
+		\end{bmatrix}
+	\]
+	
+	Per comprendere al meglio, di seguito un esempio.\\
+	Sia 
+	\[
+		\begin{aligned}
+			F: \K^2 &\to \K\\
+			(x_1, x_2) &\mapsto x_{1}^{2} + 3x_1x_2 - x_{2}^{2}
+		\end{aligned}
+	\]
+	la matrice di Gram associata sarà dunque
+	\[
+		\begin{bmatrix}
+			1 & \frac{3}{2}\\
+			\frac{3}{2} & -1
+		\end{bmatrix}
+	\]
+	
+	Se volessimo invece esprimere la stessa matrice ma secondo un'altra base, si mantiene la logica del cambiamento di base vista nella sezione delle matrici:
+	\[
+		M_\C(F) = M_{\mathbb{B}}^\C(\operatorname{Id})^T \cdot M_\mathbb{B}(F) \cdot  M_{\mathbb{B}}^\C(\operatorname{Id})
+	\]
+	
+	\begin{definizione}{Definizione di congruenza tra due matrici}{congruenza}
+		Due matrici $A, B$ si dicono \textbf{congruenti} se esiste una matrice $G$ invertibile per cui vale
+		\[
+			A = G^T \cdot B \cdot G
+		\]
+	\end{definizione}
+	
+	Problema: date due forme quadratiche $q_1, q_2 \in Q(\V)$, quando queste due forme si possono definire \textbf{equivalenti}?
+	Questo avviene se esistono $\mathbb{B} = \{\vectors{v}\}, \C = \{\vectors{w}\}$ basi di $\V$ e se vale
+	\[
+		q_1\left(\sum x_iv_i\right) = q_1\left(\sum x_iw_i\right)
+	\]
+	Questo vale anche se e solo se le due matrici di Gram associate dalla scelta di queste due forme quadratiche sono uguali.
+	
+	\begin{proposizione}{}{}
+		Sia $F \in \operatorname{Bil}^+(\V)$ e siano $\mathbb{B}, \C$ basi di $\V$. Allora $\rg(M_\mathbb{B}(F)) = \rg(M_\C(F))$.
+		Dunque indipendentemente dalla scelta della base, il rango della matrice (e di conseguenza dell'applicazione) sarà sempre lo stesso.
+	\end{proposizione}
+	
+	\begin{proposizione}{}{}
+		Se due forme bilineari simmetrice $F, G$ sono equivalenti, allora hanno lo stesso rango.
+	\end{proposizione}
+	
+	\begin{definizione}{Definizione di F-ortogonalità}{ortogonalita}
+		$v, w$ sono $F$-ortogonali se $F(v, w) = 0$.\\
+		Con più comune notazione, ciò si indica con $v\perp w$.
+	\end{definizione}
+	
+	\begin{osservazione}{}{}
+		Se $\mathbb{B}$ è una base $F$-ortogonale, allora la matrice di Gram associata ad $F$ sotto la base $\mathbb{B}$ sarà una matrice diagonale.\\
+		Ne segue che $q_F\left(\sum x_iv_i\right) = \sum_{i=1}^{n} \lambda_i \cdot x_{i}^{2}$.
+	\end{osservazione}
+	
+	\begin{definizione}{Definizione di applicazione definita positiva}{definita-positiva-negativa}
+		Sia $\V$ uno spazio vettoriale su $\R$. Se $F \in \operatorname{Bil}^+(\V)$, essa si dice:
+		\begin{itemize}
+			\item \textbf{definita positiva}, se $F$è un prodotto scalare euclideo.
+			\item \textbf{definita negativa}, se $-F$ è un prodotto scalare euclideo.
+		\end{itemize}
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di segnatura}{segnatura}
+		Data una base $\mathbb{B} F$-ortogonale. Sappiamo dunque che $M_\mathbb{B}(F)$ p una matrice diagonale.
+		Definiamo come:
+		\begin{itemize}
+			\item $\sigma_+$: \textbf{segnatura positiva}, cioè il numero degli elementi $> 0$ sulla diagonale principale.
+			\item $\sigma_-$: \textbf{segnatura negativa}, cioè il numero degli elementi $< 0$ sulla diagonale principale.
+		\end{itemize}
+		Per la segnatura vale l'importantissima relazione che segue:
+		\[
+			\rg(F) = \sigma_+ + \sigma_-
+		\]
+		ed ecco perché nella definizione di segnatura non vengono inclusi gli elementi con valore $= 0$, perché non contribuiscono al rango della matrice.
+	\end{definizione}
+	
+	Diciamo, infine, che un ulteriore modo per stabilire che $F, G \in \operatorname{Bil}^+(\V)$ sono equivalenti è controllare che le loro segnature siano uguali.
+	
+	\newpage
+	\chapter{Spazi vettoriali euclidei}
+	
+	\begin{definizione}{Definizione di applicazione definita positiva}{definita-positiva}
+		$F \in \operatorname{Bil}^+(\V)$ si dice \textbf{definita positiva} se $v \neq 0$ implica $F(v, v) > 0$
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di spazio vettoriale euclideo}{spazio-vettoriale-euclideo}
+		Uno spazio vettoriale euclideo è uno spazio vettoriale su $\R$ in cui è stata definita l'operazione di prodotto scalare.
+	\end{definizione}
+	
+	\begin{proposizione}{Cauchy-Schwartz}{}
+		Sia $v \in \V$, allora $|\langle v, w \rangle| \leq ||v|| \cdot ||w||$ e vale l'uguaglianza sse. $v, w$ sono linearmente dipendenti.
+	\end{proposizione}
+	Da questa proposizione, se ricordiamo che $||v|| = \langle v, v \rangle$, possiamo ricavare la disuguaglianza triangolare:
+	\[
+		||v+w|| \leq ||v|| + ||w||
+	\]
+
+	\begin{definizione}{Definizione di distanza}{distanza}
+		Sia $S$ uno spazio affine su $\R$ e sia $V(S)$ uno spazio vettoriale euclideo. Se $P, Q \in S$, definiamo la \textbf{distanza} tra $P$ e $Q$ come segue:
+		\[
+			d(P, Q) := ||\overrightarrow{PQ}|| = \langle \overrightarrow{PQ}, \overrightarrow{PQ} \rangle ^{\frac{1}{2}}
+		\]
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di vettori ortogonali}{vettori-ortogonali}
+		$v, w \in \V$, con $\V$ spazio vettoriale euclideo si dicono \textbf{ortogonali} se $\langle v, w \rangle = 0$.
+	\end{definizione}
+	
+	\begin{definizione}{Definizione di base ortonormale}{base-ortonormale}
+		Una base di $\V$ spazio vettoriale euclideo si dice \textbf{ortonormale} se
+		\[
+			\langle v_i, v_j \rangle = 
+			\begin{cases}
+				1, i = j\\
+				0, i \neq j
+			\end{cases}
+		\]
+	\end{definizione}
+	
+	\begin{proposizione}{}{}
+		Se $\V$ è uno spazio vettoriale euclideo finitamente generato, esiste \textbf{sempre} una base ortonormale.
+	\end{proposizione}
+	
+	Morale della favola: se $\V, \W$ sono spazi vettoriali euclidei finitamente generati e $\dim(\V) = \dim(\W)$, i due spazi si dicono \textbf{equivalenti}.
+	
+\end{document}

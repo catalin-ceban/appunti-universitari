@@ -1,0 +1,176 @@
+\usepackage[dvipsnames, table, x11names]{xcolor}
+\usepackage{anyfontsize}
+\usepackage{etoolbox}
+\usepackage[italian]{babel}
+\usepackage[pass]{geometry}
+\usepackage{tcolorbox}
+\usepackage{ragged2e}
+\usepackage{listings}
+\usepackage{ltablex}
+\usepackage{environ}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+
+\tcbuselibrary{theorems, listings, breakable, skins}
+
+% Togliamo la fastidiosissima cosa che appena vado a capo mi mette lo skip
+% come se fosse un paragrafo. Modifichiamo anche lo skip verticale.
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex}
+
+% Modifichiamo lo stile del generico capitolo
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries\linespread{1.3}\selectfont\raggedright}
+{\chaptertitlename\ \thechapter}
+{5pt}
+{\Huge}
+
+\titlespacing*{\chapter}{0pt}{0pt}{2pt}
+\titlespacing*{\section}{0pt}{5pt}{3pt}
+\titlespacing*{\subsection}{0pt}{5pt}{3pt}
+
+\newcommand{\generaFrontespizio}[4]{
+    \begin{titlepage}
+		
+		\begin{center}
+			
+			\hbox{}
+			\vfill
+			
+			{
+				\color{BrickRed}
+				\bfseries
+				\fontsize{40pt}{40pt}\selectfont
+				#1
+				\par
+			}
+			
+			\vspace{0.5cm}
+			
+			\vfill
+			\hbox{}
+			
+			\begin{minipage}{1\textwidth}
+				\fontsize{12pt}{14pt}\selectfont \textit{I seguenti appunti sono a cura di \textbf{Catalin Ceban} e si basano sul corso di "#1" erogato nell'A.A. #2 
+				\ifstrequal{#4}{m}{ dal professore}{\ifstrequal{#4}{p}{ dai professori}{ dalla professoressa}} #3 per il C.d.L Informatica (33503)}
+			\end{minipage}
+			
+			\vspace{0.5cm}
+			{\large \today}
+			
+		\end{center}
+		
+	
+	\end{titlepage}
+
+	\newgeometry{
+		includefoot,
+		left=3.5cm,
+		right=3.5cm,
+		top=2.9cm,
+		bottom=2cm
+	}
+
+	\tableofcontents
+	\clearpage
+	
+}
+
+\colorlet{coloreTeoremi}{DarkGoldenrod2}
+\colorlet{coloreDefinizioni}{Coral3}
+\colorlet{coloreProposizioni}{LightSalmon3}
+\colorlet{coloreCorollari}{MediumOrchid3}
+\colorlet{coloreOsservazioni}{Burlywood4}
+\colorlet{coloreSfondoBox}{gray!5}
+
+\newlength{\boxDistanzaVerticale}
+\setlength{\boxDistanzaVerticale}{7pt}
+\newlength{\boxDistanzaOrizzontale}
+\setlength{\boxDistanzaOrizzontale}{10pt}
+\newlength{\boxSpessoreRiga}
+\setlength{\boxSpessoreRiga}{3pt}
+
+\tcbset{
+	stileBox/.style={
+		blanker,
+		borderline west={\boxSpessoreRiga}{0pt}{#1},
+		left=\boxDistanzaOrizzontale,
+		toptitle=\boxDistanzaVerticale, 
+		bottom=\boxDistanzaVerticale,
+		right=\boxDistanzaOrizzontale,
+		pad after break=2mm,
+		colback=coloreSfondoBox,
+		colbacktitle=tcbcolback,
+		coltitle=#1,
+		fonttitle=\bfseries,
+		enhanced,
+		breakable
+	}
+}
+
+\newtcbtheorem[number within=section]{teorema}{Teorema}{stileBox=coloreTeoremi}{th}
+
+\newtcbtheorem[number within=section]{definizione}{Definizione}{stileBox=coloreDefinizioni}{def}
+
+\newtcbtheorem[number within=section]{proposizione}{Proposizione}{stileBox=coloreProposizioni}{prop}
+
+\newtcbtheorem[number within=section]{corollario}{Corollario}{stileBox=coloreCorollari}{cor}
+
+\newtcbtheorem[number within=section]{osservazione}{Osservazione}{stileBox=coloreOsservazioni}{oss}
+
+\newtcbtheorem[number within=section]{dimostrazione}{Dimostrazione}{stileBox=coloreOsservazioni}{oss}
+
+\newtcbtheorem[number within=section]{algoritmo}{Spiegazione algoritmo}{stileBox=coloreProposizioni}{alg}
+
+
+\lstdefinestyle{stile-listings}{
+	basicstyle=\ttfamily\small,
+	inputencoding=utf8,
+	extendedchars=true,
+	literate=
+	{à}{{\`a}}1
+	{è}{{\`e}}1
+	{é}{{\'e}}1
+	{ì}{{\`i}}1
+	{ò}{{\`ò}}1
+	{ù}{{\`u}}1,
+	keywordstyle=\color{blue!55!black}\bfseries,
+	stringstyle=\color{Coral!55!black},
+	numbers=left,
+	numberstyle=\tiny\color{black!45},
+	numbersep=8pt,
+	backgroundcolor=\color{gray!15},
+	frame=single,
+	rulecolor=\color{gray!70!black},
+	framesep=6pt,
+	framextopmargin=4pt,
+	framexbottommargin=4pt,
+	xleftmargin=7pt,
+	xrightmargin=7pt,
+	breaklines=true,
+	breakatwhitespace=false,
+	showstringspaces=false,
+	tabsize=2,
+	captionpos=b,
+	aboveskip=15pt,
+	belowskip=8pt
+}
+
+\newcolumntype{C}{>{\Centering\arraybackslash}X}
+
+\NewEnviron{tabella}[1]{
+	\vspace{0.5em}
+	\centering
+	\renewcommand{\arraystretch}{2}
+	\begin{tabularx}{\textwidth}{#1}
+		\hline
+		\rowcolor{BrickRed!60!white}
+		\BODY
+		\hline
+	\end{tabularx}
+	\par
+	\vspace{0.5em}
+}
+
+
