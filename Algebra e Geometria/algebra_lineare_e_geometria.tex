@@ -67,7 +67,7 @@
 		\end{aligned}
 	\]
 	
-	\begin{definizione}{Definizione di anello commutativo con unità}{anello}
+	\begin{definizione}{Anello commutativo con unità}{anello}
 		Un insieme $R$ definito con le operazioni di somma e prodotto come sopra è detto un \textbf{anello commutativo con unità} se soddisfa le seguenti 8 proprietà:
 		
 		\begin{enumerate}
@@ -97,7 +97,7 @@
 	
 	\section{Campi}
 	
-	\begin{definizione}{Definizione di campo}{campo}
+	\begin{definizione}{Campo}{campo}
 		Un anello $K$ è un \textbf{campo} se $ \forall a \neq 0,\whitespace \exists b \in K \taleche a \cdot b = 1 $.	
 	\end{definizione}
 	
@@ -352,14 +352,14 @@
 	
 	Un esempio di $\K^n$ può essere $\R^3$, cioè l'insieme di tutte le triple di numeri presi in $\R$.
 	
-	\begin{definizione}{Definizione di spazio vettoriale}{spazio-vettoriale}
+	\begin{definizione}{Spazio vettoriale}{spazio-vettoriale}
 		Uno \textbf{spazio vettoriale} è un insieme $\V$ fornito delle operazioni di somma e prodotto per scalare definite come sopra, per i cui elementi valgono anche le stesse 8 proprietà che deve rispettare un campo (che ricordiamo essere commutatività della somma e del prodotto, esistenza univoca dell'elemento neutro per la somma e per il prodotto, \dots), ovviamente adattate alle n-uple dell'insieme.
 		Gli elementi di uno spazio vettoriale (vale a dire le n-uple) sono dette \textbf{vettori}.
 		In particolare, l'elemento neutro per la somma si indica con $\mathbf{\nullvector}$ ed è anche detto \textbf{vettore nullo}.
 	\end{definizione}
 	
 	
-	\begin{definizione}{Definizione di sottospazio vettoriale}{sottospazio-vettoriale}
+	\begin{definizione}{Sottospazio vettoriale}{sottospazio-vettoriale}
 		Un insieme $\W \subseteq \V$ è un sottospazio vettoriale se:
 		\begin{itemize}
 			\item $\W \neq \emptyset$.
@@ -431,7 +431,7 @@
 		\end{cases}
 	\]
 	
-	\begin{definizione}{Definizione di Span}{span}
+	\begin{definizione}{Span}{span}
 		
 		Sia $\mathbb{S} \subseteq \V$ un sottoinsieme di $\V$. Essendo un semplice sottoinsieme dunque non è detto che $\mathbb{S}$ sia un sottospazio vettoriale: è sufficiente che sia un insieme di vettori, cioè di n-uple.\\
 		Definiamo come $\mathbb{\langle S\rangle} \text{ oppure } Span(\mathbb{S})$ l'insieme delle combinazioni lineari date dai vettori in $\mathbb{S}$. \\
@@ -450,7 +450,7 @@
 	
 	Non è tuttavia ovvio il fatto che $\langle\mathbb{S}\rangle$ sia il più piccolo spazio vettoriale di $\V$ che contiene $\mathbb{S}$.
 	
-	\begin{definizione}{Definizione di somma di due sottospazi}{somma-di-sottospazi}
+	\begin{definizione}{Somma di due sottospazi}{somma-di-sottospazi}
 		Siano $\vectorspace{U}, \W \subseteq \V$.\\
 		La somma $\vectorspace{U}+\W$ è il sottospazio definito come segue:
 		\[
@@ -458,7 +458,7 @@
 		\]
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di spazio vettoriale finitamente generato}{spazio-finitamente-generato}
+	\begin{definizione}{Spazio vettoriale finitamente generato}{spazio-finitamente-generato}
 		Uno spazio vettoriale $\V$ si dice \textbf{finitamente generato} se esiste un \textbf{insieme finito} $\mathbb{S} \subseteq \V$ tale che:
 		\[
 			\V = \langle\mathbb{S}\rangle
@@ -482,12 +482,12 @@
 	
 	Forniamo di seguito due tra le definizioni più importanti di tutta l'algebra lineare.
 	
-	\begin{definizione}{Definizione di dipendenza lineare}{dipendenza-lineare}
+	\begin{definizione}{Dipendenza lineare}{dipendenza-lineare}
 		Diciamo che $\vectors{v}$ sono \textbf{linearmente dipendenti} se esiste una relazione lineare \textit{non banale} che coinvolge la lista dei vettori.\\
 		Vuol dire dunque che, se i vettori sono linearmente dipendenti, esiste almeno un modo di far risultare al vettore nullo la loro combinazione lineare, senza necessariamente porre tutti i coefficienti a $0$.
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di indipendenza lineare}{indipendenza-lineare}
+	\begin{definizione}{Indipendenza lineare}{indipendenza-lineare}
 		Simmetricamente, diciamo che $\vectors{v}$ sono \textbf{linearmente indipendenti} se l'unica relazione lineare possibile tra la lista di vettori è quella \textit{banale}.\\
 		In altre parole, vuol dire che l'unico modo per ottenere il vettore nullo come combinazione dei vettori della lista è ponendo a $0$ tutti i coefficienti.
 	\end{definizione}
@@ -513,7 +513,7 @@
 	
 	Si nota che uno spazio vettoriale può assolutamente avere più di una lista di generatori e più di una base.
 	
-	\begin{definizione}{Definizione di coordinate di un vettore rispetto ad una base}{coordinate}
+	\begin{definizione}{Coordinate di un vettore rispetto ad una base}{coordinate}
 		Definiamo inizialmente l'applicazione che, data una lista di vettori generatori $\{\vectors{v}\}$, associa ad una lista di coefficienti $\lambda_1, \dots, \lambda_n$ il vettore generato come combinazione lineare dei vettori della lista, ognuno col suo coefficiente.
 		
 		\[
@@ -584,7 +584,7 @@
 	Questa proposizione ci sta dicendo che, se uno spazio è generato da un numero minimo di $n$ vettori, una qualsiasi lista di \textit{generatori} con più di $n$ elementi non può essere linearmente indipendente. Diciamo che il numero di elementi della lista dei generatori è il \textit{tetto massimo} per una lista di vettori che siano contemporaneamente linearmente indipendenti e generatori: abbiamo appena dato la proposizione che ci conferma che \textit{tutte} le basi di uno spazio vettoriale $\V$ hanno lo \textbf{stesso numero di elementi}.\\
 	Possiamo dunque procedere con la definizione di dimensione.
 	
-	\begin{definizione}{Definizione di dimensione}{dimensione}
+	\begin{definizione}{Dimensione}{dimensione}
 		La \textbf{dimensione} di uno spazio vettoriale $\V$ è uguale alla cardinalità di una sua qualsiasi base.
 	\end{definizione}
 	
@@ -621,7 +621,7 @@
 	
 	Siano $\V, \W$ spazi vettoriali su $\K$.
 	
-	\begin{definizione}{Definizione di applicazione lineare}{applicazione-lineare}
+	\begin{definizione}{Applicazione lineare}{applicazione-lineare}
 		Un'applicazione $f: \V \to \W$ si dice lineare se rispetta i seguenti requisiti:
 		\begin{enumerate}
 			\item $f(v_1+v_2) = f(v_1) + f(v_2), \whitespace \forall v_1, v_2 \in \V$
@@ -700,7 +700,7 @@
 	\end{aligned}
 	\]
 	
-	\begin{definizione}{Definizione di isomorfismo}{isomorfismo}
+	\begin{definizione}{Isomorfismo}{isomorfismo}
 		$f: \V \to \W$ lineare è un \textbf{isomorfismo} se $\exists g: \W \to \V$ lineare tale che:
 		\begin{itemize}
 			\item $g \circ f = g(f(v)) = Id_V$
@@ -720,7 +720,7 @@
 	\end{osservazione}
 	
 	\section{Matrici}
-	\begin{definizione}{Definizione di matrice}{matrice}
+	\begin{definizione}{Matrice}{matrice}
 		Una matrice $m \times n$ con entrate in $\K$ è una funzione definita come segue:
 		\[
 			a : \{(i, j) \mid 1 \leq i \leq m, \whitespace 1 \leq j \leq n\} \to \K
@@ -842,7 +842,7 @@
 		
 	\end{itemize}
 	
-	\begin{definizione}{Definizione di matrice unità}{matrice-unita}
+	\begin{definizione}{Matrice unità}{matrice-unita}
 		La matrice unità (o identità) è quella matrice quadrata $n \times n$ che ha tutte entrate $1 \in \K$ (cioè l'elemento neutro per il prodotto) sulla diagonale principale, ed entrate $0 \in \K$ (cioè l'elemento neutro per la somma) nel resto della matrice.\\
 		Si indica con $1_n$ e graficamente si presenta così:
 		\[
@@ -857,7 +857,7 @@
 		\]
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di matrice scalare e diagonale}{matrice-scalare-diagonale}
+	\begin{definizione}{Matrice scalare e diagonale}{matrice-scalare-diagonale}
 		Una matrice $A$ si dice:
 		\begin{itemize}
 			\item \textbf{Scalare} se $A = \lambda \cdot 1_n$ e si rappresenta graficamente come:
@@ -932,7 +932,7 @@
 	Infatti data un applicazione lineare chiamata ad esempio $f$, la proposizione ci dice che una volta trovata la matrice associata all'applicazione (supponiamo questa matrice si chiami $A$) possiamo chiamare l'applicazione non più $f$ bensì $L_A$.
 	
 	In particolare questo concetto può essere formalizzato nel seguente modo.
-	\begin{definizione}{Definizione di matrice associata}{matrice-associata}
+	\begin{definizione}{Matrice associata}{matrice-associata}
 		Sia $f: \V \to \W$ lineare. Sia $\mathbb{B} = \{\vectors{v}\}$ una base di $\V$ e $\mathbb{C} = \{\vectors{w}\}$ una base di $\W$.\\
 		Allora $\associatedmatrix{B}{C}(f)$, la matrice associata ad $f$, è così definita:
 		\[
@@ -1045,7 +1045,7 @@
 	Questa proposizione è molto forte, in quanto ci sta dicendo sostanzialmente che è possibile ottenere la legge dell'applicazione (che nella formula sarebbe $\mathbb{X}_\C(f(v))$) semplicemente conoscendo la matrice associata e le coordinate di un generico vettore $v$ rispetto alla base del dominio.
 	Questo ci dice anche che riferirci ad un'applicazione lineare rispetto al suo nome (ad esempio chiamandola $f$) o alla sua matrice associata è completamente equivalente, anche perché si è già visto come la matrice associata sia unica per ogni applicazione lineare ben definita.
 	
-	\begin{definizione}{Definizione di insieme di applicazioni lineari}{insieme-applicazioni-lineari}
+	\begin{definizione}{Insieme di applicazioni lineari}{insieme-applicazioni-lineari}
 		Siano $\V, \W$ spazi vettoriali su $\K$.
 		Definiamo \textit{L}$(\V, \W) := \{f: \V \to \W \mid f \text{ lineare }\}$.
 	\end{definizione}
@@ -1057,7 +1057,7 @@
 		Allora $\associatedmatrix{A}{C}(f \circ g) = \associatedmatrix{B}{C}(f) \cdot \associatedmatrix{A}{B}$
 	\end{proposizione}
 	
-	\begin{definizione}{Definizione di rango di un'applicazione lineare}{rango}
+	\begin{definizione}{Rango di un'applicazione lineare}{rango}
 		Il \textbf{rango} di un'applicazione lineare $f$ è definito come:
 		\[
 			\rg(f) := \dim(\operatorname{Im}(f))
@@ -1234,7 +1234,7 @@
 	\]
 	e infatti nel nostro esempio il kernel ha solo un elemento nella base, e dunque ha come dimensione $1$.
 	
-	\begin{definizione}{Definizione di matrice trasposta}{matrice-trasposta}
+	\begin{definizione}{Matrice trasposta}{matrice-trasposta}
 		Sia $A \in M_{m,n}(\K)$. La trasposta di A si indica con $A^T$ e appartiene a $M_{n,m}(\K)$, ed è la matrice che si ottiene dove la riga $i$-esima di $A$ diventa la \textbf{colonna} $i$-esima di $A^T$.
 	\end{definizione}
 	Dunque ogni riga viene scambiata con la colonna di corrispondente indice, ecco perché la trasposta di una matrice $m \times n$ è una matrice $n \times m$.
@@ -1257,7 +1257,7 @@
 	\end{proposizione}
 	
 	\newpage
-	\begin{definizione}{Definizione di matrice inversa}{matrice-inversa}
+	\begin{definizione}{Matrice inversa}{matrice-inversa}
 		Sia $A = M_{n,n}(\K)$ una matrice quadrata. La matrice inversa si indica con $A^{-1}$ ed è quella matrice per cui vale $A \cdot A^{-1} = 1_n$. Si tratta di uno dei pochi casi in cui il prodotto matriciale commuta.
 		L'inversa di una matrice \textbf{non} è sempre ammessa, ma la matrice di partenza deve rispettare i seguenti requisiti:
 		
@@ -1292,25 +1292,25 @@
 		\associatedmatrix{C}{C}(f) = \associatedmatrix{B}{C}(\operatorname{Id}_\V) \cdot \associatedmatrix{B}{B}(f) \cdot \associatedmatrix{C}{B}(\operatorname{Id}_\V)
 	\]
 	
-	\begin{definizione}{Definizione di matrici coniugate}{coniugio}
+	\begin{definizione}{Matrici coniugate}{coniugio}
 		Due matrici $A, B$ si dicono coniugate se $\exists P$ matrice invertibile tale che vale la seguente uguaglianza:
 		\[
 			B = P^{-1} \cdot A \cdot P
 		\]
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di base diagonalizzante}{base-diagonalizzante}
+	\begin{definizione}{Base diagonalizzante}{base-diagonalizzante}
 		Sia $f$ un endomorfismo su $\V$. Si dice che una base $\mathbb{B}$ \textbf{diagonalizza} $\V$ sse. $\associatedmatrix{B}{B}(f)$ è diagonale.
 		Analogamente, $f$ è \textbf{diagonalizzabile} sse. $\exists \mathbb{B}$ che la diagonalizza.
 		Oppure, un altro modo per esprimerlo, possiamo dire che $f$ è diagonalizzabile se la matrice associata ad $f$ nella base canonica dello spazio è coniugata ad una matrice diagonale.
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di autovalori e autovettori}{autovalori-autovettori}
+	\begin{definizione}{Autovalori e autovettori}{autovalori-autovettori}
 		Sia $f$ un endomorfismo su $\V$. Sia $\lambda \in \K$ e $v \in \V$.\\
 		Diciamo che $\lambda$ è un \textbf{autovalore} e $v$ il suo \textbf{autovettore} se si ha che $f(v) = \lambda \cdot v$.
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di autospazio}{autospazio}
+	\begin{definizione}{Autospazio}{autospazio}
 		Definiamo $\V_\lambda(f) := \ker(\lambda \cdot \operatorname{Id}_\V - f)$ l'\textbf{autospazio} associato a $\lambda$, cioè l'insieme di tutti gli autovettori che hanno come autovalore $\lambda$.
 	\end{definizione}
 	Questa definizione di autospazio viene da una precisa formula.
@@ -1393,7 +1393,7 @@
 	\newpage
 	\chapter{Applicazioni multilineari}
 	Siano $\V_1, \dots, \V_m$ spazi vettoriali su $\K$.
-	\begin{definizione}{Definizione di applicazione multilineare}{applicazione-multilineare}
+	\begin{definizione}{Applicazione multilineare}{applicazione-multilineare}
 		Un'applicazione $\phi: \V_1, \dots, \V_m \to \K$ è \textbf{multilineare} se $\forall v_1, \dots, v_{j-1}, v_{j+1}, \dots, v_m$ (dove l'indice di ogni vettore corrisponde allo spazio di provenienza) l'applicazione $\V_j \to \K$ definita come $v \mapsto \phi(v_1, \dots, v_{j-1}, v_{j+1}, \dots, v_n)$ è lineare.
 	\end{definizione}
 	In parole, per quanto possibili, più semplici, stiamo dicendo che fissati $m-1$ spazi e di conseguenza $m-1$ vettori, per ogni scelta possibile dell'unico vettore mancante nello spazio non considerato, l'applicazione costruita su quello spazio fissando gli $m-1$ vettori deve essere lineare.
@@ -1405,7 +1405,7 @@
 	che si può dimostrare essere a sua volta uno spazio vettoriale definendo opportunamente le operazioni di somma e prodotto per scalare.
 	
 	Consideriamo adesso lo speciale caso per cui tutti i $\V_i$ del dominio dell'applicazione sono uguali.
-	\begin{definizione}{Definizione di applicazione multilineare alternante}{multilineare-alternante}
+	\begin{definizione}{Applicazione multilineare alternante}{multilineare-alternante}
 		$\phi: \V \times \dots \times \V \to \K$ si dice alternante se vale che se $v_i = v_j$ allora $\phi(v_1, \dots, v_n) = 0$.
 	\end{definizione}
 	E' possibile anche definire l'insieme delle applicazioni multilineari alternanti $\operatorname{Alt}(\V^m, \K)$.
@@ -1502,7 +1502,7 @@
 		\item $P + (v + w) = (P + v) + w$
 	\end{itemize}
 	
-	\begin{definizione}{Definizione di spazio affine}{spazio-affine}
+	\begin{definizione}{Spazio affine}{spazio-affine}
 		Sia $\V$ uno spazio vettoriale su $\K$. Uno \textbf{spazio affine con gruppo delle traslazioni} $\V$ è un insieme $S$ non vuoto provvisto di un'applicazione:
 		\[
 			\begin{aligned}
@@ -1534,7 +1534,7 @@
 		\] 
 	\end{teorema}
 	
-	\begin{definizione}{Definizione di combinazione affine tra punti}{combinazione-affine}
+	\begin{definizione}{Combinazione affine tra punti}{combinazione-affine}
 		$\sum_{i=0}^{d} \lambda_i \cdot P_i := Q + \sum_{i=0}^{d} \lambda_i \cdot \overrightarrow{QP_i}$
 	\end{definizione}
 	
@@ -1542,11 +1542,11 @@
 	
 	Ed è proprio ciò che qui abbiamo definito, dicendo che la combinazione affine di $d+1$ punti viene definita come la somma tra un punto $Q$ (scelto arbitrariamente, è molto importante capire che la scelta \textbf{non} influenza il risultato finale) e un vettore (perché alla fine la sommatoria non è altro che la combinazione lineare tra i vari vettori spostamento che vanno dal punto arbitrario $Q$ che abbiamo scelto e progressivamente uno dei $P_i$ punti).
 	
-	\begin{definizione}{Definizione di punti affinamente indipendenti}{indipendenza-affine}
+	\begin{definizione}{Punti affinamente indipendenti}{indipendenza-affine}
 		Dei punti $P_0, \dots, P_d$ si dicono \textbf{affinamente indipendenti} se, preso come riferimento un punto $P_j$, i vettori ottenuti da $\overrightarrow{P_jP_i}$ con $i \neq j$ sono tra loro linearmente indipendenti.
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di sottospazio affine}{sottospazio-affine}
+	\begin{definizione}{Sottospazio affine}{sottospazio-affine}
 		Un sottoinsieme $T \subseteq S$ è un sottospazio affine se $\exists W \subseteq V(S)$ e un punto $P_0 \in S$ tali che:
 		\[
 			T = P_0 + \W = {P_0 + w \mid w \in \W}
@@ -1554,7 +1554,7 @@
 	\end{definizione}
 	Dunque un sottospazio affine è a sua volta uno spazio affine, definito a partire da un punto contenuto all'interno dell'insieme ambiente e da un sottospazio vettoriale del gruppo delle traslazioni.
 	
-	\begin{definizione}{Definizione di applicazione affine}{applicazione-affine}
+	\begin{definizione}{Applicazione affine}{applicazione-affine}
 		Un'applicazione $F: S \to T$ si dice \textbf{affine} se $\exists f: V(S) \to V(T)$ lineare tale che $\forall P, Q \in S$
 		\[
 			\overrightarrow{F(P)F(Q)} = f(\overrightarrow{PQ})
@@ -1562,12 +1562,12 @@
 	\end{definizione}
 	
 	La seguente definizione vale solo per gli spazi affini la cui dimensione è $< \infty$.
-	\begin{definizione}{Definizione di riferimento affine}{riferimento-affine}
+	\begin{definizione}{Riferimento affine}{riferimento-affine}
 		Un \textbf{riferimento affine} per $S$ è dato da una coppia $R = (0, \mathbb{B})$ dove $0 \in S$ è un punto detto \textbf{origine} e $\mathbb{B}$ è una base di $V(S)$.
 	\end{definizione}
 	Informalmente, possiamo dire che un riferimento affine in uno spazio affine è l'equivalente di una base all'interno di uno spazio vettoriale: come negli spazi vettoriali possiamo avere più basi, dunque possono cambiare le coordinate di uno stesso vettore rispetto a basi diverse, lo stesso discorso vale per i punti espressi in riferimenti affini diversi. Infatti, per gli spazi affini, il riferimento affine standard è dato da $R = (0, \mathbb{E})$, dove $0 \in S$ è l'origine (possiamo pensare all'origine cartesiana, il punto in cui tutte le entrate sono pari a $0$) e $\mathbb{E} = \{\underline{e}_1, \dots, \underline{e}_n\}$ è la base standard di $V(S)$.
 	
-	\begin{definizione}{Definizione di prodotto scalare euclideo}{prodotto-scalare}
+	\begin{definizione}{Prodotto scalare euclideo}{prodotto-scalare}
 		Se consideriamo $\V = V(E^3)$ e scegliamo un'unità di misura, possiamo definire il prodotto scalare euclideo come segue:
 		\[
 			\begin{aligned}
@@ -1584,7 +1584,7 @@
 	
 	\newpage
 	\chapter{Forme quadratiche}
-	\begin{definizione}{Definizione di forma quadratica}{forma-quadratica}
+	\begin{definizione}{Forma quadratica}{forma-quadratica}
 		Sia $\V$ uno spazio vettoriale su $\K$ finitamente generato.
 		Una forma quadratica su $\V$ è un'applicazione $Q: \V \to \K$ tale che, scelta $\mathbb{B} = \{\vectors{v}\}$ base di $\V$ vale che:
 		\[
@@ -1598,7 +1598,7 @@
 	Si può ricondurre lo studio delle forme quadratiche a quello delle forme bilineari simmetriche.\\
 	Sia $F: \V \times \V \to \K$ una forma bilineare. Definiamo poi $q_F: \V \to \K$ che associa ad un vettore la corrispondente immagine sotto $F$, cioè $v \mapsto F(v, v)$. Si può verificare come $q_F$ sia una forma quadratica (si dimostra semplicemente sviluppando la formula $F(v, v)$ e applicando le proprietà di bilinearità dell'applicazione).
 	
-	\begin{definizione}{Definizione di simmetria di una forma bilineare}{bilineare-simmetrica}
+	\begin{definizione}{Simmetria di una forma bilineare}{bilineare-simmetrica}
 		Una forma bilineare su $\V$ si dice \textbf{simmetrica} sse.
 		\[
 			F(v, w) = F(w, v), \whitespace \forall v,w \in \V
@@ -1613,7 +1613,7 @@
 		L'applicazione $\phi: \operatorname{Bil}^+(\V) \to Q(\V)$è un isomorfismo. Ciò vuol dire che vi è una corrispondenza biunivoca tra una forma quadratica e la forma bilineare associata.
 	\end{proposizione}
 	
-	\begin{definizione}{Definizione di matrice di Gram}{matrice-gram}
+	\begin{definizione}{Matrice di Gram}{matrice-gram}
 		Sia $\mathbb{B} = \{\vectors{v}\}$ una base di $\V$ e sia $F \in \operatorname{Bil}(\V)$ una forma bilineare su $\V$.
 		La matrice di Gram associata \textit{dalla scelta della base $\mathbb{B}$} è matrice fatta nel seguente modo:
 		\[
@@ -1669,7 +1669,7 @@
 		M_\C(F) = M_{\mathbb{B}}^\C(\operatorname{Id})^T \cdot M_\mathbb{B}(F) \cdot  M_{\mathbb{B}}^\C(\operatorname{Id})
 	\]
 	
-	\begin{definizione}{Definizione di congruenza tra due matrici}{congruenza}
+	\begin{definizione}{Congruenza tra due matrici}{congruenza}
 		Due matrici $A, B$ si dicono \textbf{congruenti} se esiste una matrice $G$ invertibile per cui vale
 		\[
 			A = G^T \cdot B \cdot G
@@ -1692,7 +1692,7 @@
 		Se due forme bilineari simmetrice $F, G$ sono equivalenti, allora hanno lo stesso rango.
 	\end{proposizione}
 	
-	\begin{definizione}{Definizione di F-ortogonalità}{ortogonalita}
+	\begin{definizione}{F-ortogonalità}{ortogonalita}
 		$v, w$ sono $F$-ortogonali se $F(v, w) = 0$.\\
 		Con più comune notazione, ciò si indica con $v\perp w$.
 	\end{definizione}
@@ -1702,7 +1702,7 @@
 		Ne segue che $q_F\left(\sum x_iv_i\right) = \sum_{i=1}^{n} \lambda_i \cdot x_{i}^{2}$.
 	\end{osservazione}
 	
-	\begin{definizione}{Definizione di applicazione definita positiva}{definita-positiva-negativa}
+	\begin{definizione}{Applicazione definita positiva}{definita-positiva-negativa}
 		Sia $\V$ uno spazio vettoriale su $\R$. Se $F \in \operatorname{Bil}^+(\V)$, essa si dice:
 		\begin{itemize}
 			\item \textbf{definita positiva}, se $F$è un prodotto scalare euclideo.
@@ -1710,7 +1710,7 @@
 		\end{itemize}
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di segnatura}{segnatura}
+	\begin{definizione}{Segnatura}{segnatura}
 		Data una base $\mathbb{B} F$-ortogonale. Sappiamo dunque che $M_\mathbb{B}(F)$ p una matrice diagonale.
 		Definiamo come:
 		\begin{itemize}
@@ -1729,11 +1729,11 @@
 	\newpage
 	\chapter{Spazi vettoriali euclidei}
 	
-	\begin{definizione}{Definizione di applicazione definita positiva}{definita-positiva}
+	\begin{definizione}{Applicazione definita positiva}{definita-positiva}
 		$F \in \operatorname{Bil}^+(\V)$ si dice \textbf{definita positiva} se $v \neq 0$ implica $F(v, v) > 0$
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di spazio vettoriale euclideo}{spazio-vettoriale-euclideo}
+	\begin{definizione}{Spazio vettoriale euclideo}{spazio-vettoriale-euclideo}
 		Uno spazio vettoriale euclideo è uno spazio vettoriale su $\R$ in cui è stata definita l'operazione di prodotto scalare.
 	\end{definizione}
 	
@@ -1745,18 +1745,18 @@
 		||v+w|| \leq ||v|| + ||w||
 	\]
 
-	\begin{definizione}{Definizione di distanza}{distanza}
+	\begin{definizione}{Distanza}{distanza}
 		Sia $S$ uno spazio affine su $\R$ e sia $V(S)$ uno spazio vettoriale euclideo. Se $P, Q \in S$, definiamo la \textbf{distanza} tra $P$ e $Q$ come segue:
 		\[
 			d(P, Q) := ||\overrightarrow{PQ}|| = \langle \overrightarrow{PQ}, \overrightarrow{PQ} \rangle ^{\frac{1}{2}}
 		\]
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di vettori ortogonali}{vettori-ortogonali}
+	\begin{definizione}{Vettori ortogonali}{vettori-ortogonali}
 		$v, w \in \V$, con $\V$ spazio vettoriale euclideo si dicono \textbf{ortogonali} se $\langle v, w \rangle = 0$.
 	\end{definizione}
 	
-	\begin{definizione}{Definizione di base ortonormale}{base-ortonormale}
+	\begin{definizione}{Base ortonormale}{base-ortonormale}
 		Una base di $\V$ spazio vettoriale euclideo si dice \textbf{ortonormale} se
 		\[
 			\langle v_i, v_j \rangle = 
