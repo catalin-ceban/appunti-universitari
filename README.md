@@ -9,3 +9,6 @@ L'idea si è concretizzata nella mia repository "notes-to-latex-converter", i cu
 ## Conclusioni
 Nonostante l'ammissione dell'uso dell'Intelligenza Artificiale possa in qualche modo "screditare" queste dispense, c'è da fareuna doverosa precisazione: gli appunti a cui l'IA fa riferimento per la conversione sono sempre i **miei**, scritti in aula durante la lezione. L'unico passo in cui agisce l'IA è quello di tradurre la singola pagina del mio PDF degli appunti in codice LaTex, secondo la formattazione da me fornita. Formattazione che include i file già scritti a mano e il file di stile *stile_appunti.sty* sempre scritto da me.
 Nonostante questo, la scelta è stata presa in quanto ritenevo di aver raggiunto uno stile personale abbastanza delineato. Tuttavia, se in futuro volessi cambiare stile o implementarenuove funzionalità, quelle verranno implementate da me, e da nessuna IA.
+
+## Contatti
+Se ci fosse un qualsiasi problema riguardo gli appunti (errori di sintassi, errori di tipografia, errori di stile, ..., qualsiasi cosa segnalabile insomma) sentitevi liberi di aprire una "Issue" su GitHub segnalando il suddetto problema. Grazie ancora!
