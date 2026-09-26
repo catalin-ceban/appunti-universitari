@@ -1,0 +1,479 @@
+\documentclass[12pt]{report}
+
+\usepackage{listings}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\input{../stile_appunti.sty}
+\lstset{style=stile-listings}
+
+\begin{document}
+	
+	\generaFrontespizio{Sistemi Operativi}{2026}{Gabriele Tolomei}{m}
+	
+	\chapter{Introduzione al corso}
+	
+	Per comprendere appieno il ruolo dei sistemi operativi, è utile richiamare una celebre affermazione del matematico e informatico Richard Hamming:
+	
+	\begin{quote}
+		\textit{«Lo scopo del calcolo è la comprensione, non i numeri.»}
+		\hfill --- Richard Hamming
+	\end{quote}
+	
+	In modo del tutto analogo, possiamo affermare che lo scopo primario di un \textbf{Sistema Operativo} è l'\textbf{astrazione}, e non la semplice gestione meccanica dell'hardware. 
+	
+	Tuttavia, per poter costruire astrazioni corrette, stabili ed efficaci, è indispensabile padroneggiare in primo luogo il funzionamento della macchina fisica sottostante. 
+	
+	\begin{osservazione}{Virtualizzazione dell'hardware}{}
+		I buoni sistemi operativi si distinguono proprio per la loro capacità di \textbf{virtualizzare} con successo i diversi aspetti dell'architettura hardware, fornendo ai programmi applicativi un'interfaccia semplificata e indipendente dai dettagli implementativi del livello fisico.
+	\end{osservazione}
+	
+	In questo capitolo introduttivo verranno dunque fornite delle basi riguardanti l'archittettura degli elaboratori, in quanto queste conoscenze sono essenziali e necessarie al fine di comprendere \textit{come} e \textit{dove} lavora il Sistema Operativo.
+	In particolare verranno trattate:
+	
+	\begin{enumerate}
+		\item \textbf{L'architettura di von Neumann}: la struttura e il layout generale dell'elaboratore.
+		\item \textbf{La CPU}: l'organizzazione interna comprendente registri, ALU, pipeline e suddivisione in core.
+		\item \textbf{La gerarchia di memoria}: le tecnologie SRAM/DRAM, il principio di località e la gestione delle memorie cache.
+		\item \textbf{Il sistema di Input/Output (I/O)}: il ruolo dei controller, la gestione degli interrupt e il meccanismo DMA (\textit{Direct Memory Access}).
+	\end{enumerate}
+	
+	\section{Lo spettro Hardware-Software}
+	
+	Per comprendere il ruolo di un sistema operativo, è fondamentale analizzare la sua collocazione all'interno della gerarchia che separa il software applicativo dall'hardware sottostante. Ci si chiede quindi: \textit{dove si posiziona esattamente il sistema operativo?}
+	
+	L'architettura del sistema può essere suddivisa in tre macro-aree di esecuzione: lo \textbf{User Space} (spazio utente), il \textbf{Kernel Space} (spazio kernel) e la \textbf{Physical Machine} (macchina fisica).
+	
+	\begin{tabella}{l C}
+		\textbf{Livello dell'Architettura} & \textbf{Ambito di Esecuzione} \\
+		Applicazioni (\textit{Python, Java, C++, Web}) & \textbf{User Space} \\
+		Librerie di Sistema (\textit{libc}) & \textbf{User Space} \\
+		Sistema Operativo (\textit{Kernel}) & \textbf{Kernel Space} \\
+		Firmware / Device Driver & \textbf{Hardware / Low-Level Space} \\
+		Hardware (\textit{CPU, RAM, Controller I/O}) & \textbf{Physical Machine} \\
+	\end{tabella}
+	
+	Parleremo in modo più approfondito del kernel e delle componenti di un Sistema Operativo più avanti nel corso.
+	Come possiamo però vedere, il sistema operativo agisce come un vero e proprio \textit{ponte} tra il livello logico (le applicazioni in esecuzione) e il livello fisico (gli effettivi componenti hardware).
+	
+	Le astrazioni software fornite dai sistemi operativi devono necessariamente rispettare i limiti fisici imposti dall'hardware sottostante. La progettazione del software di sistema non può prescindere da questi vincoli, tra i quali spiccano in particolare:
+	
+	\begin{description}
+		\item [Divario di velocità (\textit{Speed gap}):] Le CPU operano a frequenze molto elevate, riuscendo ad eseguire le istruzioni in frazioni di nanosecondo. Al contrario, i tempi di accesso alla memoria principale (DRAM) si misurano nell'ordine delle decine di nanosecondi. Questa marcata differenza prestazionale rende la memoria un frequente collo di bottiglia durante l'esecuzione dei processi.
+		
+		\item [Compromesso sulla memorizzazione (\textit{Storage trade-off}):] Esiste un vincolo fisico ed economico inscindibile tra velocità, capacità e costo della memoria. I dispositivi di storage più veloci (come le cache) sono estremamente costosi e di piccole dimensioni, mentre le memorie più economiche (come i dischi secondari) garantiscono capacità enormi ma a fronte di velocità decisamente inferiori.
+		
+		\item [Concorrenza (\textit{Concurrency}):] L'esecuzione parallela nei reali sistemi multi-core richiede un supporto hardware esplicito e dedicato per la sincronizzazione (ad esempio tramite istruzioni atomiche), indispensabile per evitare race condition e garantire la coerenza dei dati.
+	\end{description}
+	
+	\begin{osservazione}{Ruolo del Sistema Operativo}{}
+		Uno degli scopi primari nella progettazione degli algoritmi di un sistema operativo è proprio quello di mascherare ed erodere questi limiti fisici, offrendo ai programmi un'astrazione dell'hardware efficiente, omogenea e trasparente.
+	\end{osservazione}
+	
+	\section{L'architettura di von Neumann (1945)}
+	
+	L'architettura di von Neumann rappresenta il fondamento teorico di quasi tutti i moderni calcolatori d'uso generale (\textit{general-purpose}).
+	
+	Tale modello si basa su due concetti chiave:
+	\begin{description}
+		\item [Concetto di programma memorizzato (\textit{Stored-Program}):] Le istruzioni e i dati condividono lo stesso spazio di memoria fisica (memorizzati in una memoria detta \textit{Memoria Centrale}).
+		\item [Esecuzione sequenziale:] Le istruzioni vengono prelevate ed estratte una alla volta dalla memoria ed eseguite sequenzialmente dalla CPU. Non è previsto alcun tipo di concorrenza da questa architettura.
+	\end{description}
+	
+	Di seguito forniamo uno schema grafico rappresentante la struttura del modello:
+	
+	\begin{center}
+		\begin{tikzpicture}[
+			node distance=1.5cm,
+			block/.style={draw, rectangle, minimum width=2.2cm, minimum height=1cm, align=center, fill=white, font=\small},
+			cpu_box/.style={draw, rectangle, minimum width=6.5cm, minimum height=3.2cm, fill=gray!5},
+			bus_line/.style={thick}
+			]
+			
+			% CPU Box
+			\node[cpu_box] (cpu) {};
+			\node[anchor=north, font=\bfseries] at (cpu.north) {CPU};
+			
+			% Sub-components inside CPU
+			\node[block, anchor=north west] (cu) at ([shift={(0.5cm,-0.6cm)}]cpu.north west) {Control\\Unit};
+			\node[block, anchor=north east] (alu) at ([shift={(-0.5cm,-0.6cm)}]cpu.north east) {ALU};
+			\node[block, minimum width=4.5cm, anchor=south] (reg) at ([shift={(0cm,0.4cm)}]cpu.south) {Registers};
+			
+			% Lower Blocks (posizionati sotto il bordo inferiore della CPU)
+			\node[block, below=1.8cm of cpu.south] (io_in) {I/O\\(Input)};
+			\node[block, left=0.6cm of io_in] (ram) {Memory\\(RAM)};
+			\node[block, right=0.6cm of io_in] (io_out) {I/O\\(Output)};
+			
+			% Bus Split coordinate (a meta strada tra CPU e blocchi inferiori)
+			\coordinate (bus_split) at ([yshift=-0.9cm]cpu.south);
+			
+			% Bus Connections
+			\draw[bus_line] (cpu.south) -- (bus_split);
+			\draw[bus_line] (ram.north |- bus_split) -- (io_out.north |- bus_split);
+			
+			\draw[bus_line] (ram.north) -- (ram.north |- bus_split);
+			\draw[bus_line] (io_in.north) -- (bus_split);
+			\draw[bus_line] (io_out.north) -- (io_out.north |- bus_split);
+			
+			% Bus Label (posizionato leggermente a lato dell'asta centrale per non sovrapporsi)
+			\node[above right=0.05cm and 0.1cm of bus_split, font=\small] {System Bus};
+			
+		\end{tikzpicture}
+	\end{center}
+	
+	L'architettura si articola nei seguenti elementi funzionali:
+	
+	\begin{description}
+		\item [Unità Centrale di Elaborazione (CPU):] È il «cervello» del calcolatore, responsabile del coordinamento e dell'esecuzione di tutte le istruzioni. Al suo interno comprende:
+		\begin{itemize}
+			\item \textbf{Control Unit (Unità di Controllo):} Preleva le istruzioni dalla memoria, le decodifica e genera i segnali di controllo necessari al loro completamento.
+			\item \textbf{ALU (Arithmetic Logic Unit):} Esegue le operazioni aritmetiche di base e le operazioni logiche elementari sui dati.
+			\item \textbf{Registers (Registri):} Celle di memoria ad altissima velocità situate all'interno della CPU, impiegate per contenere temporaneamente dati, indirizzi di memoria o stati di esecuzione. Tra questi registri abbiamo, ad esempio:
+			\begin{itemize}
+				\item \textbf{Program Counter (PC)}, che si occupa di memorizzare l'indirizzo della prossima istruzione che deve essere eseguita dalla CPU.
+				\item \textbf{Instruction Register (IR)}, che contiene il codice binario dell'effettiva istruzione puntata dal Program Counter.
+			\end{itemize}
+		\end{itemize}
+		
+		\item [Bus di Sistema (\textit{System Bus}):] È la struttura di collegamento condivisa (costituita da linee elettriche) attraverso la quale la CPU scambia indirizzi, dati e segnali di controllo con la memoria e le periferiche.
+		
+		\item [Memoria Principale (RAM):] Contiene sia il codice dei programmi in esecuzione sia i dati necessari al funzionamento delle applicazioni. Nel modello di von Neumann, istruzioni e dati condividono lo stesso spazio di memoria ed i medesimi bus.
+		
+		\item [Interfacce di I/O (Input/Output):] Moduli necessari a permettere l'interazione tra l'elaboratore e il mondo esterno, distinti in dispositivi di ingresso (\textit{Input}, come tastiera e mouse) e di uscita (\textit{Output}, come monitor e stampanti).
+	\end{description}
+	
+	Tuttavia, come visto in precedenza, il principale svantaggio dell'architettura di von Neumann è proprio il fatto che le istruzioni e i dati condividono lo stesso spazio di memoria. Da ciò si origina il cosiddetto \textit{von Neumann Bottleneck}, cioè un effettivo limite fisico in quanto una memoria non può essere acceduta da più dispositivi contemporaneamente. Un'alternativa a questo modello è infatti il cosiddetto \textbf{Modello Harvard}, che prevede spazi di memoria e bus fisicamente separati per istruzioni e dati.
+	
+	\subsection{Il Bus di Sistema}
+	Entriamo più nel dettaglio riguardo ai bus di sistema, che hanno l'importante compito di traspostare qualsiasi tipo di dato tra una componente e l'altra.
+	
+	\begin{description}
+		\item [Bus Indirizzi (\textit{Address Bus}):] trasporta gli indirizzi di memoria dalla CPU verso i componenti di destinazione.
+		Questo bus è \textbf{unidirezionale}, in quanto solo la CPU deve poter inviare l'indirizzo di memoria su cui lavorare.
+		Inoltre, l'Address Bus ha una proprietà detta \textbf{Bus Width} (che fisicamente rappresenta quanti fili elettrici ci sono per quel bus) e che determina qual è il massimo numero di locazioni indirizzabili. La formula è molto semplice: se abbiamo $\text{width}=N$, il numero di locazioni indirizzabili è pari a $2^N$.
+		
+		\item [Bus Dati (\textit{Data Bus}):] gestisce il trasferimento dei byte di dati effettivi tra i vari componenti. Rappresenta il canale sul quale viaggia fisicamente l'istruzione da eseguire oppure il dato da elaborare. Poiché i dati devono poter essere scritti e letti, la trasmissione lungo il Data Bus è di tipo \textit{bidirezionale}. Anche questo bus possiede la proprietà di \textbf{Bus Width}, con significato analogo a quella dell'Address Bus, e questo valore in genere coincide con la Word Size del processore (dunque più è ampio il bus, maggiore è la quantità di dati che possono essere trasmessi simultaneamente).
+		
+		\item [Bus di Controllo (\textit{Control Bus}):] veicola i segnali di comando e di sincronizzazione del sistema, come le operazioni di lettura (\textit{read}), scrittura (\textit{write}), segnali di \textit{reset} o richieste di \textit{interrupt}. In sostanza, è il mezzo tramite cui la Control Unit (CU) definisce cosa fare con il dato e l'indirizzo selezionati.
+	\end{description}
+	
+	\subsection{Il ciclo di istruzione}
+	
+	Il \textbf{ciclo di istruzione} (o \textit{fetch-decode-execute cycle}) rappresenta il processo fondamentale alla base del funzionamento di qualsiasi elaboratore. Ogni programma esegue questo ciclo in maniera continua.
+	
+	\begin{center}
+		\begin{tikzpicture}[
+			node distance=1.5cm,
+			box/.style={draw, rectangle, minimum width=3.5cm, minimum height=0.9cm, align=center, font=\ttfamily\bfseries},
+			arrow/.style={->, >=stealth, thick}
+			]
+			% Nodi
+			\node[box] (fetch) {1. Fetch};
+			\node[box, below of=fetch] (decode) {2. Decode};
+			\node[box, below of=decode] (execute) {3. Execute};
+			
+			% Frecce principali
+			\draw[arrow] (fetch) -- (decode);
+			\draw[arrow] (decode) -- (execute);
+			
+			% Ciclo di ritorno
+			\draw[arrow] (execute.west) -- ++(-1.2,0) |- (fetch.west);
+		\end{tikzpicture}
+	\end{center}
+	
+	Il ciclo si compone di tre fasi sequenziali gestite direttamente dalla CPU:
+	
+	\begin{enumerate}
+		\item \textbf{Fetch (Prelevamento):} il contenuto del PC viene trasferito sull'Address Bus per poi prelevare l'effettiva istruzione puntata da quell'indirizzo. Alla fine di questa fase il valore del PC viene incrementato in modo di far passare all'istruzione successiva.
+		
+		\item \textbf{Decode (Decodifica):} il processore analizza e interpreta il significato della sequenza di bit che compone l'istruzione. Questa operazione viene svolta in base alla specifica codifica scelta dall'architettura dell'elaboratore (ossia l'\textit{Instruction Set Architecture} o ISA).
+		
+		\item \textbf{Execute (Esecuzione):} viene svolta l'operazione richiesta dall'istruzione. Questa fase può comportare un calcolo eseguito dall'Unità Aritmetico-Logica (ALU) oppure un'operazione di lettura/scrittura in memoria.
+	\end{enumerate}
+	
+	Al termine della fase di esecuzione, il ciclo riparte immediatamente dalla fase di \textit{fetch} per l'istruzione successiva.
+	
+	\subsection{L'Unità Centrale di Elaborazione (CPU)}
+	
+	La \textbf{Central Processing Unit} (\textbf{CPU}) rappresenta il "cervello" del calcolatore, essendo l'organo fondamentale preposto all'esecuzione delle istruzioni memorizzate in memoria.
+	
+	L'architettura interna della CPU si articola su tre elementi costruttivi principali:
+	
+	\begin{enumerate}
+		\item \textbf{Datapath (Unità Dati):} include l'\textbf{Arithmetic Logic Unit} (\textbf{ALU}), preposti alla manipolazione e al calcolo effettivo sui dati e i registri General-Purpose (adibiti al contenimento di risultati intermedi per le operazioni della ALU).
+		
+		\item \textbf{Control Unit} (\textbf{CU}): opera come coordinatore dell'intero microprocessore. Il suo compito è prelevare le istruzioni dalla memoria (\textit{fetch}), decodificarle e pilotare opportunamente il datapath per consentirne l'esecuzione.
+		
+		\item \textbf{Bus Interno:} insieme di canali e linee di interconnessione interne che mettono in comunicazione diretta i registri, l'ALU e la Control Unit.
+	\end{enumerate}
+	
+	\subsection{Registri della CPU}
+	Vediamo ora una carrellata veloce dei registri di sistema e delle loro funzionalità:
+	
+	\begin{enumerate}
+		\item \textbf{Registri visibili all'utente (General-Purpose):} sono direttamente indirizzabili dalle istruzioni in linguaggio assembly per la manipolazione dei dati e l'esecuzione delle operazioni.
+		
+		\item \textbf{Registri di controllo e di stato (Special-Purpose):} sono utilizzati dalla \textit{Control Unit} (CU) per gestire lo stato di esecuzione del sistema e del processore. Tra i più rilevanti rientrano:
+		\begin{itemize}
+			\item \textbf{Program Counter (PC):} mantiene l'indirizzo della prossima istruzione da eseguire.
+			
+			\item \textbf{Instruction Register (IR):} contiene l'istruzione attualmente in fase di decodifica o esecuzione.
+			
+			\item \textbf{Processor Status Register (PSR):} memorizza le informazioni sullo stato corrente del processore (flag di condizione, livello di privilegio, ecc.).
+			
+			\item \textbf{Stack Pointer (SP):} contiene l'indirizzo di memoria della cima dello stack delle chiamate (ad esempio di chiamate delle funzioni).
+			
+			\item \textbf{Memory Address Register (MAR):} contiene l'indirizzo che sta per essere utilizzato dalla RAM. E' direttamente collegato all'Address Bus.
+			
+			\item \textbf{Memory Data Register (MDR):} contiene i byte di dati letti dalla RAM, ed è direttamente collegato al Data Bus.
+			
+		\end{itemize}
+	\end{enumerate}
+	
+	\section{Pipelining delle istruzioni}
+	
+	Nei processori più semplici, il ciclo di esecuzione delle istruzioni segue un approccio strettamente sequenziale. Come previsto dal modello classico dell'architettura di Von Neumann, il processo avviene in modo sequenziale: la CPU deve completare interamente le fasi di prelievo (\textit{fetch}), decodifica (\textit{decode}) ed esecuzione (\textit{execute}) di una singola istruzione prima di poter passare a quella successiva. Questo schema, pur essendo semplice, comporta un notevole spreco di risorse hardware, poiché molte unità funzionali della CPU rimangono inattive durante le fasi in cui non sono direttamente coinvolte.
+	
+	Per superare questa limitazione e migliorare le prestazioni del sistema, si introduce una tecnica di ottimizzazione fondamentale:
+	
+	\begin{definizione}{Pipelining}{}
+	Il \textbf{pipelining} è una tecnica di ottimizzazione hardware che consente di sovrapporre l'esecuzione di più istruzioni nel tempo, parallelizzando le diverse fasi del loro ciclo di vita.
+	\end{definizione}
+	
+	Tale tecnica, almeno per le architetture di tipo RISC, si articola in 5 stadi:
+	
+	\begin{enumerate}
+		\item \textbf{IF (Instruction Fetch):} prelievo dell'istruzione dalla cache di primo livello (L1 Cache) o dalla memoria principale (RAM).
+		
+		\item \textbf{ID (Instruction Decode):} decodifica dell'istruzione appena prelevata e lettura dei registri sorgente.
+		
+		\item \textbf{EX (Execute):} esecuzione del calcolo tramite l'unità aritmetico-logica (ALU) o calcolo dell'indirizzo di memoria.
+		
+		\item \textbf{MEM (Memory Access):} accesso alla memoria dati, che comporta un'operazione di lettura o scrittura verso la cache dati.
+		
+		\item \textbf{WB (Writeback):} scrittura del risultato finale all'interno del registro di destinazione.
+	\end{enumerate}
+	
+	Grazie a questa suddivisione, ogni stadio opera su un'istruzione differente in modo simultaneo durante ciascun ciclo di clock, consentendo un'elevata sovrapposizione delle operazioni e migliorando l'efficienza del processore.
+	
+	\subsection{Hazard della pipeline}
+	
+	In condizioni ideali, le architetture con pipeline consentono di raggiungere il massimo incremento prestazionale. Tuttavia, nella realtà possono verificarsi delle situazioni anomale note come \textbf{hazard} (o criticità), che impediscono all'istruzione successiva di essere eseguita nel ciclo di clock prestabilito. 
+	
+	Tali criticità si dividono principalmente in tre grandi categorie:
+	
+	\begin{description}
+		\item [Hazard strutturali (\textit{Structural Hazards}):] Si verificano in presenza di un conflitto di risorse, ovvero quando due o più stadi della pipeline richiedono contemporaneamente l'accesso allo stesso componente hardware fisico.
+		
+		\item [Hazard sui dati (\textit{Data Hazards}):] Si manifestano quando un'istruzione dipende strettamente dal risultato di un'istruzione precedente che non ha ancora completato il suo percorso all'interno della pipeline.
+		
+		\item [Hazard di controllo (\textit{Control Hazards}):] Sono causati dalle istruzioni di salto condizionato o incondizionato (\textit{branch}), le quali modificano il valore del \textit{Program Counter} (PC). Ciò rende invalide le istruzioni che sono già state caricate (\textit{fetched}) preventivamente nella pipeline.
+		
+	\end{description}
+	
+	Per risolvere tali criticità, le CPU moderne impiegano dei predittori di salto (\textbf{branch predictors}) per indovinare l'esito di un'istruzione di salto prima che essa venga effettivamente completata. Tuttavia, tali metodologie non verranno trattate.
+	
+	\section{Instruction Set Architectures (ISA)}
+	
+	Nel mondo dell'informatica sono stabiliti due standard principali riguardo al linguaggio adottato dalle istruzioni macchina:
+	
+	\begin{description}
+		
+		\item [CISC (Complex Instruction Set Computer):] ogni istruzione macchina può comprenderne altre (sono infatti a lunghezza variabile), in modo da "semplificare" la scrittura del software per gli utenti.
+		
+		\item [RISC (Reduced Instruction Set Computer):] mantiene solo le istruzioni principali del codice macchina (tutte hanno la stessa lunghezza).
+		
+	\end{description}
+	
+	\section{Processori Multi-Core}
+	Gli elaboratori di oggi aggirano i limiti di potenza e velocità dei processori collocando più processori (detti appunto \textit{core}) su un singolo macro-processore.
+	La caratteristica principale è proprio che ogni \textit{core} è come se fosse "autonomo", in quanto possiede i suoi registri e le sue unità di controllo.
+	A questo punto deve essere il Sistema Operativo a saper gestire l'architettura Multi-Core: deve saper far comunicare efficientemente i vari core per la condivisione di risorse senza che si verifichino problemi di sincronizzazione delle variabili.
+	Discuteremo di queste tecniche quando parleremo di \textit{concorrenza} e \textit{multi-threading}.
+	
+	\subsection{Prestazioni della CPU: Velocità di Clock e Cicli}
+	
+	Il funzionamento della CPU è sincronizzato da un \textbf{clock di sistema} ($System Clock$) oscillante, che scandisce il ritmo delle operazioni eseguite dal processore. Per comprendere le prestazioni di una CPU, è fondamentale analizzare due grandezze fondamentali legate a questo segnale:
+	
+	\begin{itemize}
+		
+		\item \textbf{Periodo di clock ($T$):} rappresenta la durata temporale di un singolo ciclo di clock (ad esempio $0.25$ nanosecondi).
+		
+		\item \textbf{Frequenza di clock ($f$):} rappresenta il numero di cicli di clock al secondo, misurata in Hertz ($\text{Hz}$).
+		
+	\end{itemize}
+	
+	Queste due grandezze sono inversamente proporzionali tra loro e legate dalla relazione:
+	\[
+	f = \frac{1}{T}
+	\]
+	
+	A titolo d'esempio, una CPU a $4.0\text{ GHz}$ è in grado di completare $4 \times 10^9$ cicli di clock in un solo secondo.
+	
+	Tuttavia, non tutte le istruzioni macchina richiedono lo stesso tempo per essere eseguite: le istruzioni più semplici possono essere completate in un solo ciclo di clock, mentre le operazioni più complesse (come la divisione tra numeri in virgola mobile o gli accessi alla memoria principale) richiedono un numero elevato di cicli per poter essere portate a termine.
+	
+	Per valutare e confrontare l'efficienza dei processori, risulta fondamentale definire delle metriche standard. Una delle domande chiave nell'architettura dei calcolatori è: quante istruzioni riesce ad eseguire una CPU per ogni ciclo di clock? Per rispondere a questo interrogativo, introduciamo due parametri fondamentali:
+	
+	\begin{itemize}
+		\item \textbf{CPI (Cycles Per Instruction):} rappresenta il numero medio di cicli di clock necessari per eseguire una singola istruzione.
+		\item \textbf{IPC (Instructions Per Cycle):} rappresenta l'inverso del CPI, ovvero il numero di istruzioni eseguite in un singolo ciclo di clock. La relazione matematica è la seguente:
+		\[
+		\text{IPC} = \frac{1}{\text{CPI}}
+		\]
+	\end{itemize}
+	
+	Per calcolare il tempo totale necessario per eseguire un determinato programma, si utilizza la formula fondamentale delle prestazioni della CPU, che mette in relazione il numero di istruzioni, l'efficienza architetturale e la frequenza di clock:
+	\[
+	\text{CPU Time} = \text{Instruction Count} \times \text{CPI} \times \text{Clock Cycle Time}
+	\]
+	Dove con \textit{CPU Time} si intende il tempo totale necessario per eseguire tutte le istruzioni del programma. Analizzando i singoli componenti della formula:
+	\begin{itemize}
+		\item \textbf{Instruction Count:} il numero totale di istruzioni eseguite dal programma.
+		\item \textbf{CPI:} il numero medio di cicli per istruzione.
+		\item \textbf{Clock Cycle Time:} la durata di un singolo ciclo di clock (l'inverso della frequenza di clock).
+	\end{itemize}
+	
+	\newpage
+	\section{La gerarchia di memoria}
+	La velocità dei processori, nel corso degli ultimi anni, è cresciuta molto più velocemente (si potrebbe dire in maniera quasi esponenziale) rispetto alla velocità di accesso alle memorie RAM. 
+	Per continuare a velocizzare l'accesso alle risorse, gli architetti dei computer fanno riferimento ad una \textit{gerarchia delle memorie}, una struttura piramidale che organizza le memorie dall'alto verso il basso, dove quella più in \textbf{cima} sono i \textbf{registri}, memorie \textit{estremamente veloci}, situate all'interno della CPU, ma altrettanto costose; alla base di questa piramide si collocano i dispositivi di archiviazione di massa, come \textit{SSD} e \textit{HDD}, che sono più economiche ma decisamente più lente.
+	Dunque, il compito di un bravo architetto di computer è quello di trovare il giusto compromesso a livello di prezzo e velocità, e il compito di un buon sistema operativo è quello di saper sfruttare queste risorse nel modo più efficiente possibile.
+	
+	Possiamo riassumere il comportamento della struttura con una regola fondamentale: \textbf{scendendo nella gerarchia, la velocità di accesso diminuisce, la capacità aumenta e il costo per byte diminuisce}.
+	
+	\begin{tabella}{|c|c|c|c|}
+		\textbf{Livello} & \textbf{Componente} & \textbf{Capacità tipica} & \textbf{Latenza di accesso} \\
+		L0 & CPU Registers & $< 1$ KiB & $< 0.5$ ns \\
+		L1 & L1 Cache (per core) & $32 - 64$ KiB & $1 - 2$ ns \\
+		L2 & L2 Cache (per core) & $256 - 512$ KiB & $3 - 5$ ns \\
+		L3 & L3 Cache (shared) & $8 - 64$ MiB & $10 - 20$ ns \\
+		L4 & Main Memory (DRAM) & $8 - 64$ GiB & $60 - 100$ ns \\
+		L5 & SSD (NAND Flash) & $256$ GiB - $2$ TiB & $10 - 100$ $\mu$s \\
+		L6 & HDD (Magnetic Disk) & $1 - 10$ TiB & $5 - 10$ ms \\
+	\end{tabella}
+	
+	\newpage
+	La memoria principale è strutturata come una griglia monodimensionale di indirizzi di byte (\textit{byte addresses}). Ogni cella possiede un indirizzo univoco a cui corrisponde un determinato contenuto memorizzato.
+	
+	\begin{tabella}{|c|c|}
+		\textbf{Indirizzo fisico} & \textbf{Contenuto} \\
+		\texttt{0x00000000} & \texttt{01101010} \\
+		\texttt{0x00000001} & \texttt{11001100} \\
+		\dots & \dots \\
+		\texttt{0xFFFFFFFF} & \texttt{00000000} \\
+	\end{tabella}
+	
+	\subsection{Il principio di località}
+	
+	L'efficacia della gerarchia di memoria (\textit{memory hierarchy}) si basa sul "principio di località", che definisce una serie di principi secondo i quali lavora la CPU per ottimizzare l'accesso alle informazioni. I programmi in esecuzione non accedono infatti alla memoria in modo casuale, ma presentano due forme fondamentali di località:
+	
+	\begin{description}
+		\item [\textbf{Località temporale (\textit{Temporal Locality}):}] se una determinata locazione di memoria viene acceduta una volta, è molto probabile che la stessa locazione venga acceduta nuovamente nel futuro prossimo. Ad esempio, in un ciclo \texttt{for} in cui si accede alla variabile \texttt{i} per ogni iterazione del ciclo, la CPU dovrà accedere sempre alle stesse variabili e dunque terrà memorizzato in qualche registro vicino alla CPU l'indirizzo di memoria di quelle variabili.
+		
+		\item [\textbf{Località spaziale (\textit{Spatial Locality}):}] se viene acceduta una specifica locazione di memoria, è molto probabile che anche le locazioni ad essa vicine o adiacenti vengano accedute nel prossimo futuro. Tenendo sempre l'esempio del ciclo \texttt{for}, vedendo che tali locazioni di memoria vengono usate spesso, la CPU tende a memorizzare quei valori nei registri più vicini ad essa, in modo da renderne l'accesso quasi immediato.
+	\end{description}
+	
+	\subsection{Architettura della Cache Memory}
+	
+	Le memorie cache non gestiscono i dati a livello di singoli byte, ma operano su blocchi di dimensione fissa denominati \textbf{cache line} (la cui dimensione tipica è di $64\text{ byte}$).
+	
+	Ogni entry all'interno di una cache line è composta da tre elementi fondamentali:
+	\begin{description}
+		\item[Valid Bit:] Un bit di controllo che indica se i dati presenti nella linea di cache sono validi ed aggiornati. Questo flag permette di verificare se il dato cercato è effettivamente presente ed utilizzabile all'interno della cache.
+		\item[Tag Bit:] Identifica l'indirizzo di memoria originale (in RAM) da cui sono stati reperiti i dati. Agisce in modo analogo alla chiave di un dizionario: permette di stabilire in modo univoco a quale posizione della memoria principale appartenga il blocco.
+		\item[Data Block:] Contiene l'effettivo blocco di dati copiato dalla memoria RAM (tipicamente $64\text{ byte}$), ovvero il contenuto informativo richiesto situato a quell'indirizzo.
+	\end{description}
+	
+	Nel momento in cui la CPU richiede un determinato indirizzo di memoria (\textit{memory address}), si possono verificare due situazioni distinte:
+	
+	\begin{description}
+		
+		\item [Cache Hit (Dato trovato)] Si ha un \textit{cache hit} quando la CPU individua con successo l'indirizzo e il dato cercato direttamente all'interno della memoria cache.
+		
+		\item [Cache Miss (Dato non trovato)] Si ha un \textit{cache miss} quando la CPU non trova l'indirizzo richiesto all'interno della memoria cache, rendendo necessario il recupero del dato da memorie più lente.
+		
+	\end{description}
+	
+	\subsection{Politiche di scrittura della Cache}
+	Nel momento in cui la CPU scrive i dati in un cache block, possono essere applicate due politiche per mantenere aggiornata la RAM:
+	\begin{description}
+		\item [Write-Through:] la CPU scrive contemporaneamente sia nella cache che nella memoria centrale. Il vantaggio è ovviamente una sincronizzazione costante dei dati; lo svantaggio è che una semplice operazione di scrittura di un dato sarà sempre lenta in quanto si dovrà riportare anche in memoria centrale, e dunque elimina il vantaggio di utilizzo della cache.
+		
+		\item [Write-Back:] la CPU scrive solo nella cache line e la marca come "modificata". L'aggiornamento effettivo nella memoria centrale si verifica solo quando tale cache line viene espulsa dalla cache per fare spazio ad altri dati. Vantaggioso in quanto viene mantenuta la velocità di memorizzazione di dati all'interno della cache, ma rimane il problema possibile della sincronizzazione.
+	\end{description}
+	
+	\subsection{Politiche di mapping della Cache Line}
+	
+	Una questione fondamentale nell'organizzazione delle architetture dei calcolatori riguarda il criterio secondo cui un blocco della memoria principale (\textit{memory block}) viene posizionato all'interno di uno slot della memoria cache (\textit{cache slot}). 
+	
+	Per gestire questa mappatura ed individuare la posizione specifica in cui collocare i dati, si adottano principalmente tre schemi di progettazione:
+	
+	\begin{description}
+		\item [Direct Mapped (Mappatura Diretta):] Ogni blocco di memoria principale viene mappato in modo univoco ed esatto in un solo ed unico \textit{cache slot}. Vantaggioso in quanto siamo sicuri di dove ritrovare i blocchi di memoria della cache. Possono tuttavia verificarsi conflitti di indirizzi in caso di mappatura nella stessa locazione.
+		
+		\item [Fully Associative (Completamente Associativa):] Ogni blocco di memoria principale può essere collocato in un qualsiasi \textit{cache slot} libero all'interno della cache. Tale approccio elimina i problemi di conflitto di mappatura, ma potendo posizionare un blocco in qualsiasi punto, dovremo cercare in qualsiasi punto possibile.
+		
+		\item [Set Associative (Associativa a Insiemi):] Rappresenta un compromesso tra le due politiche precedenti. La memoria cache viene suddivisa in un determinato numero di insiemi (\textit{set}), ciascuno composto da un numero fisso di slot. Un blocco di memoria viene mappato in modo rigido a uno specifico \textit{set}, ma all'interno di quel set può risiedere in un qualsiasi slot libero.
+	\end{description}
+	
+	\section{Il sistema Input/Output (I/O)}
+	
+	Affinché un calcolatore sia effettivamente utile ed utilizzabile, esso deve necessariamente comunicare con l'ambiente esterno mediante opportuni dispositivi. È importante sottolineare che i dispositivi di Input/Output non si limitano unicamente alle periferiche di interazione diretta con l'utente (come quelle adibite all'inserimento di testo o alla visualizzazione grafica), ma comprendono un'ampia varietà di categorie:
+	
+	\begin{itemize}
+		\item \textbf{Dispositivi di memorizzazione secondaria (Storage Devices):} memorie di massa persistenti quali SSD, HDD e unità USB Flash.
+		\item \textbf{Dispositivi di rete (Network Devices):} schede di rete (NIC), sia cablate (Ethernet) che wireless (Wi-Fi), per la trasmissione e ricezione di dati attraverso la rete.
+		\item \textbf{Interfacce utente (User Interfaces):} periferiche standard di interazione uomo-macchina, tra cui tastiera, mouse e schermo.
+	\end{itemize}
+	
+	Tutti i trasferimenti di dati da CPU a dispositivi di I/O sono gestiti da appositi sistemi hardware o software specializzati nel controllo di quel specifico dispositivo o di quella specifica categoria di dispositivi.
+	
+	\begin{description}
+		\item[Device Controller (Hardware)] 
+		Consiste in un effettivo microchip integrato sulla scheda madre o alloggiato su una scheda di espansione che controlla direttamente il dispositivo fisico.
+		
+		\item[Device Driver (Software)] 
+		Si tratta di un modulo del sistema operativo che conosce la sintassi e la logica per comunicare correttamente con il dispositivo di I/O.
+		
+	\end{description}
+	
+	Una questione fondamentale nella gestione delle periferiche riguarda il meccanismo con cui il processore interagisce con l'hardware: \textit{come legge e scrive la CPU nei registri del device controller?}
+	
+	Per rispondere a questa domanda si distinguono principalmente due approcci architetturali:
+	
+	\begin{enumerate}
+		\item \textbf{Port-Mapped I/O (PMIO)}:
+		Prevede l'utilizzo di \textbf{istruzioni CPU dedicate} (come ad esempio le istruzioni \texttt{IN} e \texttt{OUT} nelle architetture x86). Questo approccio nasce dal fatto che, a livello di \textit{control bus}, le consuete operazioni di \texttt{LOAD} e \texttt{STORE} possono essere utilizzate solo se l'indirizzo di destinazione fa riferimento a una locazione di memoria principale. Si rende quindi necessaria la definizione di uno spazio di indirizzamento separato e di istruzioni specifiche riservate alla comunicazione con i dispositivi di I/O.
+		
+		\item \textbf{Memory-Mapped I/O (MMIO)}:
+		Rappresenta la soluzione standard e moderna, che consiste nella predisposizione di uno spazio di memoria e dei registri interamente dedicati a questi dispositivi.
+	\end{enumerate}
+	
+	Un controller espone tipicamente tre classi fondamentali di registri:
+	\begin{description}
+		\item [Status register:] registro di sola lettura, riporta lo stato corrente del dispositivo (BUSY, READY, ...).
+		
+		\item [Command register:] sola scrittura, indica al dispositivo \textit{cosa} fare.
+		
+		\item [Data register:] lettura e scrittura, contiene i dati inviati/ricevuti al/dal dispositivo.
+	\end{description}
+	
+	\subsection{Protocolli di trasferimento I/O}
+	
+	Una delle problematiche fondamentali dell'architettura di un elaboratore riguarda la modalità con cui la CPU coordina e gestisce il trasferimento dei dati da e verso un dispositivo di Input/Output. Per rispondere a questa esigenza, si adottano principalmente tre protocolli:
+	
+	\begin{enumerate}
+		\item \textbf{Programmed I/O (Polling)}: la CPU controlla ciclicamente lo stato del dispositivo per verificare se è pronto a trasferire i dati. Tale approccio può avere senso ed essere efficiente quando si devono trasferire pochissimi dati, in quanto evita l'overhead legato alla gestione delle interruzioni.
+		
+		\item \textbf{Interrupt-Driven I/O}: come già accennato durante l'analisi del \textit{control bus}, in questo schema è il dispositivo a notificare alla CPU l'avvenuto completamento di un'operazione tramite un segnale di interruzione. Risulta una modalità nettamente meno onerosa rispetto al polling quando si devono trasmettere quantitativi di dati più consistenti.
+		In particolare, appena la CPU riceve questo segnale di interruzione, effettua una "fotografia" dello stato corrente dei registri e passa all'esecuzione di una particolare \textit{routine} (\textbf{Interrupt Service Routine (ISR)}).
+		Nello specifico, tutte le routine sono memorizzate all'interno di una struttura dati detta \textbf{Interrupt Vector Table} a cui la CPU ha accesso e che contiene i puntatori ad ogni specifica ISR.
+		
+		\item \textbf{Direct Memory Access (DMA)}: un modulo hardware dedicato si occupa di trasferire i dati direttamente tra la memoria principale e il dispositivo di I/O, senza che la CPU debba intervenire per ogni singolo byte, riducendo drasticamente il carico di lavoro del processore.
+	\end{enumerate}
+	
+\end{document}
