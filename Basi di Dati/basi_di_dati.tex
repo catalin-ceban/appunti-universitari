@@ -13,6 +13,624 @@
 
 \begin{document}
 	
+	\generaFrontespizio{Basi di Dati}{2026}{Giuseppe Perelli}{m}
 	
+	\chapter{La memorizzazione dei dati nel passato}
+	Si ritiene opportuno, come introduzione al corso, fornire vari esempi e una definizione abbastanza comune di "base di dati".
+	Interagiamo con basi di dati costantemente durante la nostra quotidianità: accedendo all'applicazione della nostra banca, utilizzando i social network, effettuando un acquisto su piattaforme di E-Commerce, ...\\
+	Questi sono solo pochi degli innumerevoli esempi di basi di dati con le quali ci troviamo a contatto ogni giorno. Possiamo dunque concludere che una definizione molto poco formale e spiccola di "base di dati" sia letteralmente \textit{un grande e organizzato contenitore di dati di alcun tipo}.
 	
+	\section{Sistema informativo e sistema informatico}
+	Nelle situazioni sopra elencate, ma anche nella vita di tutti i giorni, è strettamente necessario tenere traccia delle informazioni riguardanti persone o cose. Pensiamo ad esempio ad un'azienda: all'interno di questa sarà necessario tenere traccia di tutti i dettagli anagrafici dei dipendenti, ma anche dei contratti, degli stipendi, ecc...\\
+	Tutti questi dati venivano e vengono ancora oggi gestiti dal cosiddetto \textbf{sistema informativo}.
+	
+	\begin{definizione}{Sistema informativo}{}
+		Il \textit{sistema informativo} è l'insieme di quelle risorse, umane o materiali, che un'organizzazione impiega per la gestione e la memorizzazione delle informazioni.
+		
+		Un banale esempio di sistema informativo potrebbe essere un cassetto contenente delle cartelle, ognuna relativa ad ogni dipendente (risorsa materiale) e la segretaria che è adibita all'accesso e al controllo di questi dati.
+	\end{definizione}
+	
+	Come ben sappiamo però, l'epoca degli archivi fisici è da un po' passata: con l'avvento della tecnologia, e in particolare con la sua massiccia distribuzione, le organizzazioni si sono sempre di più affidate a strumenti di memorizzazione automatizzati e a sistemi per la gestione semi-automatica dei dati (gli elaboratori, per l'appunto).
+	Nasce così un altro importante concetto, quello del \textbf{sistema informatico}.
+	
+	\begin{definizione}{Sistema informatico}{}
+		Il \textit{sistema informatico} è l'insieme delle tecnologie utilizzate dall'organizzazione per la memorizzazione dei dati.
+		Parliamo anche di \textbf{sistema informativo automatizzato} quando includiamo nella precedente definizione di sistema informativo anche le componenti elettroniche.
+	\end{definizione}
+	
+	\section{La gestione dei dati prima dei DBMS}
+	
+	Prima della nascita e della diffusione dei moderni sistemi di gestione di basi di dati (DBMS), i processi di organizzazione e memorizzazione delle informazioni non venivano ancora effettuati nel modo più efficiente possibile. Infatti, ogni organizzazione aveva il proprio \textbf{file privato} in cui memorizzare i dati. Utilizzando dunque un singolo file per ogni informazione, la memorizzazione dei dati avveniva in modo \textit{sequenziale}. Dunque, per reperire un dato, era anche necessario scorrere ogni record del file finché questo non fosse stato trovato.
+	Gli svantaggi di questa metodologia sono evidenti ad occhio nudo:
+	\begin{itemize}
+		\item \textbf{Ridondanza:} se lo stesso dato doveva essere condiviso tra più applicazioni, questo doveva essere duplicato (letteralmente un copia e incolla).
+		
+		\item \textbf{Inconsistenza:} a causa della ridondanza, aggiornando un'istanza di un record ci si poteva dimenticare di aggiornare anche le altre.
+		
+		\item \textbf{Dipendenza dall'applicazione:} ogni applicazione era fortemente legata alla struttura fisica delle cartelle e dei dati in suo possesso.
+	\end{itemize}
+	
+	\chapter{Basi di dati e DBMS}
+	Avendo fornito una panoramica riguardo ai sistemi e alle strategie di memorizzazione utilizzate nel passato (si parla prima degli anni '70), è giusto concentrarsi sullo standard adottato da tali anni fino ad oggi.
+	Iniziamo fornendo una definizione più formale di \textbf{base di dati}.
+	
+	\begin{definizione}{Base di dati}{}
+		Una \textit{base di dati} è una raccolta di dati permanenti, gestita da un elaboratore elettronico.\\
+		Più nel pratico, una base di dati rappresenta un insieme di file mutualmente connessi, gestiti efficientemente in modo da rendere l'accesso ai dati il più rapido possibile.
+		\linebreak
+		Le basi di dati permettono la memorizzazione di due tipi di dati:
+		\begin{itemize}
+			\item \textbf{Metadati:} delle informazioni speciali che descrivono lo schema della base di dati (la sua struttura) e tutti i vincoli e le relazioni che intercorrono tra i vari file.
+			
+			\item \textbf{Dati:} le effettive informazioni che, contestualizzate, vengono inserite e memorizzate nei file. Nota importante sulla parola \textit{contestualizzate}: un numero o una stringa da soli non significano niente. Solo una volta che identifichiamo il numero come ad esempio la matricola di uno studente e la stringa come il suo nome questi dati assumono di significato e possono essere memorizzati con un criterio all'interno dei file.
+		\end{itemize} 
+	\end{definizione}
+	
+	Assieme al concetto di base di dati presentiamo un altro concetto fondamentale che viaggia di pari passo con il precedente:
+	\begin{definizione}{DataBase Management System (DBMS)}{}
+		Il \textit{DBMS} è uno strumento software che si occupa principalmente di gestire grandi quantità di dati.
+		Un buon DBMS deve inoltre fornire linguaggi e strumenti per permettere le seguenti operazioni:
+		\begin{itemize}
+			\item Definizione delle relazioni tra i dati.
+			
+			\item Inserimento/modifica/cancellazione dei dati nei file.
+			
+			\item Creazione dei vincoli di integrità che devono essere stabiliti tra i record in relazione.
+			
+			\item Memorizzazione fisica delle informazioni tramite apposite strutture dati.
+		\end{itemize}
+		
+		Inoltre, un DBMS deve garantire due proprietà fondamentali:
+		\begin{itemize}
+			\item \textbf{Indipendenza fisica:} modificando l'organizzazione della base di dati, i programmi applicativi non devono risentire di modifiche o malfunzionamenti.
+			
+			\item \textbf{Indipendenza logica:} i programmi applicativi non devono essere modificati a seguito di una modifica nello schema logico.
+		\end{itemize}
+		Tale principio di indipendenza è fondamentale per eliminare quella dipendenza stretta tra supporto fisico e software che tanto aveva causato problemi nell'epoca pre-DBMS.
+	\end{definizione}
+	
+	Nel mondo dell'informatica, vigono due modalità di uso principali dei DBMS:
+	\begin{description}
+		\item [On-Line Transaction Processing (OLTP):] si tratta della metodologia classica di utilizzo dei DBMS, che prevede lo sfruttamento completo dei vincoli di integrità messi a disposizione da questo. Le organizzazioni che fanno uso di questo paradigma si concentrano maggiormente su \textit{quali dati e come sono memorizzati}, e le operazioni svolte (\textit{transazioni}) sono spesso molto semplici e lavorano su relativamente pochi dati.
+		
+		\item [On-Line Analytical Processing (OLAP):] secondo questo paradigma è importante che i dati siano molti e vengano memorizzati in apposite strutture. Infatti, le organizzazioni che fanno uso di questa modalità tendono a sfruttare le \textit{data warehouses} (letteralmente dei "magazzini per i dati") in quanto sono maggiormente utilizzati nell'ambito della ricerca e dell'analisi scientifica, dove non importa \textit{come} sono organizzati i dati bensì \textit{quali} dati sono memorizzati.
+	\end{description}
+	
+	Tuttavia la vera differenza nell'uso dei DBMS venne fatta dal matematica Edgar F. Codd intorno agli anni '70, quando propose di creare un modello di DBMS che si ispirasse al concetto matematico di \textbf{relazione} (che ricordiamo essere un sottoinsieme del prodotto cartesiano tra due insiemi). Nasce così il \textbf{modello relazionale}.
+	\begin{definizione}{DBMS relazionale}{}
+		Un DBMS che implementa il modello relazionale organizza i propri dati all'interno di $n$-uple ordinate, dette \textbf{record}, in cui ogni elemento del record rappresenta una particolare informazione.
+		\smallbreak
+		Nella definizione di una base di dati relazionale bisogna anche definire uno \textbf{schema} secondo il quale organizzare questi dati. Tale schema non è altro che la \textit{struttura logica} della tabella, cioè una $n$-upla di quelli che sono gli attributi (o più informalmente, le colonne) della tabella. Infine, possiamo dire che una tabella contiene tutti record di tipo omogeneo, cioè tutti record che hanno la stessa struttura (o, appunto, lo stesso schema).\\
+		\linebreak
+		All'interno del modello relazionale, due record non vengono collegati tramite puntatori come ad esempio nel modello gerarchico o reticolare (vedi dopo) bensì viene stabilito un collegamento tra due attributi dei due record che devono necessariamente essere dello stesso tipo e contenere lo stesso valore. Intuitivamente si può pensare che tale procedimento causi una forte ridondanza dei dati, ma tale osservazione è parzialmente errata in quanto:
+		\begin{itemize}
+			\item Un buon DBMS deve mettere a disposizione gli strumenti per la creazione di tali collegamenti e controllare che questi non vengano violati (\textbf{vincoli di integrità}).
+			
+			\item Ogni record è memorizzato \textbf{una e una sola volta} sul disco fisico. Ciò vuol dire che se un record studente è associato ad una classe, non verrà duplicato alcun record per stabilire il collegamento, ma semplicemente verranno collegati i due record già esistenti. Tale ridondanza deve però essere gestita, come detto anticipatamente, dal DBMS.
+		\end{itemize}
+	\end{definizione}
+	
+	\begin{tabella}{|c|c|c|}
+		Matricola & Cognome & E-Mail \\
+		2671072 & Rossi & rossi@sapienza.it \\ \hline
+		2623072 & Bianchi & bianchi@sapienza.it \\ \hline
+		2623272 & Verdi & verdi@sapienza.it \\
+	\end{tabella}
+	Sopra è presentato un esempio di come vengono organizzati i dati all'interno di una tabella nel modello relazionale. Come possiamo vedere ogni record ha la stessa struttura: matricola, cognome, e-mail. Questa struttura inoltre è proprio lo \textit{schema della tabella} (inclusi vari vincoli di integrità stabiliti).
+	
+	Tuttavia il modello relazionale non fu e ancora oggi non è l'unico modello per la rappresentazione dei dati.
+	\begin{description}
+		\item [Modello reticolare:] i dati vengono presentati come una collezione di record di tipo omogeneo (simile al relazionale). Tuttavia, le effettive \textit{relazioni} tra i vari record venivano fatte tramite dei \textit{puntatori} da un record ad un altro.
+		
+		\item [Modello gerarchico:] si tratta di una sottoclasse del modello reticolare, e prevede l'organizzazione dei dati in una struttura simile a quella di un albero informatico, dove ogni nodo (record) ha solo un genitore.
+	\end{description}
+	
+	\section{Architettura ANSI/SPARC}
+	Nello studio dei sistemi di gestione di basi di dati, risulta particolarmente utile ed efficace distinguere tre differenti livelli di descrizione dei dati, noti comunemente come schemi. Tale suddivisione permette di garantire l'indipendenza dei dati e di gestire la complessità strutturale del sistema.
+	Vediamo più nel dettaglio ciascun livello componente questa architettura.
+	
+	\subsection{Schema esterno}
+	Si tratta della porzione più superficiale dell'architettura, quella con cui saranno a contatto gli utenti che non dovranno avere nulla a che fare con la gestione dei dati, ma solo con il loro utilizzo (ad esempio, la segretaria di un ufficio).
+	Tale schema predispone anche che ogni utente sia in grado di visualizzare solo \textit{una porzione} delle informazioni contenute nella base di dati, in base ai suoi permessi.
+	
+	\subsection{Schema logico}
+	Questo livello descrive la struttura degli insiemi di dati e delle relazioni tra loro, secondo il modello adottato dal DBMS. Nota che questo livello si occupa di definire lo schema dei dati, ma non ha alcuna influenza su come questi vengono memorizzati fisicamente in memoria.
+	Un esempio di schema logico può essere il seguente, che definisce la struttura di una tabella all'interno della base di dati di un'università; \texttt{Studenti(matricola char(8), cognome char(20), annoDiNascita int)}
+	
+	\subsection{Schema fisico}
+	L'ultimo e più profondo livello si occupa di gestire l'effettiva memorizzazione dei dati all'interno dei supporti di memorizzazione, fornendo le strutture dati necessarie per facilitarne l'accesso (in particolare i B-Alberi).
+	Ad esempio, l'amministratore della base di dati potrebbe decidere che i dati vadano \textit{memorizzati} in maniera sequenziale (i record vengono messi uno dopo l'altro) e l'accesso a questi venga fatto tramite un indice sull'identificativo univoco del record.
+	\begin{center}
+		\begin{tikzpicture}[thick, >=stealth]
+			
+			\node[draw, fill=yellow!60!green, minimum width=2.2cm, minimum height=0.6cm] (V1) at (-3.2, 3) {Vista1};
+			\node[draw, fill=green!70!black, text=black, minimum width=2.2cm, minimum height=0.6cm] (V2) at (0, 3) {Vista 2};
+			\node[draw, fill=green, minimum width=2.2cm, minimum height=0.6cm] (V3) at (3.2, 3) {Vista 3};
+			
+			\node[draw, fill=yellow, minimum width=7cm, minimum height=0.7cm] (SL) at (0, 1.2) {Schema logico};
+			
+			\node[draw, fill=orange, minimum width=5.5cm, minimum height=0.7cm] (SF) at (0, -0.3) {Schema fisico};
+			
+			\draw (-1.2, -2.2) -- (-1.2, -4);
+			\draw (1.2, -2.2) -- (1.2, -4);
+			\draw (0, -2.2) ellipse (1.2 and 0.3);
+			\draw (-1.2, -4) arc (180:360:1.2 and 0.3);
+			
+			\coordinate (DB_top) at (0, -1.9);
+			
+			\draw[<->] (V1.south) -- (-1.5, 1.55);
+			\draw[<->] (V2.south) -- (0, 1.55);
+			\draw[<->] (V3.south) -- (1.5, 1.55);
+			
+			\draw[<->] (SL.south) -- (SF.north);
+			\draw[<->] (SF.south) -- (DB_top);
+			
+		\end{tikzpicture}
+	\end{center}
+	
+	\section{Le transazioni}
+	Un buon DBMS deve inoltre gestire anche una serie di operazioni sensibili di inserimento, modifica e cancellazione di dati, in modo che queste vengano effettuate senza contrattempi o errori.
+	\begin{definizione}{Transazione}{}
+		Una \textbf{transazione} è una sequenza di operazioni di lettura e scrittura in memoria che deve rispettare le seguenti proprietà \textbf{ACID}:
+		\begin{itemize}
+			\item \textbf{Atomicity:} deve essere una sequenza \textbf{indivisibile} di operazioni. In caso di verifica di un qualsiasi errore nel mezzo di una transazione porta questa ad essere marcata come \textit{non valida}, in quanto le operazioni devono essere eseguite \textbf{tutte o nessuna}.
+			
+			\item \textbf{Consistency:} bisogna lasciare i dati modificati in uno stato corretto che non viola i vincoli imposti precedentemente dal DBMS.
+			
+			\item \textbf{Isolation:} ogni transazione deve essere \textbf{indipendente}. Dunque durante esecuzione concorrente di più transazioni, gli effetti di una non devono dipendere dalle altre.
+			
+			\item \textbf{Durability:} gli effetti di una transazione devono essere \textbf{permanenti} per quanto riguarda i dati modificati (ovvero le modifiche devono necessariamente essere applicate anche su disco per mantenere la sincronizzazione dei dati).
+		\end{itemize}
+	\end{definizione}
+	
+	Vediamo di seguito un esempio di due transazioni che vengono eseguite bene o male nello stesso momento:
+	
+	\begin{itemize}
+		\item \textbf{Transazione 1}: "Accredita 1000 € sul conto corrente $c1$"
+		\item \textbf{Transazione 2}: "Accredita 500 € sul conto corrente $c1$"
+	\end{itemize}
+	
+	Supponiamo che il valore iniziale del saldo del conto $c1$ sia pari a $2000$ €. Intuitivamente, al termine di entrambe le transazioni, ci aspetterions un valore finale di $3500$ €. Vediamo invece cosa può accadere se le operazioni vengono interlacciate nel tempo senza opportune 
+	sue protezioni.
+	
+	\begin{osservazione}{}{}
+		Una volta letto un valore, ogni transazione lo modifica nel \textbf{proprio} spazio di memoria di lavoro; altrimenti si rischiano modifiche irreversibili ai dati nello schema.
+	\end{osservazione}
+	
+	Analizziamo la seguente tabella di esecuzione temporale delle due transazioni:
+	
+	\begin{tabella}{|C|C|C|}
+		\hline
+		\textbf{Transazione 1} & \textbf{Tempo} & \textbf{Transazione 2} \\ \hline
+		cerca $c1$ & $t1$ & \\ \hline
+		& $t2$ & cerca $c1$ \quad $\leftarrow$ \textit{qui non prende il valore aggiornato $+1000$} \\ \hline
+		modifica \textit{saldo} in \textit{saldo}$+1000$ & $t3$ & \\ \hline
+		& $t4$ & modifica \textit{saldo} in \textit{saldo}$+500$ \\ \hline
+	\end{tabella}
+	
+	Come si può vedere dalla tabella, l'esecuzione concorrente di due transazioni, in questo caso, risulta in un esito errato, in quanto ogni transazione effettua modifiche sulla \textbf{sua} porzione di dati, e non su quella effettivamente memorizzata, il che causa problemi di sincronizzazione.
+	
+	\begin{definizione}{Serializzabilità}{}
+		Nel caso di esecuzioni concorrenti di più transazioni, l'effetto complessivo deve essere equivalente a quello di un'esecuzione seriale, ovvero con le transazioni eseguite \textit{una dopo l'altra}, senza alcun interfogliamento delle loro operazioni elementari.
+	\end{definizione}
+	
+	Chiaramente la serializzabilità non è sempre semplice da implementare, e si fa infatti uso di protocolli progettati per garantire a priori la correttezza di qualunque schedule di transazioni che li adottano. Queste tecniche e protocolli non saranno tuttavia argomento di questo corso, per cui si lascia al lettore la voglia di approfondire.
+	
+	Continuando l'analisi delle funzionalità offerte da un DBMS, è fondamentale esaminare gli strumenti messi a disposizione per la gestione e lo sviluppo. Tali funzionalità non si rivolgono unicamente agli utenti finali che eseguono interrogazioni sui dati, ma coprono ruoli cruciali come l'amministratore della base di dati e lo sviluppatore di applicazioni.
+	
+	Concludendo questo capitolo, se volessimo elencare i vantaggi e gli svantaggi nell'utilizzo di un DBMS \textit{ben progettato} per la memorizzazione dei dati, otterremmo un simile resoconto.
+	\begin{osservazione}{Vantaggi nell'uso di un DBMS}{}
+		\begin{enumerate}
+			\item Indipendenza fisica e logica tra dati e applicazioni che li usano.
+			
+			\item Memorizzazione e recupero efficiente dei dati.
+			
+			\item Vincoli di integrità sui dati.
+		\end{enumerate}
+	\end{osservazione}	
+	
+	Il principale \textbf{svantaggio} nell'utilizzo di un DBMS risiede nella stretta necessità di definire uno schema di dati prima di poterli memorizzare. Tale punto diventa uno svantaggio nel momento in cui si vogliono memorizzare, ad esempio, piccole quantità di dati (ad esempio se vogliamo memorizzare il contenuto di un libro), oppure non ci interessa \textit{come} questi dati vengano memorizzati.
+	
+	\chapter{Progettazione di basi di dati}
+	
+	Progettare una base di dati significa progettare sia la \textbf{struttura dei dati} sia le \textbf{applicazioni} che vi operano sopra. Tra queste due componenti, la \textbf{progettazione dei dati} rappresenta l'attività più importante e delicata.
+	Tale progettazione non è un'attività fine a sé stessa, bensì rientra nel \textbf{ciclo di vita di un sistema informativo}.
+	
+	\begin{definizione}{Ciclo di vita di un sistema informativo}{}
+		Il \textit{ciclo di vita di un sistema informativo} è quella sequenza di attività svolte da analisti, progettisti e utenti nello sviluppo dei sistemi informativi.
+		Viene detto \textit{ciclo} in quanto ogni fase non è una tantum, bensì può essere ripetuta più volte apportando le opportune modifiche al fine di raggiungere il risultato finale sperato.\\
+		\linebreak
+		Tale ciclo si articola nelle seguenti fasi:
+		\begin{enumerate}
+			\item \textbf{Studio di fattibilità:} definizione delle proprietà, stime dei costi, valutazione dei tempi richiesti dal progetto.
+			
+			\item \textbf{Raccolta e analisi dei requisiti}
+			
+			\item \textbf{Progettazione e implementazione:} modellazione concettuale e logica dei dati che si vogliono memorizzare e implementazione tramite un apposito linguaggio DBMS.
+			
+			\item \textbf{Validazione e collaudo:} effettuazione dei test per verificare che il sistema risponda correttamente alle esigenze.
+		\end{enumerate}
+	\end{definizione}
+	
+	La modellazione di una base di dati si colloca a \textit{metà} tra la raccolta e l'analisi dei requisiti e la progettazione effettiva.
+	
+	\section{Modelli informatici}
+	Prima di modellare la base di dati, bisogna decidere a quale modello informatico/matematico rifarsi per la memorizzazione di questi.
+	Un modello deve presentare le seguenti caratteristiche:
+	\begin{itemize}
+		\item Deve essere \textbf{la rappresentazione di un certo fatto concreto}.
+		
+		\item Tale rappresentazione deve essere descritta mediante un \textbf{linguaggio formale} (dunque che segue delle regole ben definite).
+		
+		\item Individuazione delle strutture da utilizzare per organizzare i dati di interesse e le relazioni tra questi.\\ Ad esempio, il modello relazionale di cui abbiamo discusso prima utilizza il concetto matematico di \textit{relazione} per organizzare i dati.
+	\end{itemize}
+	
+	Possiamo definire due tipologie di modelli fondamentali nella progettazione di una base di dati:
+	\begin{definizione}{Modello logico e modello concettuale}{}
+		Il \textbf{modello logico} di una base di dati rappresenta la struttura dei dati e come questi vengono memorizzati. Si potrebbe dire che corrisponde allo schema logico visto precedentemente nel modello ANSI/SPARC, in quanto si colloca indipendente dalla memorizzazione fisica dei dati, ma è strettamente legato dal tipo di modello informatico che abbiamo scelto di adottare per la memorizzazione di questi.\\
+		\linebreak
+		Il \textbf{modello concettuale} è tutto il contrario: deve essere completamente indipendente dalle modalità di realizzazione, e ha lo scopo di rappresentare la realtà descritta dal problema, tramite un preciso linguaggio formale (ad esempio i diagrammi UML, ma anche il modello \textbf{Entity-Relationship (E-R)})
+	\end{definizione}
+	
+	Non esiste un modello corretto: la stessa realtà può essere modellata in modi diversi a seconda dell'interpretazione che si dà al problema. Tuttavia deve essere seguito uno specifico "percorso mentale" nella progettazione di una base di dati:
+	\begin{enumerate}
+		\item \textbf{Aspetto ontologico:} quanto conosco del dominio del discorso? Quanto sono familiare con l'ambito di discussione?\\
+		Durante questa fase, detta anche fase di \textit{analisi del problema}, devo delineare quali sono le entità la cui realtà deve essere modellata e come si relazionano tra loro.
+		
+		\item \textbf{Aspetto logico:} con quale concetto astratto voglio realizzare le entità del modello? (es. relazionale, gerarchico, reticolare, ...)\\
+		Durante questa fase definisco le effettive relazioni tra le entità.
+		
+		\item \textbf{Aspetto linguistico:} con quale linguaggio formale definiamo il modello? (es. SQL/algebra relazionale)
+		
+		\item \textbf{Aspetto pragmatico:} come memorizzo i dati nei supporti di memorizzazione fisica?
+	\end{enumerate}
+	
+	\section{Entità, collezioni e attributi}
+	Nella descrizione delle fasi da seguire durante la progettazione di una base di dati abbiamo citato un termine importante e fondamentale nella modellazione concettuale della realtà di riferimento: \textbf{entità}.
+	\begin{definizione}{Entità}{}
+		Le \textit{entità} di un problema sono quegli oggetti a cui il problema dà particolare rilevanza, e dei quali ci interessa rappresentare alcuni fatti a loro associati, detti per l'appunto \textbf{attributi (o proprietà) dell'entità}.\\
+		Ogni entità appartiene ad un \textbf{tipo} che ne specifica la natura. Ad esempio l'entità \texttt{Studente} appartiene alla categoria \texttt{Persona} (possiamo vederla come l'ereditarietà nella programmazione ad oggetti).\\
+		Una \textbf{collezione} di entità è invece un insieme variabile nel tempo di entità tutte dello stesso tipo. Ad esempio, se pensiamo a tutti gli studenti di un'università, quella rappresenta una collezione di entità di tipo \texttt{Studente}.\\
+		\smallbreak
+		Supponiamo di dover creare la base di dati di un sistema di memorizzazione degli studenti, professori ed esami. Possiamo individuare nello studente un'\textbf{entità}, in quanto si tratta di uno degli oggetti fondamentali descritti dal problema, e nella sua matricola, cognome e data di nascita gli \textbf{attributi} fondamentali che lo descrivono.
+	\end{definizione}
+	
+	Un entità o un attributo non mantengono il loro status costantemente all'interno di ogni analisi e di ogni problema: in una realtà potrebbe essere messa più importanza su un oggetto, spingendoci dunque a farlo diventare entità, mentre in un'altra tale importanza potrebbe mancare, rilegando così l'oggetto ad un semplice attributo.
+	Ad esempio, proviamo a rappresentare una biblioteca: se ci interessasse modellare solo i libri, senza curarci degli autori, potremmo avere uno schema logico di questo tipo \texttt{Libro(titolo, annoDiPubblicazione, casaEditrice, autore)}. Se invece fossimo interessati anche agli autori, renderemmo quell'oggetto una vera e propria entità con nome e cognome, anziché lasciarlo un semplice attributo.
+	
+	\section{Le associazioni}
+	\begin{definizione}{Associazione}{}
+		Un'\textbf{istanza di associazione} è un fatto che collega due o più entità, stabilendo un legame logico fra loro.\\
+		Matematicamente, definiamo $R(X, Y)$ un'associazione fra due collezioni di entità $X$ ed $Y$ un insieme di istanze di associazione tra elementi $x \in X$ e $y \in Y$. Il prodotto cartesiamo $X \times Y$ è detto \textbf{dominio dell'associazione}.\\
+		\smallbreak
+		Generalmente, nella modellazione concettuale, le associazioni sono descritte da un \textit{verbo} che lega le varie entità coinvolte. Chiaramente tale verbo deve essere esplicativo della natura dell'associazione, e per tale ragione si devono evitare verbi come "essere" o "avere" oppure verbi modali.\\
+		Un esempio di associazione possiamo vederlo anche con il precedente esempio della biblioteca: le entità \texttt{Libro} e \texttt{Autore} sono collegate tra loro dall'associazione \texttt{SCRIVERE}, in quanto è l'autore a scrivere il libro, e il libro viene scritto dall'autore.
+	\end{definizione}
+	
+	Un'associazione è caratterizzata dalle seguenti proprietà strutturali:
+	\begin{itemize}
+		\item \textbf{Molteplicità:} prese le due collezioni di entità $X$ ed $Y$ e un'associazione $R(X, Y)$, indica quante istanze di un elemento $x \in X$ sono associate ad uno e un solo elemento $y \in Y$.\\
+		Formalmente, tale proprietà è descritta dal \textbf{vincolo di univocità}:
+		\begin{itemize}
+			\item Un'associazione si dice \textbf{univoca} rispetto ad $X$ se per ogni elemento $x \in X$ esiste \textbf{al più} un elemento $y \in Y$ che è associato ad $x$.
+			
+			\item Se tale vincolo fallisce (ovvero se esiste \textbf{almeno} un elemento $x \in X$ a cui è associato più di un elemento $y \in Y$) l'associazione si dice \textbf{multivalore}.
+		\end{itemize}
+		
+		Facendo un esempio, un'associazione del tipo $R(X, Y) = (1:N)$ è multivalore su $X$ e univoca su $Y$. Viceversa, se avessimo scritto $R(X, Y) = (N:1)$, sarebbe stata univoca su $X$ e multivalore su $Y$. Possiamo leggerla "a croce", diciamo: la molteplicità dell'elemento più a sinistra è il valore più a destra, mentre quella dell'elemento più a destra è il valore più a sinistra. Come nelle proporzioni, gli esterni vanno con gli esterni e gli interni con gli interni.
+		
+		\item \textbf{Totalità:} indica se l'associazione tra un elemento $x \in X$ e un elemento $y \in Y$ è opzionale oppure no. Formalmente:
+		\begin{itemize}
+			\item Un'associazione $R(X,Y)$ si dice \textbf{totale} se, per ogni elemento $x \in X$ esiste \textit{almeno} un elemento $y \in Y$ associato ad $x$ (questa proprietà è conosciuta meglio come \textbf{obbligatorietà del valore}).
+			
+			\item Tale associazione si dice invece \textbf{parziale} quando il vincolo imposto precedentemente fallisce, ovvero quando ad un valore $x \in X$ \textit{non è detto} che vi sia associato un valore $y \in Y$ (questa proprietà è più conosciuta come \textbf{opzionalità}).
+		\end{itemize}
+		
+		Ad esempio, pensiamo ad un'associazione del tipo \texttt{Possedere(Persona, AutomobileConTarga)}. Riprendendo il discorso sulla molteplicità, questa sarà del tipo \texttt{(1:N)}, in quanto una persona può possedere più di un'automobile con targa, però una singola automobile con targa è posseduta da una sola persona. Vedendo invece il vincolo di totalità, quest'associazione risulta essere \textit{opzionale} sulla Persona, in quanto non è detto che una persona possegga un'automobile, mentre è \textit{totale} su automobile, in quanto un'automobile già targata è sicuramente proprietà di qualcuno.
+	\end{itemize}
+	
+	Vediamo adesso una delle numerose rappresentazioni grafiche con cui possiamo rappresentare le associazioni, e delle particolarità che le contraddistinguono:
+	
+	\begin{figure}[htbp]
+		
+		\begin{minipage}[c]{0.6\textwidth}
+			\begin{tikzpicture}[thick, baseline=(current bounding box.center)]
+				
+				\node[draw, minimum width=2.5cm, minimum height=0.8cm] (stud) at (0, 0) {\textbf{Studenti}};
+				\node[draw, minimum width=2.5cm, minimum height=0.8cm] (esam) at (5, 0) {\textbf{Esami}};
+				
+				
+				\draw (stud) -- (esam) node[midway, above=12pt] {\textbf{HaSostenuto}};
+				
+				
+				\draw (stud.east) -- ++(0.3, 0.2);
+				\draw (stud.east) -- ++(0.3, -0.2);
+				
+				
+				\draw ([xshift=-20pt]esam.west) -- ++(0, 0.3) -- ++(0, -0.6);
+				\draw ([xshift=0pt]esam.west) -- ++(-0.3, 0.2);
+				\draw ([xshift=0pt]esam.west) -- ++(-0.3, -0.2);
+				\draw ([xshift=-5pt]esam.west) -- ++(-0.3, 0.2);
+				\draw ([xshift=-5pt]esam.west) -- ++(-0.3, -0.2);
+				
+			\end{tikzpicture}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.35\textwidth}
+			\caption{Relazione \textbf{HaSostenuto}}
+			\label{fig:studenti_esami}
+		\end{minipage}
+	\end{figure}
+	
+	\vspace{1cm}
+	
+	\begin{figure}[htbp]
+		\begin{minipage}[c]{0.6\textwidth}
+			\begin{tikzpicture}[thick, baseline=(current bounding box.center)]
+				
+				\node[draw, minimum width=2.5cm, minimum height=0.8cm] (ute) at (0, 0) {\textbf{Utenti}};
+				\node[draw, minimum width=2.5cm, minimum height=0.8cm] (lib) at (5, 0) {\textbf{Libri}};
+				
+				
+				\node[draw, inner sep=2pt] (prestito) at (2.5, 1.8) {
+					\begin{tabular}{c}
+						\textbf{HaInPrestito} \\
+						\hline
+						Data
+					\end{tabular}
+				};
+				
+				
+				\draw (ute) -- (lib);
+				\draw[dashed] (2.5, 0) -- (prestito.south);
+				
+				
+				\draw ([xshift=12pt]ute.east) -- ++(0, 0.3) -- ++(0, -0.6); 
+				\draw (ute.east) -- ++(0.3, 0.2);
+				\draw (ute.east) -- ++(0.3, -0.2);
+				
+				
+				\draw ([xshift=-18pt]lib.west) -- ++(0, 0.3) -- ++(0, -0.6); 
+				\draw (lib.west) -- ++(-0.3, 0.2);
+				\draw (lib.west) -- ++(-0.3, -0.2);
+				\draw ([xshift=-5pt]lib.west) -- ++(-0.3, 0.2);
+				\draw ([xshift=-5pt]lib.west) -- ++(-0.3, -0.2);
+			\end{tikzpicture}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.35\textwidth}
+			\caption{Relazione con attributi. L'attributo \textit{Data} è agganciato alla relazione stessa.}
+			\label{fig:utenti_libri}
+		\end{minipage}
+	\end{figure}
+	
+	\vspace{1cm}
+	
+	\begin{figure}[htbp]
+		\begin{minipage}[c]{0.6\textwidth}
+			\begin{tikzpicture}[thick, baseline=(current bounding box.center)]
+				
+				\node[draw, minimum width=3cm, minimum height=0.8cm] (pers) at (0, 0) {\textbf{Persone}};
+				
+				
+				\coordinate (c1) at ([xshift=-1.2cm]pers.south);
+				\coordinate (c2) at ([xshift=1.2cm]pers.south);
+				
+				
+				\draw (c1) -- ++(0, -1.8) coordinate (botLeft) 
+				-- (botLeft -| c2) coordinate (botRight) node[midway, below=3pt, font=\bfseries] {ÈMadreDi}
+				-- (c2);
+				
+				
+				\node[left=6pt, font=\footnotesize\bfseries] at ([yshift=-0.7cm]c1) {HaMadre};
+				\node[right=8pt, font=\footnotesize\bfseries] at ([yshift=-0.7cm]c2) {HaFigli};
+				
+				
+				\draw ([yshift=-15pt]c1) -- ++(-0.25, 0) -- ++(0.5, 0); 
+				\draw (c1) -- ++(-0.25, -0.3);
+				\draw (c1) -- ++(0.25, -0.3);
+				
+				
+				
+				\draw (c2) -- ++(-0.25, -0.3);
+				\draw (c2) -- ++(0.25, -0.3);
+				\draw ([yshift=-6pt]c2) -- ++(-0.25, -0.3);
+				\draw ([yshift=-6pt]c2) -- ++(0.25, -0.3);
+				
+				\draw ([yshift=-22pt]c2) -- ++(-0.25, 0) -- ++(0.5, 0); 
+			\end{tikzpicture}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.35\textwidth}
+			\caption{Relazione ricorsiva. L'entità \textbf{Persone} si relaziona con sé stessa tramite i ruoli \textit{HaMadre} e \textit{HaFigli}.}
+			\label{fig:persone_madre}
+		\end{minipage}
+	\end{figure}
+	
+	Descriviamo adesso tutte le informazioni ricavabili dalla notazione presa in esempio:
+	\begin{itemize}
+		\item Il singolo \texttt{>} oppure \texttt{<} significa che la relazione è \textbf{univoca} verso quel lato. Vedendo la figura \ref{fig:studenti_esami} vediamo come in questa specifica modellazione un esame venga sostenuto da uno e un singolo studente.
+		
+		\item Il doppio \texttt{>>} oppure \texttt{<<} significa che da quel lato la relazione è \textbf{multivalore}. Sempre prendendo in esempio gli studenti, uno studente può aver sostenuto più volte lo stesso esame. Anche con \texttt{Utenti - Libri}, vediamo come un utente prende in presito più libri, mentre un libro viene preso in prestito solo da un utente alla volta.
+		
+		\item La barra verticale \texttt{|} vicino alla molteplicità indica che da quel lato la relazione è \textbf{parziale}, dunque opzionale. Ad esempio vediamo come, nel caso \texttt{Studenti - Esami} il singolo studente potrebbe ancora non aver mai sostenuto quell'esame, mentre l'esame stesso, essendo registrato, è sicuramente stato sostenuto da qualche studente.
+	\end{itemize}
+	
+	\section{Le gerarchie di classi}
+	Spesso le classi di entità sono organizzate in una gerarchia di \textit{specializzazione/generalizzazione}. Una classe della gerarchia minore di altre viene detta \textbf{sottoclasse}, mentre le altre prendono il nome di \textbf{superclassi}. Il concetto è lo stesso alla base dell'ereditarietà nella programmazione ad oggetti.
+	Per fare un esempio pertinente, la classe degli \textit{studenti universitari} può è una generalizzazione (o sopraclasse) delle seguenti classi:
+	\begin{itemize}
+		\item Matricole e laureandi.
+		\item Studenti in corso e studenti fuori corso.
+		\item Studenti locali e studenti fuori sede.
+		\item Studenti maschi e studentesse.
+	\end{itemize}
+	
+	Fra i tipi oggetto è definita una \textbf{relazione di sottotipo} che regola la struttura gerarchica dei dati.
+	Per il lettore questa è semplicemente una formalizzazione matematica del concetto di \textit{polimorfismo} all'interno della programmazione ad oggetti.
+	
+	\begin{definizione}{Relazione di sottotipo}{rel_sottotipo}
+		Fra i tipi oggetto viene stabilita una relazione di sottotipo che soddisfa le seguenti proprietà fondamentali:
+		\begin{itemize}
+			\item È \textbf{asimmetrica}, \textbf{riflessiva} e \textbf{transitiva} (definendo così una relazione di ordine parziale).
+			\item \textbf{Principio di sostitutività}: Se $T$ è sottotipo di $T'$, allora gli elementi appartenenti al tipo $T$ possono essere usati in qualsiasi contesto in cui possano apparire valori di tipo $T'$.
+			
+			In particolare, ciò implica che:
+			\begin{itemize}
+				\item Gli elementi di $T$ possiedono tutte le proprietà degli elementi di $T'$.
+				\item Per ogni proprietà $p$ in $T'$, il suo tipo associato in $T$ deve essere un sottotipo del suo tipo in $T'$.
+			\end{itemize}
+		\end{itemize}
+	\end{definizione}
+	
+	Facendo nuovamente riferimento alla programmazione ad oggetti, anche nella modellazione concettuale possiamo definire degli oggetti (le entità del problema che vogliamo modellare) a partire da altri già esistenti. Questi nuovi oggetti erediteranno dal proprio genitore (o \textit{dai propri genitori}, in quanto viene supportata l'ereditarietà multipla) tutti i suoi attributi, e potranno anche definirne di nuovi o ridefinire gli esistenti.
+	
+	\begin{figure}[htbp]
+		
+		\begin{minipage}[c]{0.5\textwidth}
+			\centering
+			\begin{tikzpicture}[thick, baseline=(current bounding box.center)]
+				
+				
+				\tikzset{
+					classbox/.style={
+						draw,
+						inner sep=2pt, 
+						font=\small\sffamily
+					}
+				}
+				
+				
+				\node[classbox] (persona) at (0, 0) {
+					\begin{tabular}{ll}
+						\multicolumn{2}{c}{\textbf{UnaPersona}} \\[2pt]
+						\hline
+						\rule{0pt}{10pt}
+						Nome: & string \\
+						AnnoNascita: & int \\
+						LingueParlate: & seq string \\
+						Possiede: & Auto \\[2pt]
+					\end{tabular}
+				};
+				
+				
+				\node[classbox] (studente) at (0, -3.5) {
+					\begin{tabular}{ll}
+						\multicolumn{2}{c}{\textbf{UnoStudente}} \\[2pt]
+						\hline
+						\rule{0pt}{10pt}
+						Matricola: & int \\
+						AnnoIscrizione: & int \\
+						Possiede: & AutoUtilitiaria \\[2pt]
+					\end{tabular}
+				};
+				
+				\draw[fill=white] (persona.south) -- ++(-6pt, -8pt) -- ++(12pt, 0) -- cycle;
+				
+				\draw (studente.north) -- ([yshift=-8pt]persona.south);
+				
+			\end{tikzpicture}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.45\textwidth}
+			\caption{Ereditarietà tra classi. La classe \textbf{UnoStudente} eredita da \textbf{UnaPersona}, specializzando il tipo dell'attributo \textit{Possiede}.}
+			\label{fig:ereditarieta_persona_studente}
+		\end{minipage}
+	\end{figure}
+	
+	Fra le classi può essere definita una relazione di \textbf{sottoclasse}, detta anche di \textbf{sottoinsieme}, caratterizzata dalle seguenti proprietà:
+	
+	\begin{definizione}{Relazione di sottoclasse}{}
+		La \textbf{relazione di sottoclasse }è definita dalle seguenti proprietà:
+		\begin{itemize}
+			\item È \textbf{antisimmetrica}, \textbf{riflessiva} e \textbf{transitiva}.
+			\item Se $C$ è sottoclasse di $C'$, allora il tipo degli elementi di $C$ è sottotipo del tipo degli elementi di $C'$ (\textbf{vincolo intensionale}).
+			\item Se $C$ è sottoclasse di $C'$, allora gli elementi di $C$ sono un sottoinsieme degli elementi di $C'$ (\textbf{vincolo estensionale}).
+		\end{itemize}
+	\end{definizione}
+	
+	\subsection{Vincoli su insiemi di sottoclassi}
+	Per gli insiemi delle sottoclassi (i domini dei valori che tali classi possono assumere) vengono anche stabiliti dei vincoli.
+	
+	\begin{definizione}{Vincolo di disgiunzione}{}
+		Gli elementi di una sottoclasse non possono far parte di un'altra sottoclasse.\\
+		Sostanzialmente stiamo dicendo che, avendo delle classi che sono specializzazioni di una sopraclasse, tali sottoclassi \textbf{non avranno nulla in comune}, e dunque un elemento di una sottoclasse non avrà nulla a che vedere con un elemento di un'altra sottoclasse.\\
+		Pensiamo ad esempio di avere una classe \texttt{Persona} che ha come sottoclassi \texttt{Maggiorenni} e \texttt{Minorenni}. Tra queste sottoclassi vige il vincolo di disgiunzione, in quanto una persona non potrà \textbf{mai} essere contemporaneamente sia minorenne che maggiorenne.
+		D'altro canto, se avessimo una classe \texttt{Persona} con sottoclassi \texttt{Programmatore} e \texttt{Maggiorenne}, tra queste due sottoclassi non vige il vincolo di disgiunzione in quanto non possiamo categoricamente dire che nessun programmatore è maggiorenne o viceversa.
+		Formalizzando in maniera matematica questo vincolo, possiamo dire che \textit{i domini delle due sottoclassi sono due insiemi la cui intersezione è nulla}.
+		
+		\vspace{6pt}
+		\begin{center}
+			\begin{tikzpicture}[scale=0.75, transform shape, thick]
+				\tikzset{
+					classbox/.style={
+						draw,
+						minimum width=2.6cm,
+						minimum height=0.7cm,
+						fill=white
+					}
+				}
+				
+				
+				\node[classbox] (super) at (0, 0) {};
+				
+				
+				\node[classbox] (sub1) at (-1.6, -1.8) {};
+				\node[classbox] (sub2) at (1.6, -1.8) {};
+				
+				
+				\draw[fill=white] (super.south) -- ++(-5pt, -7pt) -- ++(10pt, 0) -- cycle;
+				
+				
+				\coordinate (split) at (0, -1.1);
+				
+				
+				\draw ([yshift=-7pt]super.south) -- (split);
+				\fill (split) circle (2.8pt);
+				
+				
+				\draw (split) -| (sub1.north);
+				\draw (split) -| (sub2.north);
+			\end{tikzpicture}
+		\end{center}
+	\end{definizione}
+	
+	\begin{definizione}{Vincolo di copertura}{}
+		L'unione degli elementi delle sottoclassi contiene \textbf{tutti} gli elementi della sopraclasse.\\
+		Mantenendoci sempre sull'esempio fatto in precedenza con \texttt{Persona, Maggiorenne, Minorenne}, tra le due sottoclassi è presente un vincolo di copertura, in quanto una persona \textbf{o} è maggiorenne \textbf{o} è minorenne. Necessariamente una delle due.
+		In modo più matematico e formale, possiamo dire che \textit{l'unione dei domini delle sottoclassi è uguale al dominio della sopraclasse}.
+		
+		\vspace{6pt}
+		\begin{center}
+			\begin{tikzpicture}[scale=0.75, transform shape, thick]
+				\tikzset{
+					classbox/.style={
+						draw,
+						minimum width=2.6cm,
+						minimum height=0.7cm,
+						fill=white
+					}
+				}
+				
+				
+				\node[classbox] (super) at (0, 0) {};
+				
+				
+				\node[classbox] (sub1) at (-1.6, -1.8) {};
+				\node[classbox] (sub2) at (1.6, -1.8) {};
+				
+				
+				\draw[fill=white] (super.south) -- ++(-5pt, -7pt) -- ++(10pt, 0) -- cycle;
+				
+				
+				\coordinate (split) at (0, -1.1);
+				
+				
+				\draw[double, double distance=1.2pt] ([yshift=-7pt]super.south) -- (split);
+				
+				
+				\draw (split) -| (sub1.north);
+				\draw (split) -| (sub2.north);
+			\end{tikzpicture}
+		\end{center}
+	\end{definizione}
+	
+	Se tra le sottoclassi di una gerarchia si verificano contemporaneamente il vincolo di disgiunzione e quello di copertura, si dice che l'insieme delle sottoclassi è una \textbf{partizione} della classe padre.
+
 \end{document}

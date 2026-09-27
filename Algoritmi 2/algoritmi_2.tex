@@ -5,6 +5,8 @@
 \usepackage{booktabs}
 \usepackage{amssymb}
 \usepackage{subcaption}
+\usepackage{graphicx}
+\graphicspath{{images/}}
 
 \input{../stile_appunti.sty}
 \lstset{style=stile-listings}
@@ -12,44 +14,30 @@
 \begin{document}
 	
 	\generaFrontespizio{Algoritmi 2}{2026}{Paul Joseph Wollan}{m}
+
+	\chapter{Teoria dei Grafi}
 	
+	\begin{definizione}{Grafo}{}
+		Un \textbf{grafo} è una coppia $G = (V, E)$, dove:
+		\begin{itemize}
+			\item $V$ rappresenta l'insieme dei \textbf{vertici} (o nodi).
+			\item $E$ rappresenta l'insieme degli \textbf{archi} (o lati). Matematicamente parlando, un arco è a sua volta una coppia di valori $(v_1, v_2)$, dove $v_1, v_2$ sono de vertici del grafo.
+		\end{itemize}
+		Per comodità di notazione, nel corso del manuale denoteremo con $n = |V|$ il numero dei vertici e con $m = |E|$ il numero degli archi.
+	\end{definizione}
 	
-	% --- NEW PAGE (1) ---
-	
-	\chapter{Introduzione e Teoria dei Grafi}
-	
-	In questa sezione introduttiva delineiamo gli argomenti principali che saranno trattati nel corso, ponendo le basi per lo studio strutturato degli algoritmi avanzati.
-	
-	\section{Argomenti principali}
-	Il corso si articolerà principalmente attorno ai seguenti nuclei tematici:
-	\begin{enumerate}
-		\item \textbf{Grafi e algoritmi sui grafi}: studio delle strutture dati fondamentali per la rappresentazione di relazioni e delle relative tecniche di visita ed elaborazione.
-		\item \textbf{Algoritmi greedy}: strategie di scelta ottima locale per la risoluzione di problemi globali (ad esempio, la ricerca di un albero di copertura di peso minimo connettendo vari nodi).
-		\item \textbf{Divide et impera}: paradigma algoritmico basato sull'approccio \textit{top-down}, che consiste nel suddividere un problema in sottoproblemi più piccoli, risolverli ricorsivamente e combinarne le soluzioni.
-		\item \textbf{Programmazione dinamica}: approccio di tipo \textit{bottom-up} per la risoluzione di problemi caratterizzati da sottoproblemi sovrapposti, memorizzando i risultati parziali per evitare ricalcoli superflui.
-	\end{enumerate}
-	
-	\begin{osservazione}{Albero}{}
-		Ricordiamo che un \textbf{albero} è definito formalmente come un grafo connesso e aciclico.
-	\end{osservazione}
-	
-	\section{Definizioni preliminari sui grafi}
-	
-	Un \textbf{grafo} è una coppia $G = (V, E)$, dove:
-	\begin{itemize}
-		\item $V$ rappresenta l'insieme dei vertici o nodi.
-		\item $E$ rappresenta l'insieme degli archi o lati.
-	\end{itemize}
-	Per comodità di notazione, nel corso del manuale denoteremo con $n = |V|$ il numero dei vertici e con $m = |E|$ il numero degli archi.
-	
-	Ogni arco è una coppia di punti che indica i due vertici collegati. A titolo esemplificativo, consideriamo la seguente rappresentazione grafica:
+	A titolo esemplificativo, consideriamo la seguente rappresentazione grafica di un grafo:
 	
 	\begin{center}
-		\begin{tikzpicture}[scale=1.1, every node/.style={circle, draw, inner sep=1.5pt}]
-			\node (A) at (0, 1) {};
-			\node (B) at (2, 1) {};
-			\node (C) at (1, 0) {};
-			\node (D) at (1, 1.8) {};
+		\begin{tikzpicture}[thick]
+			% Definizione dello stile per tutti i nodi di questo grafo
+			\tikzset{nodo/.style={circle, draw, minimum size=0.7cm, inner sep=0pt, font=\sffamily}}
+			
+			% Nodi posizionati in modo più ampio e simmetrico
+			\node[nodo] (A) at (0, 1.5) {A};
+			\node[nodo] (B) at (3, 1.5) {B};
+			\node[nodo] (C) at (1.5, 0) {C};
+			\node[nodo] (D) at (1.5, 3) {D};
 			
 			\draw (A) -- (B);
 			\draw (A) -- (C);
@@ -59,185 +47,154 @@
 		\end{tikzpicture}
 	\end{center}
 	
-	Riguardo agli archi, potremmo avere anche un orientamento: se ogni arco possiede una direzione definita, diciamo che il grafo è \textbf{diretto}. 
+	Riguardo agli archi, potremmo avere anche un orientamento.
+	\begin{definizione}{Grafo diretto (o orientato)}{}
+		Un grafo si dice \textbf{diretto} o \textbf{orientato} se ciascuno dei suoi archi ha un orientamento, cioè punta specificatamente verso un dato nodo.
+	\end{definizione}
 	
 	\begin{center}
-		\begin{tikzpicture}[scale=1.1, every node/.style={circle, draw, inner sep=1.5pt}]
-			\node (A) at (0, 0) {};
-			\node (B) at (1.5, 1.2) {};
-			\node (C) at (3, 0) {};
+		% L'opzione "very thick" aumenta lo spessore dell'arco e, proporzionalmente, della punta della freccia
+		\begin{tikzpicture}[very thick, >=stealth]
+			\tikzset{nodo/.style={circle, draw, thin, minimum size=0.7cm, inner sep=0pt, font=\sffamily}}
 			
-			\draw[->, >=stealth] (A) -- (B);
-			\draw[->, >=stealth] (B) -- (C);
-			\draw[->, >=stealth] (C) -- (A);
-			\draw[<->, >=stealth, bend left=30] (A) -- (C);
+			\node[nodo] (A) at (0, 0) {A};
+			\node[nodo] (B) at (1.5, 2.2) {B};
+			\node[nodo] (C) at (3, 0) {C};
+			
+			\draw[->] (A) -- (B);
+			\draw[->] (B) -- (C);
+			\draw[->] (C) -- (A);
+			
+			% Curvatura aumentata per distaccare meglio la freccia bidirezionale dal lato del triangolo
+			\draw[->, bend left=45] (A) to (C);
 		\end{tikzpicture}
 	\end{center}
 	
-	È importante notare che possiamo avere anche due archi sugli stessi nodi ma con orientamento diverso (come mostrato nel collegamento bidirezionale o nei doppi archi orientati tra i medesimi vertici).
+	È importante notare che possiamo avere anche due archi sugli stessi nodi ma con orientamento diverso (come mostrato nel collegamento bidirezionale).
 	
-	Sia $f$ un arco che collega due vertici $x$ e $y$, formalmente rappresentabile come $x \longleftarrow f \longrightarrow y$. Diciamo che:
-	\begin{itemize}
-		\item L'arco $f$ è \textbf{incidente} ai vertici $x$ e $y$.
-		\item Il vertice $x$ è \textbf{adiacente} al vertice $y$.
-	\end{itemize}
+	\begin{definizione}{Arco incidente e vertici adiacenti}{}
+		Sia $f$ un arco che collega due vertici $x$ e $y$, formalmente rappresentabile come $x \longleftarrow f \longrightarrow y$. Diciamo che:
+		\begin{itemize}
+			\item L'arco $f$ è \textbf{incidente} ai vertici $x$ e $y$.
+			\item Il vertice $x$ è \textbf{adiacente} al vertice $y$.
+		\end{itemize}
+	\end{definizione}
 	
 	\begin{definizione}{Grado di un vertice}{}
-		Il \textbf{grado} di un vertice $x$, denotato con $\deg(x)$, è il numero di archi incidenti in $x$.
+		Il \textbf{grado} di un vertice $x$, denotato con $\deg(x)$, è dato dal numero di archi incidenti in $x$.
 	\end{definizione}
 	
 	Ad esempio, considerando un nodo centrale collegato a quattro vertici periferici:
 	
 	\begin{center}
-		\begin{tikzpicture}[scale=1.1, every node/.style={circle, draw, inner sep=1.5pt}]
-			\node (C) at (1, 1) {};
-			\node (1) at (0, 2) {};
-			\node (2) at (2, 2) {};
-			\node (3) at (0.5, 0) {};
-			\node (4) at (1.5, 0) {};
+		\begin{tikzpicture}[thick]
+			\tikzset{nodo/.style={circle, draw, minimum size=0.7cm, inner sep=0pt, font=\sffamily}}
 			
-			\draw (C) -- (1);
-			\draw (C) -- (2);
-			\draw (C) -- (3);
-			\draw (C) -- (4);
+			% Nodo centrale (evidenziato con la x come da testo)
+			\node[nodo] (X) at (1.5, 1.5) {$x$};
 			
-			\draw (1) -- (2);
-			\draw (3) -- (4);
+			% Nodi periferici
+			\node[nodo] (A) at (0, 3) {A};
+			\node[nodo] (B) at (3, 3) {B};
+			\node[nodo] (C) at (0.5, 0) {C};
+			\node[nodo] (D) at (2.5, 0) {D};
+			
+			\draw (X) -- (A);
+			\draw (X) -- (B);
+			\draw (X) -- (C);
+			\draw (X) -- (D);
+			
+			% Collegamenti esterni
+			\draw (A) -- (B);
+			\draw (C) -- (D);
 		\end{tikzpicture}
 	\end{center}
 	
-	Per il nodo centrale $x$ contrassegnato, avremo chiaramente $\deg(x) = 4$, poiché vi incidono esattamente quattro archi distinti.
-	% --- NEW PAGE (2) ---
+	Per il nodo centrale $x$ contrassegnato, avremo chiaramente $\deg(x) = 4$, poiché vi incidono esattamente quattro archi \textbf{distinti}.
 	
-	\chapter{Introduzione ai grafi e passeggiate euleriane}
+	\section{Il problema dei ponti di Konigsberg}
 	
-	\section{Il problema dei ponti di K\"onigsberg}
+	Il problema classico da cui nasce la teoria dei grafi è il famoso problema dei ponti di Konigsberg:
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[width=0.5\textwidth]{konigsberg_bridges_problem.png}
+		\caption{Rappresentazione grafica del problema dei ponti di Konigsberg.}
+	\end{figure}
 	
-	Il problema classico da cui nasce la teoria dei grafi è il famoso problema dei ponti di K\"onigsberg:
-	\begin{center}
-		\begin{tikzpicture}[scale=0.8]
-			% Fiumi e terre schematici
-			\draw[thick] (0,1) to[out=10,in=170] (6,1);
-			\draw[thick] (0,-1) to[out=-10,in=-170] (6,-1);
-			\draw[thick] (2.5,-1.3) to[out=80,in=280] (2.5,1.3);
-			\draw[thick] (3.5,-1.3) to[out=100,in=260] (3.5,1.3);
-			
-			% Terre (isole/rive)
-			\draw[thick, fill=gray!20] (1,0) ellipse (0.8cm and 0.5cm);
-			\draw[thick, fill=gray!20] (5,0) ellipse (0.8cm and 0.5cm);
-			\draw[thick, fill=gray!20] (3,1.5) rectangle (4,1.8);
-			\draw[thick, fill=gray!20] (3,-1.8) rectangle (4,-1.5);
-			
-			% Ponti
-			\draw[double,thick] (1.3,0.5) -- (1.3,1.5);
-			\draw[double,thick] (1.7,0.5) -- (1.7,1.5);
-			
-			\draw[double,thick] (1.3,-0.5) -- (1.3,-1.5);
-			\draw[double,thick] (1.7,-0.5) -- (1.7,-1.5);
-			
-			\draw[double,thick] (1.8,0) -- (4.2,0);
-			
-			\draw[double,thick] (4.7,0.5) -- (4.7,1.5);
-			\draw[double,thick] (5.1,0.5) -- (5.1,1.5);
-			
-			\draw[double,thick] (4.7,-0.5) -- (4.7,-1.5);
-			\draw[double,thick] (5.1,-0.5) -- (5.1,-1.5);
-		\end{tikzpicture}
-	\end{center}
+	Ci si chiede: \textit{è possibile attraversare tutti i ponti una sola volta e tornare al punto di partenza?}
+	Come prima cosa, quando si vuole tradurre un problema in un problema di teoria dei grafi, è buona cosa cercare di dare una rappresentazione grafica il più accurata possibile del problema.
+	Essendo questo un problema di piccole dimensioni, possiamo ottenere la seguente struttura:
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[width=0.5\textwidth]{konigsberg_graph.png}
+		\caption{Rappresentazione a grafo del problema dei ponti.}
+	\end{figure}
 	
-	Ci si chiede: \textit{è possibile attraversare tutti i ponti una sola volta e arrivare al punto di partenza?}
-	
-	Trduciamo il problema in un problema di grafi:
-	\begin{center}
-		\begin{tikzpicture}[scale=0.7]
-			% Semplice schema di traduzione
-			\node at (0,0) {
-				\begin{tikzpicture}[scale=0.5]
-					\draw[thick, fill=gray!10] (0,0) ellipse (0.6cm and 0.4cm);
-					\draw[thick, fill=gray!10] (3,0) ellipse (0.6cm and 0.4cm);
-					\draw[double,thick] (0.6,0.2) -- (2.4,0.2);
-					\draw[double,thick] (0.6,-0.2) -- (2.4,-0.2);
-				\end{tikzpicture}
-			};
-			\node at (2.2,0) {$\Rightarrow$};
-			
-			% Grafo corrispondente
-			\begin{scope}[shift={(4,-1.5)}, vertex/.style={circle, draw, inner sep=1.5pt}]
-				\node[vertex, label=above:{\small 1}] (v1) at (1,3) {};
-				\node[vertex, label=above:{\small 2}] (v2) at (2,2.2) {};
-				\node[vertex, label=above:{\small 3}] (v3) at (3,2) {};
-				\node[vertex, label=right:{\small 4}] (v4) at (5,1.8) {};
-				\node[vertex, label=below:{\small 5}] (v5) at (3,1) {};
-				\node[vertex, label=right:{\small 6}] (v6) at (5,0.8) {};
-				\node[vertex, label=right:{\small 7}] (v7) at (5.5,0.2) {};
-				\node[vertex, label=left:{\small 8}] (v8) at (0.5,0.5) {};
-				\node[vertex, label=below:{\small 9}] (v9) at (3,0) {};
-				\node[vertex, label=below:{\small 10}] (v10) at (5,-0.8) {};
-				\node[vertex, label=below:{\small 11}] (v11) at (2,-1) {};
-				
-				% Archi
-				\draw (v1) -- node[above, green!50!black, font=\small] {$a$} (v2);
-				\draw (v2) -- node[above, green!50!black, font=\small] {$b$} (v3);
-				\draw (v3) -- node[above, green!50!black, font=\small] {$c$} (v4);
-				\draw (v1) -- node[left, green!50!black, font=\small] {$d$} (v8);
-				\draw (v2) -- node[above, green!50!black, font=\small] {$e$} (v5);
-				\draw (v4) -- node[right, green!50!black, font=\small] {$f$} (v7);
-				\draw (v5) -- node[above, green!50!black, font=\small] {$n$} (v9);
-				\draw (v5) -- node[below, green!50!black, font=\small] {$g$} (v9); % doppio arco approssimato
-				\draw (v6) -- node[above, green!50!black, font=\small] {$i$} (v7);
-				\draw (v8) -- node[below, green!50!black, font=\small] {$j$} (v9);
-				\draw (v9) -- node[below, green!50!black, font=\small] {$m$} (v11);
-			\end{scope}
-		\end{tikzpicture}
-	\end{center}
+	Si invita il lettore a provare manualmente se esiste tale sequenza di attraversamenti, ma la risposta alla domanda rimane \textbf{negativa}.
+	Prima di giustificarne la motivazione, dobbiamo fornire delle importantissime definizioni riguardanti i grafi.
 	
 	\begin{definizione}{Passeggiata in un grafo}{}
-		Una \textbf{passeggiata} in un grafo è una sequenza $v_0, e_1, v_1, e_2, v_2, \dots, v_{k-1}, e_k, v_k$ che alterna vertici e archi.
+		Una \textbf{passeggiata} (o \textbf{walk}) in un grafo è una sequenza $v_0, e_1, v_1, e_2, v_2, \dots, v_{k-1}, e_k, v_k$ che alterna vertici e archi.
+		Formalmente, può essere anche indicata con $W = (v_1, v_2, \dots, v_k)$, dunque omettendo gli archi ma indicando solo in ordine di apparizione i vertici.
 	\end{definizione}
 	
 	\begin{definizione}{Passeggiata chiusa}{}
 		Una passeggiata si dice \textbf{chiusa} se $v_0 = v_k$, cioè il punto di inizio coincide con il punto di arrivo.
 	\end{definizione}
 	
-	Qualsiasi grafo con almeno un nodo $x$ con $\deg(x)$ dispari \textbf{non} ammette una passeggiata chiusa che utilizza tutti gli archi una sola volta.
-	In questo caso, dunque: \textbf{no}, non è risolvibile il problema.
+	Possiamo adesso giustificare, più o meno, la risposta al problema dei ponti di Konigsberg: qualsiasi grafo con almeno un nodo $x$ con grado dispari \textbf{non} ammette una passeggiata chiusa che utilizza tutti gli archi una sola volta.
 	
-	E se fossero tutti pari? \textbf{Non è detto}.
+	E se invece tutti i nodi avessero grado pari? Interessante, domanda, ma \textbf{non è detto}.
 	
-	\begin{center}
-		\begin{tikzpicture}[scale=0.6]
-			% Due triangoli disconnessi
-			\node[vertex/.style={circle, draw, inner sep=1.5pt}] (a1) at (0,0) {};
-			\node[vertex/.style={circle, draw, inner sep=1.5pt}] (a2) at (1,0) {};
-			\node[vertex/.style={circle, draw, inner sep=1.5pt}] (a3) at (0.5,0.8) {};
-			\draw (a1) -- (a2) -- (a3) -- (a1);
-			
-			\node[vertex/.style={circle, draw, inner sep=1.5pt}] (b1) at (0,-1.5) {};
-			\node[vertex/.style={circle, draw, inner sep=1.5pt}] (b2) at (1,-1.5) {};
-			\node[vertex/.style={circle, draw, inner sep=1.5pt}] (b3) at (0.5,-2.3) {};
-			\draw (b1) -- (b2) -- (b3) -- (b1);
-		\end{tikzpicture}
-	\end{center}
-	Tutti $\text{deg} = 2$, ma non essendo connesso non è possibile.
+	\begin{figure}[htbp]
+		\noindent\begin{minipage}[c]{0.50\textwidth}
+			\centering
+			\begin{tikzpicture}[thick, baseline=(current bounding box.center)]
+				% Stile coerente con i grafi precedenti
+				\tikzset{nodo/.style={circle, draw, minimum size=0.7cm, inner sep=0pt, font=\sffamily}}
+				
+				% Triangolo superiore (vertice in alto)
+				\node[nodo] (A) at (1, 3.2) {A};
+				\node[nodo] (B) at (0, 1.8) {B};
+				\node[nodo] (C) at (2, 1.8) {C};
+				
+				\draw (A) -- (B);
+				\draw (B) -- (C);
+				\draw (C) -- (A);
+				
+				% Triangolo inferiore (vertice in basso, non connesso al primo)
+				\node[nodo] (D) at (0, 0.8) {D};
+				\node[nodo] (E) at (2, 0.8) {E};
+				\node[nodo] (F) at (1, -0.6) {F};
+				
+				\draw (D) -- (E);
+				\draw (E) -- (F);
+				\draw (F) -- (D);
+				
+			\end{tikzpicture}
+		\end{minipage}\hfill%
+		\begin{minipage}[c]{0.45\textwidth}
+			\caption{Grafo non connesso formato da due componenti triangolari disgiunte. Tutti i vertici hanno $\deg(v) = 2$, ma il grafo complessivo non è connesso e dunque non è possibile effettuare una passeggiata chiusa al suo interno.}
+		\end{minipage}
+	\end{figure}
 	
 	\begin{definizione}{Grafo connesso}{}
 		Un grafo si dice \textbf{connesso} se per ogni coppia di vertici esiste una passeggiata da $x$ a $y$.
+		In poche parole, un grafo si dice connesso se ogni coppia di vertici scelta è collegata in qualche modo.
 	\end{definizione}
-	% --- NEW PAGE (3) ---
-	
-	\chapter{Rappresentazione dei grafi}
 	
 	\begin{teorema}{Caratterizzazione di Eulero}{}
 		Esiste una passeggiata chiusa che contiene ogni arco una sola volta se e solo se:
 		\begin{enumerate}
-			\item Ogni vertice ha grado pari.
-			\item Il grafo è connesso.
+			\item Ogni vertice ha \textbf{grado pari}.
+			\item Il grafo è \textbf{connesso}.
 		\end{enumerate}
 	\end{teorema}
 	
+	\newpage
 	\section{Rappresentazione fisica dei grafi}
 	
-	La rappresentazione informatica dei grafi in memoria è fondamentale per determinare l'efficienza degli algoritmi che operano su di essi. Esistono principalmente due modalità standard per rappresentare un grafo: le matrici di adiacenza e le liste di adiacenza.
+	La rappresentazione informatica dei grafi in memoria è fondamentale per determinare l'efficienza degli algoritmi che operano su di essi. Esistono principalmente due modalità standard per rappresentare un grafo: le \textbf{matrici di adiacenza} e le \textbf{liste di adiacenza}.
 	
 	\subsection{Matrici di adiacenza}
 	Si stabilisce una matrice $n \times n$ dove $n = \#V$, e dove:
@@ -284,100 +241,128 @@
 	
 	Se il grafo non è diretto, la matrice sarà simmetrica rispetto alla diagonale.
 	
-	\textbf{Costo computazionale:}
+	Vediamo di seguito il \textbf{costo computazionale} di alcune delle operazioni elementari che possono essere effettuate sui grafi:
 	\begin{itemize}
-		\item Visita del grafo e memorizzazione: $\Theta(n^2)$.
-		\item Per verificare se $i$ è adiacente a $j$: $\Theta(1)$.
-		\item Verificare $\deg(i)$: $\Theta(n)$ (occorre scorrere la riga $i$-esima e contare quanti $1$ ci sono).
+		\item \textbf{Visita del grafo e memorizzazione}: $\mathbf{\Theta(n^2)}$, in quanto viene memorizzato come una matrice $n \times n$.
+		
+		\item Per verificare se $\mathbf{i}$ \textbf{è adiacente a} $\mathbf{j}$: $\mathbf{\Theta(1)}$, in quanto è sufficiente controllare il valore di $M[i][j]$: se esso corrisponde ad 1 allora i due nodi sono adiacenti, altrimenti no.
+		
+		\item \textbf{Verificare il grado di un dato vertice} $\mathbf{i}$: $\mathbf{\Theta(n)}$, in quanto occorre scorrere la riga $i$-esima della matrice e contare quanti $1$ ci sono.
 	\end{itemize}
 	
+	\newpage
 	\subsection{Liste di adiacenza}
 	
-	Una lista di adiacenza è composta da un vettore di teste di liste concatenate. Ciascuna lista contiene i nodi adiacenti al rispettivo vertice.
-	
-	\begin{center}
-		\begin{tabular}{c c}
-			$\begin{bmatrix}
-				1 \\ 2 \\ 3 \\ 4
-			\end{bmatrix}$
-			&
-			$\begin{aligned}
-				&\rightarrow [2, 3] \\
-				&\rightarrow [1, 3, 4] \\
-				&\rightarrow [1, 2, 4] \\
-				&\rightarrow [2, 3]
-			\end{aligned}$
-		\end{tabular}
-	\end{center}
-	
-	Il motivo per cui lo spazio complessivo dipende dal numero di archi è che ogni arco viene contato due volte, una per ogni nodo coinvolto nel grafo non orientato.
-	
-	\textbf{Costo computazionale (C.C.):}
+	Una lista di adiacenza è composta da:
 	\begin{itemize}
-		\item Per verificare se $i$ è adiacente a $j$: $\mathcal{O}(\deg(i))$.
-		\item Per visitare e memorizzare: $\mathcal{O}\left(n + \sum_{v} \deg(v)\right) = \mathcal{O}(n + 2m) = \mathcal{O}(n + m)$, dove $n = \#V$ e $m = \#E$.
+		\item Un array in cui ogni elemento è un nodo del grafo.
+		
+		\item Per ogni nodo del grafo, dunque per ogni elemento dell'array, viene associato anche un puntatore \texttt{neigbh} che punta ad una lista concatenata contenente tutti i nodi adiacenti al nodo corrente.
 	\end{itemize}
 	
-	L'occupazione di memoria $\mathcal{O}(n)$ è dovuta chiaramente al fatto che deve esserci un array con un elemento per ogni nodo. Ogni nodo poi dovrà avere un puntatore ad una lista concatenata che rappresenta i suoi adiacenti.
-	% --- NEW PAGE (4) ---
+	\begin{figure}[htbp]
+		\noindent\begin{minipage}[c]{0.48\textwidth}
+			\centering
+			\begin{tikzpicture}[thick, scale=0.9, baseline=(current bounding box.center)]
+				% Stile per i nodi del grafo
+				\tikzset{nodo/.style={circle, draw, minimum size=0.75cm, inner sep=0pt, font=\bfseries\sffamily}}
+				
+				% Posizionamento nodi (disposizione a rombo/aquilone)
+				\node[nodo] (1) at (0, 1.5) {1};
+				\node[nodo] (2) at (1.5, 3) {2};
+				\node[nodo] (3) at (1.5, 0) {3};
+				\node[nodo] (4) at (3, 1.5) {4};
+				
+				% Archi definiti dalla lista di adiacenza
+				\draw (1) -- (2);
+				\draw (1) -- (3);
+				\draw (2) -- (3);
+				\draw (2) -- (4);
+				\draw (3) -- (4);
+			\end{tikzpicture}
+		\end{minipage}\hfill%
+		\begin{minipage}[c]{0.48\textwidth}
+			\centering
+			% Rappresentazione formale della lista di adiacenza
+			$\begin{bmatrix}
+				1 \\
+				2 \\
+				3 \\
+				4
+			\end{bmatrix}
+			\begin{array}{l}
+				\longrightarrow [2, 3] \\[4pt]
+				\longrightarrow [1, 3, 4] \\[4pt]
+				\longrightarrow [1, 2, 4] \\[4pt]
+				\longrightarrow [2, 3]
+			\end{array}$
+		\end{minipage}
+	\end{figure}
 	
-	\chapter{Passeggiate e Cammini nei Grafi}
-	
-	Ci poniamo ora la seguente domanda: \textit{come si estendono questi concetti nel caso dei grafi diretti?}
-	
-	\begin{center}
-		\begin{tikzpicture}[->, >=stealth, thick, node distance=2cm]
-			\node[circle, draw, inner sep=2pt] (1) {$1$};
-			\node[circle, draw, inner sep=2pt] (2) [below right of=1] {$2$};
-			\node[circle, draw, inner sep=2pt] (3) [above left of=2] {$3$};
+	\textbf{Costo computazionale} delle operazioni elementari:
+	\begin{itemize}
+		\item Per visitare e memorizzare: $\mathcal{O}\left(n + \sum_{v} \deg(v)\right) = \mathcal{O}(n + 2m) = \mathcal{O}(n + m)$.\\
+		Spieghiamo il perché di questo costo computazionale:
+		\begin{enumerate}
+			\item Sicuramente, per memorizzare una lista di adiacenza abbiamo bisogno innanzitutto di un array che tenga traccia di tutti i nodi. Ecco da dove viene il $\mathcal{O}(n)$.
 			
-			\draw (1) -- (2);
-			\draw (2) -- (3);
-			\draw (3) -- (1);
-		\end{tikzpicture}
-		\hspace{2cm}
-		$\begin{bmatrix} 1 \\ 2 \\ 3 \end{bmatrix} \longrightarrow \begin{bmatrix} 2 \\ 3 \\ 1 \end{bmatrix}$
-	\end{center}
+			\item Inoltre, per ogni nodo dobbiamo memorizzare anche tutti i nodi a lui adiacenti. Il numero di nodi adiacenti corrisponde al \textbf{grado} del singolo nodo, ossia al numero di archi incidenti al nodo. Sappiamo che il numero di archi è quantificabile con $m$, ma in questo caso stiamo contando ogni arco ben due volte (vedendo anche l'esempio, nel nodo 1 stiamo dicendo che è adiacente a 2, e nel nodo due stiamo dicendo che è adiacente ad 1). Dovremo dunque contare due volte ogni arco, ottenendo una quantità pari a $2m$. Il costo computazionale diventa dunque nell'ordine di $n + 2m$, ma sapendo che le costanti moltiplicative sono indifferenti asintoticamente, tale valore diventa semplicemente $O(n + m)$.
+		\end{enumerate}
+		
+		\item Per verificare se $i$ è adiacente a $j$: $\mathcal{O}(\deg(i))$. Questo in quanto come vediamo la lista di adiacenza relativa ad ogni nodo ha un numero di elementi pari al grado di quel nodo. Dunque per verificare se due nodi sono adiacenti o meno è necessario scorrere la lista di adiacenza di quel nodo e cercare il nodo adiacente interessato.
+	\end{itemize}
 	
-	C'è un altro modo per memorizzare questi concetti. Consideriamo un grafo non orientato con i vertici $1, 2, 3, 4, 5$ collegati da vari archi etichettati.
+	Per quanto riguarda la memorizzazione e la visita completa di un grafo memorizzato mediante liste di adiacenza, si potrebbe fare un appunto riguardo ai grafi diretti. In tal caso, a meno che ogni arco non sia bi-direzionale, verrebbe memorizzata letteralmente \textbf{la metà} dei nodi memorizzati in un grafo non orientato.
+	\begin{osservazione}{}{}
+		Supponiamo di avere un problema che ci richieda frequentemente quali nodi puntano verso un dato nodo $u$.
+		Se mantenessimo un'implementazione mediante liste di adiacenza come quella vista in figura, per trovare tutti i nodi collegati ad $u$ dovremmo scorrere per ogni nodo nella lista le sue liste di adiacenza, ottenendo un costo computazionale di $\mathcal{O}(n + m)$, come se fosse una normale visita.\\
+		\smallbreak
+		Se invece decidessimo di modificare leggermente la struttura della lista di adiacenza, aggiungendo per ogni nodo un puntatore ai suoi nodi entranti e uscenti, il costo computazionale di tale operazione si ridurrebbe ad un misero $\mathcal{O}(\operatorname{deg}(u))$, in quando dovremo scorrere solo la lista dei nodi entranti (il cui numero corrisponde appunto al grado del nodo).
+		Nota bene che questa implementazione non appesantisce così tanto il costo di memorizzazione della struttura dati, in quanto per ogni nodo $u$ si aggiunge $\mathcal{O}(\operatorname{deg}(u))$ di costo computazionale, portando il totale ad $\mathcal{O}(n+3m = \mathcal{O}(n+m))$.
+	\end{osservazione}
 	
-	\begin{center}
-		\begin{tikzpicture}[thick, node distance=1.5cm]
-			\node[circle, draw, inner sep=2pt] (1) at (0,0) {$1$};
-			\node[circle, draw, inner sep=2pt] (2) at (2,0) {$2$};
-			\node[circle, draw, inner sep=2pt] (3) at (3,1.5) {$3$};
-			\node[circle, draw, inner sep=2pt] (4) at (1,1.5) {$4$};
-			\node[circle, draw, inner sep=2pt] (5) at (4,0) {$5$};
-			
-			\draw (1) -- node[below] {$a$} (2);
-			\draw (2) -- node[below] {$b$} (5);
-			\draw (2) -- node[right] {$c$} (3);
-			\draw (3) -- node[above] {$d$} (4);
-			\draw (4) -- node[left] {$e$} (1);
-			\draw (2) -- (4);
-		\end{tikzpicture}
-	\end{center}
-	
-	Una passeggiata all'interno del grafo potrebbe essere la seguente sequenza:
-	\[
-	1 \xrightarrow{a} 2 \xrightarrow{c} 3 \xrightarrow{d} 4 \xrightarrow{e} 2 \xrightarrow{b} 5
-	\]
+	\chapter{Passeggiate e cammini}
 	
 	\begin{definizione}{Cammino}{}
-		Un \textbf{cammino} in un grafo è una passeggiata che non ripete i vertici.
+		Un \textbf{cammino} nel grafo è una passeggiata in cui non viene ripetuto alcun vertice.
 	\end{definizione}
 	
-	La passeggiata vista prima \textbf{non} è un cammino da $1$ a $5$, ma un possibile cammino tra $1$ e $5$ potrebbe essere:
-	\[
-	1 \xrightarrow{a} 2 \xrightarrow{b} 5
-	\]
+	\begin{figure}[htbp]
+		\noindent\begin{minipage}[c]{0.50\textwidth}
+			\centering
+			\begin{tikzpicture}[thick, baseline=(current bounding box.center)]
+				% Stile per i nodi del grafo
+				\tikzset{nodo/.style={circle, draw, minimum size=0.7cm, inner sep=0pt, font=\sffamily\bfseries}}
+				
+				% Nodi
+				\node[nodo] (1) at (0, 0) {1};
+				\node[nodo] (2) at (2, 0) {2};
+				\node[nodo] (5) at (4, 0) {5};
+				\node[nodo] (4) at (1, 1.8) {4};
+				\node[nodo] (3) at (3, 1.8) {3};
+				
+				% Archi con relative etichette (lettere minuscole)
+				\draw (1) -- (2) node[midway, below=2pt] {$a$};
+				\draw (2) -- (5) node[midway, below=2pt] {$b$};
+				\draw (2) -- (3) node[midway, right=3pt] {$c$};
+				\draw (4) -- (3) node[midway, above=2pt] {$d$};
+				\draw (4) -- (2) node[midway, left=3pt] {$e$};
+			\end{tikzpicture}
+		\end{minipage}\hfill%
+		\begin{minipage}[c]{0.45\textwidth}
+			\caption{Una passeggiata potrebbe essere: $1\ a\ 2\ c\ 3\ d\ 4\ e\ 2\ b\ 5$.\\
+			Una camminata da $1$ a $5$ potrebbe invece essere $1\ a \ 2\ b\ 5$.}
+			\label{fig:passeggiata_grafo}
+		\end{minipage}
+	\end{figure}
 	
-	\begin{proposizione}{Esistenza di cammini e passeggiate}{}
-		Esiste una passeggiata da $x$ a $y$ se e solo se esiste un cammino da $x$ a $y$.
-	\end{proposizione}
+	\begin{corollario}{}{}
+		Esiste una passeggiata da $x$ a $y$ $\iff$ esiste un cammino da $x$ a $y$.
+	\end{corollario}
 	
 	\begin{dimostrazione}{}{}
-		Chiaramente, se esiste un cammino allora sicuramente esiste anche una passeggiata, dato che ogni cammino è un particolare tipo di passeggiata.\\
+		Chiaramente, se esiste un cammino allora sicuramente esiste anche una passeggiata, dato che ogni cammino è un particolare tipo di passeggiata. Abbiamo così dimostrato la prima implicazione ($\Rightarrow$).\\
+		\smallbreak
 		Viceversa, supponiamo di avere una passeggiata $W = (v_0, v_1, \dots, v_K)$. Abbiamo due possibilità:
 		\begin{enumerate}
 			\item Se tutti i vertici sono distinti, allora la passeggiata è già un cammino.
@@ -395,243 +380,195 @@
 	\end{dimostrazione}
 	
 	\begin{definizione}{Ciclo}{}
-		Un \textbf{ciclo} è un grafo connesso in cui ogni vertice ha grado $2$.
+		Un \textbf{ciclo} è un grafo connesso in cui \textbf{ogni vertice ha grado 2}.
 	\end{definizione}
 	
-	\begin{center}
-		\begin{tikzpicture}[thick, scale=0.8]
-			\node[circle, draw, inner sep=2pt] (1) at (0,2) {};
-			\node[circle, draw, inner sep=2pt] (2) at (1.5,1.5) {};
-			\node[circle, draw, inner sep=2pt] (3) at (1,0) {};
-			\node[circle, draw, inner sep=2pt] (4) at (-1,0) {};
-			\node[circle, draw, inner sep=2pt] (5) at (-1.5,1.5) {};
-			
-			\draw (1) -- (2);
-			\draw (2) -- (3);
-			\draw (3) -- (4);
-			\draw (4) -- (5);
-			\draw (5) -- (1);
-		\end{tikzpicture}
-	\end{center}
-	% --- NEW PAGE (5) ---
+	\begin{figure}[htbp]
+		\noindent\begin{minipage}[c]{0.50\textwidth}
+			\centering
+			\begin{tikzpicture}[thick, baseline=(current bounding box.center)]
+				% Stile dei nodi
+				\tikzset{nodo/.style={circle, draw, minimum size=0.7cm, inner sep=0pt, font=\sffamily\bfseries}}
+				
+				% Raggio del pentagono
+				\def\r{1.4cm}
+				
+				% Nodi disposti in cerchio a intervalli di 72 gradi (partendo dall'alto a 90°)
+				\node[nodo] (1) at (90:\r)  {1};
+				\node[nodo] (2) at (18:\r)  {2};
+				\node[nodo] (3) at (306:\r) {3};
+				\node[nodo] (4) at (234:\r) {4};
+				\node[nodo] (5) at (162:\r) {5};
+				
+				% Archi del ciclo
+				\draw (1) -- (2);
+				\draw (2) -- (3);
+				\draw (3) -- (4);
+				\draw (4) -- (5);
+				\draw (5) -- (1);
+			\end{tikzpicture}
+		\end{minipage}\hfill%
+		\begin{minipage}[c]{0.45\textwidth}
+			\caption{Grafo ciclo a 5 vertici ($C_5$).}
+			\label{fig:grafo_ciclo_c5}
+		\end{minipage}
+	\end{figure}
 	
-	\chapter{Ricerca di cicli nei grafi}
+	\section{Algoritmo di ricerca di un ciclo all'interno di un grafo}
 	
-	Infine la passeggiata diventa:
-	\[
-	W = (v_1, v_2, \dots, v_i, v_{j+1}, \dots, v_k)
-	\]
-	che, non contenendo nodi ripetuti, è un cammino.
+	Proponiamo un altro problema classico del lavoro con i grafi: supponiamo che, dato un grafo $G$ con l'ipotesi che \textbf{ogni vertice ha grado 2 o superiore}, volessimo trovare un qualsiasi ciclo nel grafo.
+	Partiamo con un esempio grafico di un grafo che contiene un ciclo, e vediamo come procederemmo umanamente.
+	\begin{figure}[htbp]
+		\begin{minipage}[c]{1\textwidth}
+			\centering
+			\begin{tikzpicture}[thick, scale=1.1, baseline=(current bounding box.center)]
+				% Stile per i vertici
+				\tikzset{nodo/.style={circle, draw, minimum size=0.65cm, inner sep=0pt, font=\sffamily\bfseries}}
+				
+				% Faccia superiore (rombo superiore)
+				\node[nodo] (T_back)  at (1.2, 2.7) {1};
+				\node[nodo] (T_left)  at (-0.2, 1.7) {2};
+				\node[nodo] (T_front) at (1.2, 1.0) {3};
+				\node[nodo] (T_right) at (2.6, 1.7) {4};
+				
+				% Faccia inferiore (traslata in basso)
+				\node[nodo] (B_left)  at (-0.2, 0.4) {5};
+				\node[nodo] (B_front) at (0.6, -0.4) {6};
+				\node[nodo] (B_right) at (2.6, -0.3) {7};
+				
+				% Vertice nascosto posteriore della base (opzionale per completare la prospettiva isometrica)
+				% Nel tuo disegno si vedono i 7 vertici principali con i collegamenti a vista:
+				
+				% Archi faccia superiore
+				\draw (T_back) -- (T_left);
+				\draw (T_back) -- (T_right);
+				\draw (T_left) -- (T_front);
+				\draw (T_right) -- (T_front);
+				
+				% Archi verticali
+				\draw (T_left) -- (B_left);
+				\draw (T_front) -- (B_front);
+				\draw (T_right) -- (B_right);
+				
+				% Archi base visibili
+				\draw (B_left) -- (B_front);
+				\draw (B_front) -- (B_right);
+				
+			\end{tikzpicture}
+		\end{minipage}
+	\end{figure}
 	
-	\begin{definizione}{Problema del ciclo}{}
-		Dato un grafo $G$ dove per ogni vertice $x$ si ha $\deg(x) \geq 2$, trovare un ciclo nel grafo.
-	\end{definizione}
-	
-	Prociamo prima graficamente:
-	
-	\begin{center}
-		\begin{tikzpicture}[scale=0.9, every node/.style={circle, draw, thick, inner sep=1.5pt}]
-			% Vertici del cubo/grafo
-			\node (v1) at (0,0) {};
-			\node (v2) at (2,0) {};
-			\node (v3) at (2.5,1) {};
-			\node (v4) at (0.5,1) {};
-			\node (v5) at (0,1.8) {};
-			\node (v6) at (2,1.8) {};
-			\node (v7) at (2.5,2.8) {};
-			\node (v8) at (0.5,2.8) {};
-			\node (center) at (1.25, 1.4) {};
-			
-			% Archi
-			\draw (v1) -- (v2);
-			\draw (v1) -- (v4);
-			\draw (v2) -- (v3);
-			\draw (v4) -- (v3);
-			\draw (v5) -- (v6);
-			\draw (v5) -- (v8);
-			\draw (v6) -- (v7);
-			\draw (v8) -- (v7);
-			\draw (v1) -- (v5);
-			\draw (v2) -- (v6);
-			\draw (v3) -- (v7);
-			\draw (v4) -- (v8);
-			\draw (center) -- (v3);
-			\draw (center) -- (v5);
-			\draw (center) -- (v2);
-		\end{tikzpicture}
-	\end{center}
-	
-	L'idea iniziale consiste nel:
-	\begin{itemize}
-		\item Prendere un punto di partenza.
-		\item Prendere un arco e andare al nodo adiacente.
-		\item Memorizzare i nodi visitati finora.
-		\item Controllare se il prossimo nodo è stato già visitato.
-	\end{itemize}
-	
-	Presentiamo di seguito l'algoritmo per la ricerca del ciclo all'interno del grafo $G$.
-	
-	\begin{algoritmo}{Algoritmo di ricerca del ciclo}{ciclo}
-		Il procedimento riceve in input un grafo $G$ in cui ogni vertice ha grado almeno $2$. L'obiettivo è individuare un ciclo sfruttando una lista di supporto per tracciare i nodi visitati.
-		\begin{lstlisting}[style=stile-listings]
-			Ciclo(G):
-			x = un vertice qualsiasi
-			creo una LISTA PUNTATA vuota (L)
-			append(x)
-			teniamo traccia di current(x) e next = x.neighbour[0]
-			while next not in L:
-			L.append(next)
-			if next.neighb[0] == current:
-			u = next.neighb[1]
-			else:
-			u = next.neighb[0]
-			current = next
-			next = u
-			while L[0] != next:
-			L.remove(0)
-			return L
-		\end{lstlisting}
-		\smallbreak
-		\textbf{Note sull'implementazione e complessità:}
-		\begin{itemize}
-			\item La ricerca del nodo all'interno della lista $L$ (`while next not in L`) richiede normalmente $O(n)$, ma tale operazione può essere gestita facilmente definendo un vettore di supporto `vis = [0] * n` che si aggiorna ponendo `vis[next] = 1` ad ogni iterazione, riducendo il costo di controllo a $O(1)$.
-			\item Se invece si decidesse di utilizzare una matrice di adiacenza, il controllo costerebbe comunque $O(n)$, portando il costo computazionale complessivo a $O(n^2)$.
-		\end{itemize}
-	\end{algoritmo}
-	% --- NEW PAGE (6) ---
-	
-	\chapter{Ricerca di cicli nei grafi}
-	
-	L'idea di base dell'algoritmo risolutivo per la ricerca di un ciclo all'interno di un grafo (supportata dall'ipotesi forte che ogni vertice abbia grado $\deg(x) \ge 2$) si articola nei seguenti punti:
+	L'idea di algoritmo chiaramente consiste nel:
 	\begin{enumerate}
-		\item Si sceglie un nodo di partenza $x$ e lo si memorizza in una struttura dati che permetta di tenere traccia dei nodi visitati.
-		\item Si prende un qualsiasi nodo adiacente, controllando categoricamente che non sia già stato visitato (per la prima iterazione è impossibile, ma in generale...).
+		\item Scegliere un nodo qualsiasi di partenza.
+		
+		\item Memorizzarlo all'interno di un apposita struttura dati.
+		
+		\item Prendere un arco e andare al nodo adiacente. \textbf{Importante} è assicurarsi che il prossimo nodo non sia ancora stato visitato. In tal caso, significa che abbiamo fatto un giro e abbiamo trovato un ciclo.
+		
+		\item Altrimenti, tornare all'inizio.
 	\end{enumerate}
 	
-	Siamo certi che esista un ciclo proprio grazie all'ipotesi forte di $\deg(x) \ge 2$ per ogni $x$. 
-	Proviamo a formalizzare il tutto sotto forma di codice.
+	Messa un'idea di base, procediamo con la scrittura dell'effettivo algoritmo in pseudocodice e in seguito alla sua spiegazione.
 	
-	\begin{lstlisting}[style=stile-listings, caption={Algoritmo per la ricerca di un ciclo in un grafo}]
+	\begin{lstlisting}[language=Python, caption={Pseudocidice per la ricerca di un ciclo all'interno di un grafo.}]
 		def trovaCiclo(G):
-		L = lista vuota
-		x = vertice qualsiasi
-		L.append(x)
-		Current = x
-		next = x.neighbr[0]
-		
-		while (next not in L):
-		L.append(next)
-		if next.neighbr[0] == current:
-		u = next.neighbr[1]
-		else:
-		u = next.neighbr[0]
-		current = next
-		next = u
-		
-		while L[0] != next:
-		L.remove(0)
+			L = lista vuota
+			x = un vertice qualsiasi del grafo
+			L.append(x)
+			
+			current = x
+			next = x.neigbh[0]
+			
+			while next not in L:
+				L.append(next)
+				
+				if next.neighbr[0] == current:
+					u = next.neighbr[1]
+				else:
+					u = next.neighbr[0]
+					
+				current = next
+				next = u
+				
+			while L[0] != next:
+				L.remove(0)
+				
+			return L
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Eestrazione di un ciclo da un grafo}{}
+		\begin{enumerate}
+			\item Definiamo una lista vuota, per tenere traccia dei nodi visitati finora.
+			
+			\item Prendiamo un qualsiasi vertice dal quale iniziare la nostra ricerca.
+			
+			\item Aggiungiamo il nodo scelto all'interno della lista.
+			
+			\item Prendiamo come prossimo nodo il primo della lista degli adiacenti al nodo corrente.
+			
+			\item Eseguiamo un ciclo che va avanti finché il next che abbiamo preso non è un nodo già visitato: in tal caso significa che abbiamo intrapreso una strada circolare e siamo tornati indietro.
+			
+			\item All'interno del ciclo aggiungiamo alla lista \texttt{L} dei nodi visitati anche \texttt{next}.
+			
+			\item A questo punto dobbiamo scegliere il nuovo \texttt{next}, ma dobbiamo assicurarci che non sia il nodo da cui siamo partiti: ecco perché controlliamo che \texttt{next.neighbr[0]} sia diverso dal nodo su cui siamo adesso, in modo da non poter tornare \textit{subito} indietro.
+			
+			\item Aggiorniamo i puntatori dei nodi per la prossima iterazione.
+			
+			\item Una volta usciti da questo ciclo, significa che abbiamo intrapreso la strada circolare di cui si parlava prima, e che dunque abbiamo trovato un ciclo. Significa inoltre che ora il puntatore \texttt{next} punterà al nodo da cui inizia la diramazione del ciclo, e dunque sarà il primo di questo. Ecco perché, nel ciclo finale, controlliamo che \texttt{L[0] != next}, perché \texttt{next} è il primo nodo del ciclo, e dunque deve essere anche il primo della lista che dovremo restituire.
+		\end{enumerate}
+	\end{algoritmo}
+	
+	Bisogna fare un appunto su questo algoritmo: ora come ora, per come l'abbiamo scritto, il suo costo computazionale è un $\mathcal{O}(n^2)$, tutto per colpa del controllo di testa del primo ciclo while. La condizione del ciclo è un \texttt{next not in L}, che richiede tempo $\mathcal{O}(n)$ in un array disordinato. Dato che il ciclo while potrebbe poi richiedere fino ad un massimo di $n$ iterazioni, una per ogni nodo del grafo, il costo computazionale sale al tempo quadratico.
+	Possiamo ovviamente ottimizzare questo codice, presentando la seguente versione:
+	\begin{lstlisting}[language=Python, caption={Ricerca di un ciclo in un grafo ottimizzata}]
+		def trovaCiclo(G):
+			L = lista vuota
+			vis = [0] * n
+			
+			x = un vertice qualsiasi del grafo
+			L.append(x)
+			vis[x] = 1
+			
+			current = x
+			next = x.neigbh[0]
+			
+			while vis[next] == 0:
+				L.append(next)
+				vis[next] = 1
+				
+				if next.neighbr[0] == current:
+					u = next.neighbr[1]
+				else:
+					u = next.neighbr[0]
+				
+				current = next
+				next = u
+			
+			while L[0] != next:
+				L.remove(0)
 		
 		return L
 	\end{lstlisting}
 	
-	\begin{algoritmo}{Analisi e spiegazione dell'algoritmo}{}
-		Il codice presentato implementa la ricerca di un ciclo all'interno del grafo $G$. Analizziamo dettagliatamente le singole componenti e le istruzioni evidenziate:
-		
-		\begin{itemize}
-			\item \textbf{Inizializzazione:} Viene creata una lista vuota $L$ per tracciare il percorso e viene scelto un vertice iniziale $x$ aggiunto alla lista. Si impostano i puntatori iniziali \texttt{current} e \texttt{next}. Nota importante: l'operazione di controllo di presenza all'interno di una lista non ordinata (\texttt{next not in L}) richiede tempo $O(n)$, rendendo questa versione iniziale inefficiente.
-			\item \textbf{Esplorazione (Righe 7-14):} Finché il nodo successivo \texttt{next} non è già presente in $L$\textsuperscript{1}, il nodo viene aggiunto alla lista\textsuperscript{2}. Si controlla quale dei vicini corrisponde al nodo corrente per evitare di tornare indietro sui propri passi: se il primo vicino è il nodo corrente, si sceglie il secondo, altrimenti si prende tranquillamente il primo dei vicini.
-			\item \textbf{Aggiornamento dei puntatori (Riga 12-13):} Vengono preparati i puntatori per la successiva iterazione\textsuperscript{3} aggiornando \texttt{current} a \texttt{next} e \texttt{next} a $u$. Questo ciclo viene eseguito al più $n$ volte, portando a una complessità temporale complessiva di $T(n) = O(n^2)$.
-			\item \textbf{Pulizia della struttura (Righe 16-17):} Una volta individuato il ciclo (quando \texttt{next} è già presente in $L$, il che significa che siamo in qualche modo tornati sui nostri passi), si rimuovono dalla lista $L$ tutti gli elementi iniziali che non fanno parte del ciclo, finché il primo elemento di $L$ non coincide con il nodo \texttt{next}.
-		\end{itemize}
+	\begin{algoritmo}{Ricerca di un ciclo in un grafo ottimizzata}{}
+		Andremo a commentare solo le nuove scelte implementative:
+		Si è scelto di aggiungere un array \texttt{vis} che verrà usato per tenere traccia degli elementi visitati. Ciò viene fatto stabilendo una biezione tra l'identificativo del nodo e il suo indice all'interno dell'array \texttt{vis}. Così facendo il controllo in testa al ciclo while diventa semplicemente un controllo accedendo ad un elemento dell'array tramite indice, dunque eseguibile in tempo costante.
+		L'aggiunta di un array \texttt{vis} che ha una grandezza massima dell'ordine di del numero di nodi $n$ aumenta il costo spaziale da $\Theta(n)$ a $\Theta(n + n) = \Theta(n)$, dunque rimane nello stesso ordine asintotico.
 	\end{algoritmo}
-	% --- NEW PAGE (7) ---
 	
-	\chapter{Rilevamento di cicli nei grafi}
-	
-	Quando raggiungiamo un ciclo, la variabile \texttt{next} contiene l'identificativo del vertice su cui il ciclo si è chiuso. Tuttavia, la lista $L$ contiene tutto il cammino percorso fino a quel momento, quindi dobbiamo eliminare tutto ciò che non fa parte del ciclo.
-	
-	Controlliamo se $L[0] \neq \text{next}$: sapendo che \texttt{next} è l'ultimo nodo del ciclo, significa che esso è anche il primo nodo del ciclo stesso. Dunque, il primo valore della lista dovrà essere proprio \texttt{next}, in quanto è il punto da cui tutto parte.
-	
-	\begin{figure}[htbp]
-		\centering
-		\begin{tikzpicture}[scale=1.1, every node/.style={circle, draw, minimum size=6mm}]
-			\node (1) at (0, 1) {$1$};
-			\node (2) at (1, 1) {$2$};
-			\node (3) at (2, 1) {$3$};
-			\node (4) at (2, 0) {$4$};
-			\node (5) at (0, 0) {$5$};
-			
-			\draw (1) -- (2);
-			\draw (2) -- (3);
-			\draw (3) -- (4);
-			\draw (4) -- (5);
-			\draw (5) -- (3);
-		\end{tikzpicture}
-		\caption{Esempio grafico di un grafo con un ciclo.}
-	\end{figure}
-	
-	Dopo il primo ciclo, abbiamo $L = [1, 2, 3, 4, 5]$, $\text{current} = 5$ e $\text{next} = 3$.
-	Inizia il secondo ciclo di pulizia della lista:
+	Possiamo ora discutere riguardo al costo computazionale dell'algoritmo, per entrambe le versioni:
 	\begin{itemize}
-		\item $L[0] \neq 3$? Sì, rimuoviamo $1$ e otteniamo $L = [2, 3, 4, 5]$.
-		\item $L[0] \neq 3$? Sì, rimuoviamo $2$ e otteniamo $L = [3, 4, 5]$.
-		\item $L[0] \neq 3$? No, il primo elemento è $3$: ciclo trovato, fine.
-	\end{itemize}
-	
-	Tuttavia, come già detto, il contro di questa versione è che il controllo di presenza di un nodo nella lista può essere dispendioso. Possiamo infatti mitigare quel costo con l'uso di una lista \texttt{vis} che mappa i nodi visitati.
-	
-	\begin{algoritmo}{Algoritmo di ricerca del ciclo con vettore dei visitati}{}
-		Viene presentata di seguito l'implementazione ottimizzata per la ricerca di un ciclo all'interno di un grafo $G$, utilizzando un vettore di supporto per tracciare i nodi visitati in tempo costante $\mathcal{O}(1)$.
-		
-		\begin{lstlisting}[style=stile-listings]
-			def trovaCiclo(G):
-			n = len(G.V)
-			L = lista()
-			vis = [0] * n
-			
-			x = vertice_qualsiasi()
-			L.append(x)  # Aggiungiamo alla cronologia
-			vis[x] = 1   # Segniamo come visitato
-			
-			current = x
-			next = x.neighbr[0]
-			
-			while vis[next] == 0:  # Controllo in O(1)
-			L.append(next)
-			vis[next] = 1
-			
-			if next.neighbr[0] == current:
-			u = next.neighbr[1]
-			else:
-			u = next.neighbr[0]
-			
-			current = next
-			next = u
-			
-			# Rimozione dei nodi esterni al ciclo (stessa logica vista in precedenza)
-			while L[0] != next:
-			L.pop(0)
-			
-			return L
-		\end{lstlisting}
-	\end{algoritmo}
-	% --- NEW PAGE (8) ---
-	
-	\chapter{Analisi delle versioni}
-	
-	Analizzando le due versioni, vediamo come:
-	
-	\begin{itemize}
-		\item \textbf{Versione 1 (V1)}:
+		\item Versione inefficiente:
 		\begin{itemize}
-			\item Costo temporale: $O(n^2)$
-			\item Costo spaziale: $O(n)$, ottenuto mediante l'utilizzo di una lista $L$ per tenere traccia della cronologia.
+			\item \textbf{Costo computazionale:} $\mathcal{O}(n^2)$
+			\item \textbf{Costo spaziale:} $\Theta(n)$
 		\end{itemize}
 		
-		\item \textbf{Versione 2 (V2)}:
+		\item Versione efficiente:
 		\begin{itemize}
-			\item Costo temporale: $O(n)$
-			\item Costo spaziale: $O(n) + O(n) = O(2n) = O(n)$, dove i contributi spaziali sono dati rispettivamente dalla struttura $L$ e dall'insieme di supporto per le visite $Vis$. Poiché il risultato si attesta sullo stesso ordine di grandezza, la complessità spaziale risulta essere ottima.
+			\item \textbf{Costo computazionale:} $\Theta(n)$
+			\item \textbf{Costo spaziale:} $\Theta(n)$
 		\end{itemize}
 	\end{itemize}
 	
