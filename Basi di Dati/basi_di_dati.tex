@@ -632,5 +632,361 @@
 	\end{definizione}
 	
 	Se tra le sottoclassi di una gerarchia si verificano contemporaneamente il vincolo di disgiunzione e quello di copertura, si dice che l'insieme delle sottoclassi è una \textbf{partizione} della classe padre.
+	
+	
+	% --- NEW PAGE (48) ---
+	
+	\section{La costruzione di una base di dati}
+	
+	Il ciclo di vita e il processo di sviluppo di una base di dati si articola nelle seguenti fasi principali:
+	
+	\begin{itemize}
+		\item \textbf{Analisi dei requisiti}: consiste nell'analizzare il problema e comprenderne a fondo le specifiche, fornite dall'utente o committente tipicamente in linguaggio naturale.
+		
+		\item \textbf{Progettazione}: si suddivide a sua volta nella progettazione dei dati e nella progettazione delle applicazioni.
+		\begin{itemize}
+			\item \textbf{Progettazione concettuale}: ha lo scopo di individuare le entità di interesse e le associazioni tra di esse, formalizzandole tramite un apposito modello concettuale ad alto livello (ad esempio il modello E-R o i diagrammi delle classi UML).
+			\item \textbf{Progettazione logica}: consiste nella traduzione dello schema concettuale nel modello logico scelto (ad esempio il modello relazionale), definendo puntualmente le strutture dati logiche e le relazioni intercorrenti tra esse.
+			\item \textbf{Progettazione fisica dei dati}: riguarda gli aspetti implementativi di basso livello, definendo l'organizzazione fisica e le strutture di memorizzazione dei dati su disco (file di memorizzazione, indici, metodi di accesso).
+			\item \textbf{Progettazione delle applicazioni}: definizione dell'architettura e della logica dei programmi software che interagiranno con la base di dati.
+		\end{itemize}
+		
+		\item \textbf{Realizzazione}: fase in cui il database viene effettivamente implementato sul DBMS prescelto, popolato e integrato con le applicazioni software.
+	\end{itemize}
+	
+	\begin{osservazione}{}{}
+		Nel corso della trattazione, spesso considereremo la fase di analisi dei requisiti come parte integrante del processo complessivo di progettazione.
+	\end{osservazione}
+	% --- NEW PAGE (2) ---
+	
+	\section{Componenti di una base di dati}
+	
+	\begin{osservazione}{}{}
+		Siccome d'ora in poi lavoreremo esclusivamente su basi di dati relazionali, le definizioni e le considerazioni che seguono si basano su questa fondamentale premessa.
+	\end{osservazione}
+	
+	In una base di dati possiamo individuare due componenti principali:
+	
+	\begin{description}
+		\item [Lo schema:] Sostanzialmente invariante nel tempo, descrive la struttura di rappresentazione dei dati (ovvero il modo in cui i dati sono organizzati e rappresentati, comunemente in tabelle). Rappresenta l'\textbf{aspetto intensionale} ed è il principale \textbf{oggetto della progettazione}.
+		
+		\item [L'istanza:] Costituita dai valori attuali che vengono strutturati dallo schema. Rappresenta l'effettiva entrata all'interno di una tabella, contenente i valori specifici di uno specifico dato memorizzato nello schema. Tali valori possono cambiare anche molto rapidamente nel tempo (\textbf{aspetto estensionale}).
+	\end{description}
+	% --- NEW PAGE (7) ---
+	
+	\chapter{Fasi della progettazione}
+	
+	I prodotti delle varie fasi della progettazione sono degli ``schemi''. Ogni schema segue un certo modello di dati e si articola in tre livelli principali:
+	
+	\begin{itemize}
+		\item \textbf{Schema concettuale}: rappresenta i dati in modo indipendente da qualsiasi sistema di gestione di database (DBMS) specifico, concentrandosi unicamente sulla realtà di interesse.
+		\item \textbf{Schema logico}: traduce lo schema concettuale in base al modello logico del DBMS scelto (ad esempio relazionale, a grafo, orientato agli oggetti), rimanendo comunque indipendente dai dettagli fisici di memorizzazione.
+		\item \textbf{Schema fisico}: descrive l'implementazione concreta dello schema logico sul supporto di memorizzazione, gestendo indici, strutture di file e allocazioni di memoria specifiche del sistema.
+	\end{itemize}
+	% --- NEW PAGE (9) ---
+	
+	\section{Modelli di dati}
+	
+	Nell'ambito delle basi di dati si distinguono due tipi principali di modelli.
+	
+	\begin{definizione}{Modello concettuale}{}
+		I \textbf{modelli concettuali} servono per analizzare e descrivere le classi di dati del contesto informativo e le loro correlazioni in maniera del tutto indipendente dalle modalità con cui saranno organizzati all'interno di un DBMS.
+	\end{definizione}
+	
+	I modelli concettuali prevedono l'uso di \textbf{rappresentazioni grafiche convenzionali}, utili ai fini della documentazione e della comunicazione (ad esempio: \textit{E-R}, \textit{UML}).
+	% --- NEW PAGE (10) ---
+	
+	\section{Modelli di dati}
+	
+	Si distinguono due tipi principali di modelli di dati.
+	
+	\begin{definizione}{Modelli logici}{}
+		I \textbf{modelli logici} sono utilizzati per organizzare i dati in maniera indipendente dalle strutture fisiche e in modo che siano disponibili ai programmi che utilizzano il DBMS.
+	\end{definizione}
+	% --- NEW PAGE (13) ---
+	
+	\section{Modello Entità-Relazione}
+	
+	Il \textbf{Modello Entità-Relazione} (anche noto come \textit{Entity-Relationship Model} o $E$-$R$) rappresenta il modello concettuale più diffuso nella progettazione delle basi di dati.
+	
+	\begin{osservazione}{Varianti del modello}{}
+		Del modello Entità-Relazione esistono diverse versioni che presentano leggere differenze, vertenti soprattutto sulle convenzioni grafiche adottate per la rappresentazione dei concetti fondamentali.
+	\end{osservazione}
+	% --- NEW PAGE (14) ---
+	
+	\section{I costrutti del modello E-R}
+	
+	I principali costrutti presi in considerazione nel modello Entità-Relazione (E-R) sono:
+	
+	\begin{itemize}
+		\item \textbf{Entità}
+		\item \textbf{Relazione (Associazione)}
+		\item \textbf{Attributo}
+		\item \textbf{Identificatore}
+		\item \textbf{Generalizzazione}
+		\item \dots
+	\end{itemize}
+	% --- NEW PAGE (15) ---
+	
+	\section{Entità}
+	
+	L'entità rappresenta la \textbf{primissima cosa da identificare} quando si analizza un problema.
+	
+	\begin{definizione}{Entità}{}
+		Un'\textbf{entità} è una classe di oggetti (fatti, persone, cose) dell'applicazione di interesse con proprietà comuni e con esistenza ``autonoma''.
+		
+		In altre parole, si tratta di \textbf{classi di oggetti omogenei tra loro}, i quali condividono la stessa struttura, ovvero presentano gli stessi attributi.
+	\end{definizione}
+	
+	\begin{osservazione}{}{}
+		Generalmente, le entità sono quegli elementi del problema a cui viene data molta importanza all'interno del dominio applicativo.
+	\end{osservazione}
+	
+	\subsection*{Esempi}
+	Di seguito vengono riportati alcuni esempi tipici di entità:
+	
+	\begin{itemize}
+		\item \textbf{Impiegato}
+		\item \textbf{Conto corrente}
+		\item \textbf{Fattura}
+		\item \textbf{Ordine}
+		\item \textbf{Città}
+		\item \textbf{Studente}
+	\end{itemize}
+	% --- NEW PAGE (16) ---
+	
+	\section{Associazione}
+	
+	\begin{definizione}{Associazione}{}
+		Un'\textbf{associazione} rappresenta un fatto che lega, una correlazione o un legame logico fra due o più entità, che sia significativo per l'applicazione di interesse.
+	\end{definizione}
+	
+	Un'associazione viene comunemente indicata anche con altri termini:
+	\begin{itemize}
+		\item \textbf{Relationship}: termine originale in inglese;
+		\item \textbf{Relazione}: il nome più corretto, benché il termine possa assumere accezioni diverse nel contesto delle basi di dati;
+		\item \textbf{Correlazione}.
+	\end{itemize}
+	
+	\begin{osservazione}{Dipendenza dalle entità}{}
+		Un'associazione ha senso esclusivamente in quanto collega delle entità: senza le entità collegate, l'associazione non possiede alcuna "vita propria".
+	\end{osservazione}
+	
+	\paragraph{Esempi:}
+	\begin{itemize}
+		\item \textbf{Residenza} (tra le entità \textit{Persona} e \textit{Città})
+		\item \textbf{Afferenza} (tra le entità \textit{Impiegato} e \textit{Dipartimento})
+	\end{itemize}
+	% --- NEW PAGE (17) ---
+	
+	\section{Entità: schema e istanza}
+	
+	\begin{definizione}{Entità e istanza}{}
+		\begin{description}
+			\item[Entità:] rappresenta una classe di oggetti, persone, concetti o fatti con caratteristiche comuni (\textit{omogenei}) che vengono inseriti nello schema concettuale.
+			\item[Occorrenza (o istanza) di entità:] rappresenta il singolo elemento appartenente alla classe (ad esempio il singolo oggetto o la singola persona, non i dati specifici).
+		\end{description}
+	\end{definizione}
+	
+	\begin{osservazione}{Rappresentazione nello schema concettuale}{}
+		Nello schema concettuale rappresentiamo unicamente le \textbf{entità} e non le singole istanze, in quanto in questa fase di progettazione concettuale la base di dati non esiste ancora e non è stata popolata.
+	\end{osservazione}
+	% --- NEW PAGE (18) ---
+	
+	\section{Rappresentazione grafica delle entità}
+	
+	Nel modello Entità-Relazione (E-R), le entità vengono rappresentate graficamente attraverso dei rettangoli contenenti al loro interno il nome dell'entità corrispondente.
+	
+	\begin{center}
+		\begin{tikzpicture}[
+			entita/.style={
+				rectangle,
+				draw=black,
+				fill=BrickRed!20,
+				minimum width=4.5cm,
+				minimum height=2cm,
+				align=center,
+				font=\bfseries\Large
+			}
+			]
+			\node[entita] (studente) at (0, 3) {Studente};
+			\node[entita] (impiegato) at (6, 3) {Impiegato};
+			\node[entita] (citta) at (0, 0) {Città};
+			\node[entita] (libro) at (6, 0) {Libro};
+		\end{tikzpicture}
+	\end{center}
+	% --- NEW PAGE (19) ---
+	
+	\subsection{Entità: commenti e convenzioni}
+	
+	Ogni entità ha un nome che la identifica univocamente all'interno dello schema concettuale. Nella definizione di tali identificatori è opportuno adottare alcuni accorgimenti metodologici:
+	
+	\begin{itemize}
+		\item \textbf{Espressività}: i nomi dovrebbero essere espressivi, ovvero in grado di far comprendere immediatamente la tipologia di oggetti della realtà di interesse a cui ci si riferisce.
+		\item \textbf{Convenzioni di denominazione}:
+		\begin{itemize}
+			\item Usare di regola il \textbf{singolare} per i nomi di entità.
+		\end{itemize}
+	\end{itemize}
+	% --- NEW PAGE (20) ---
+	
+	\section{Associazione: schema e istanza}
+	
+	\begin{definizione}{Associazione}{}
+		Un'\textbf{associazione} rappresenta una classe di fatti o legami tra entità "omogenei", ovvero con significato e caratteristiche comuni che vengono inseriti nello schema.
+	\end{definizione}
+	
+	\begin{definizione}{Occorrenza di associazione}{}
+		Un'\textbf{occorrenza} (o \textbf{istanza}) \textbf{di associazione} è un singolo elemento della classe di legami, identificato dalle occorrenze delle entità che esso collega.
+	\end{definizione}
+	% --- NEW PAGE (21) ---
+	
+	\section{Associazioni e occorrenze}
+	
+	\begin{definizione}{Occorrenza di un'associazione}{}
+		\begin{itemize}
+			\item \textbf{Associazione binaria}: un'occorrenza di un'associazione binaria è una coppia di occorrenze di entità, una per ciascuna entità coinvolta.
+			
+			\item \textbf{Associazione $n$-aria}: un'occorrenza di un'associazione $n$-aria è una $n$-upla di occorrenze di entità, una per ciascuna entità coinvolta.
+		\end{itemize}
+	\end{definizione}
+	
+	\begin{osservazione}{}{}
+		L'arità dell'associazione indica sostanzialmente \textbf{quante} entità sono coinvolte nella suddetta associazione.
+	\end{osservazione}
+	% --- NEW PAGE (25) ---
+	
+	\section{Associazioni e convenzioni di denominazione}
+	
+	Ogni associazione ha un nome che la identifica univocamente all'interno dello schema concettuale. 
+	
+	Per garantire la chiarezza dello schema, la scelta dei nomi deve seguire specifiche convenzioni:
+	\begin{itemize}
+		\item \textbf{Espressività}: I nomi dovrebbero essere espressivi, ossia in grado di far comprendere immediatamente il tipo di legame rappresentato.
+		\item \textbf{Convenzioni sintattiche}:
+		\begin{itemize}
+			\item Usare la forma singolare anche per i nomi delle associazioni.
+			\item Usare possibilmente sostantivi anziché verbi.
+		\end{itemize}
+	\end{itemize}
+	
+	\begin{osservazione}{Uso dei sostantivi per le associazioni}{}
+		Sebbene nella modellazione ER sia molto comune utilizzare formali forme verbali per descrivere le relazioni, una convenzione diffusa suggerisce l'impiego preferenziale dei sostantivi per definire il nome delle associazioni.
+	\end{osservazione}
+	% --- NEW PAGE (30) ---
+	
+	\section{Attributo}
+	
+	\begin{definizione}{Attributo}{}
+		Un \textbf{attributo} è una proprietà elementare di un'entità o di una associazione. All'interno del modello vengono inserite \textit{tutte e sole} le proprietà di interesse ai fini dell'applicazione.
+		
+		Formalmente, un attributo associa a ogni occorrenza di entità o di associazione un valore appartenente a un insieme prefissato, detto \textbf{dominio dell'attributo}.
+	\end{definizione}
+	% --- NEW PAGE (32) ---
+	
+	\section{Attributi composti}
+	
+	\begin{definizione}{Attributo composto}{}
+		Gli \textbf{attributi composti} sono attributi che raggruppano più informazioni insieme. Nello specifico, raggruppano attributi di una medesima entità o associazione che presentano affinità nel loro significato o che vengono utilizzati come un unico attributo.
+	\end{definizione}
+	
+	Ad esempio, gli attributi \textit{Via}, \textit{Numero civico} e \textit{CAP} possono essere composti per formare l'attributo \textit{Indirizzo}.
+	
+	\begin{osservazione}{Scelta di modellazione}{}
+		Si decide in seguito, in base alle operazioni previste, se utilizzare i singoli elementi separatamente o la loro composizione. Questa scelta dipende sempre dall'importanza che tale informazione ricopre all'interno del problema specifico.
+	\end{osservazione}
+	% --- NEW PAGE (34) ---
+	
+	\definecolor{coloreEntita}{RGB}{240, 140, 140}
+	\definecolor{coloreAttributi}{RGB}{140, 160, 250}
+	\definecolor{coloreAssociazione}{RGB}{140, 210, 140}
+	
+	\section{Esempio: La base di dati di una società}
+	
+	Nel contesto della progettazione concettuale di una base di dati, analizziamo i requisiti di una società. Per facilitare l'identificazione dei costrutti del modello Entità-Relazione (ER), il testo è stato associato alla seguente legenda cromatica:
+	
+	\begin{center}
+		\colorbox{coloreEntita}{\makebox[2.5cm]{\strut \textbf{Entità}}} \qquad
+		\colorbox{coloreAttributi}{\makebox[2.5cm]{\strut \textbf{Attributi}}} \qquad
+		\colorbox{coloreAssociazione}{\makebox[2.5cm]{\strut \textbf{Associazione}}}
+	\end{center}
+	
+	\vspace{1em}
+	
+	La società comprende più \colorbox{coloreEntita}{dipartimenti}, ognuno con \colorbox{coloreAttributi}{nome} e \colorbox{coloreAssociazione}{localizzato in} una \colorbox{coloreEntita}{sede}; più dipartimenti in sedi diverse possono avere lo stesso \colorbox{coloreAttributi}{nome}, e in una \colorbox{coloreAssociazione}{sede} possono esserci \colorbox{coloreAssociazione}{più dipartimenti}.
+	
+	\vspace{1em}
+	
+	Ad ogni Dipartimento \colorbox{coloreAssociazione}{afferisce} in certo numero di \colorbox{coloreEntita}{impiegati}, ognuno a partire da una certa \colorbox{coloreAttributi}{data}, e uno de\colorbox{coloreAssociazione}{gli} impiegati \colorbox{coloreAssociazione}{svolge il ruolo} di \colorbox{coloreEntita}{Direttore} del Dipartimento.
+	
+	\vspace{1em}
+	
+	Ogni impiegato \colorbox{coloreAssociazione}{partecipa} ad uno o più \colorbox{coloreEntita}{progetti}, ognuno con un \colorbox{coloreAttributi}{nome} ed un \colorbox{coloreAttributi}{budget} assegnato.
+	
+	\vspace{1.5em}
+	
+	\begin{osservazione}{Obiettivo del progetto}{}
+		Sulla base dei requisiti sopra elencati e debitamente classificati, l'obiettivo è quello di progettare lo \textbf{schema concettuale} (Diagramma ER) che rappresenti fedelmente la realtà di interesse della società.
+	\end{osservazione}
+	% --- NEW PAGE (36) ---
+	
+	\section{Altri costrutti del modello E-R}
+	
+	Nel modello Entità-Relazione (E-R), oltre ai costrutti di base come entità e relazioni, si introducono ulteriori concetti per arricchire l'espressività dello schema concettuale:
+	
+	\begin{itemize}
+		\item \textbf{Cardinalità}:
+		\begin{itemize}
+			\item Cardinalità di associazioni;
+			\item Cardinalità di attributo.
+		\end{itemize}
+		
+		\item \textbf{Identificatore}:
+		\begin{itemize}
+			\item Identificatore interno;
+			\item Identificatore esterno.
+		\end{itemize}
+		
+		\item \textbf{Generalizzazione}.
+	\end{itemize}
+	% --- NEW PAGE (37) ---
+	
+	\section{Cardinalità di un'associazione}
+	
+	\begin{definizione}{Cardinalità di un'associazione}{}
+		La \textbf{cardinalità} di un'associazione è espressa da una coppia di valori associata a ogni entità che partecipa all'associazione.
+		
+		Tali valori specificano il numero minimo e massimo di occorrenze dell'associazione cui \textbf{ciascuna occorrenza di una entità} può partecipare, ovvero il numero di occorrenze dell'altra entità a cui essa può essere collegata.
+	\end{definizione}
+	% --- NEW PAGE (39) ---
+	
+	\section{Valori di cardinalità}
+	
+	Per semplicità e convenzione, nella specifica delle cardinalità si utilizzano principalmente tre simboli, distinti a seconda che si consideri la cardinalità minima o quella massima:
+	
+	\begin{description}
+		\item[Cardinalità minima ($0$ e $1$):] definisce il numero minimo di occorrenze con cui un'entità deve partecipare alla relazione.
+		\begin{itemize}
+			\item \textbf{$0$ -- Partecipazione opzionale (associazione parziale):} una singola occorrenza può non partecipare all'associazione, non avendo alcun collegamento con le occorrenze dell'altra entità.
+			\item \textbf{$1$ -- Partecipazione obbligatoria (associazione totale):} ogni singola occorrenza deve necessariamente partecipare all'associazione, risultando quindi collegata ad almeno un'occorrenza dell'altra entità.
+		\end{itemize}
+		
+		\item[Cardinalità massima ($1$ ed $N$):] specifica il vincolo sul numero massimo di associazioni possibili per ciascuna occorrenza.
+		\begin{itemize}
+			\item \textbf{$1$ -- Partecipazione esclusiva (associazione univoca):} ogni occorrenza dell'entità può essere collegata al massimo ad una sola occorrenza dell'altra entità.
+			\item \textbf{$N$ -- Associazione multivalore:} non viene posto alcun limite superiore al numero di occorrenze con cui l'entità può essere associata.
+		\end{itemize}
+	\end{description}
+	% --- NEW PAGE (42) ---
+	
+	\section{Classificazione di associazioni}
+	
+	Con riferimento alle cardinalità massime, considerando entrambe le entità coinvolte, distinguiamo le seguenti tipologie di relazioni:
+	
+	\begin{itemize}
+		\item \textbf{Uno a uno} $(1, 1)$
+		\item \textbf{Uno a molti} $(1, N)$
+		\item \textbf{Molti a molti} $(N, M)$
+	\end{itemize}
 
 \end{document}

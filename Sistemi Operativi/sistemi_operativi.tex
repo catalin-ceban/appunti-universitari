@@ -8,14 +8,14 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning}
 
-\input{../stile_appunti.sty}
+\usepackage{../stile_appunti}
 \lstset{style=stile-listings}
 
 \begin{document}
 	
 	\generaFrontespizio{Sistemi Operativi}{2026}{Gabriele Tolomei}{m}
 	
-	\chapter{Introduzione al corso}
+	\chapter{Introduzione all'hardware dei calcolatori}
 	
 	Per comprendere appieno il ruolo dei sistemi operativi, è utile richiamare una celebre affermazione del matematico e informatico Richard Hamming:
 	
@@ -278,6 +278,7 @@
 	Per risolvere tali criticità, le CPU moderne impiegano dei predittori di salto (\textbf{branch predictors}) per indovinare l'esito di un'istruzione di salto prima che essa venga effettivamente completata. Tuttavia, tali metodologie non verranno trattate.
 	
 	\section{Instruction Set Architectures (ISA)}
+	\label{sec:instruction_set_architecture}
 	
 	Nel mondo dell'informatica sono stabiliti due standard principali riguardo al linguaggio adottato dalle istruzioni macchina:
 	
@@ -475,5 +476,621 @@
 		
 		\item \textbf{Direct Memory Access (DMA)}: un modulo hardware dedicato si occupa di trasferire i dati direttamente tra la memoria principale e il dispositivo di I/O, senza che la CPU debba intervenire per ogni singolo byte, riducendo drasticamente il carico di lavoro del processore.
 	\end{enumerate}
+	
+	\chapter{Introduzione ai Sistemi Operativi}
+	
+	\section{Cos'è un sistema operativo?}
+	
+	\begin{definizione}{Sistema Operativo (OS)}{os}
+		Un \textbf{sistema operativo} (Operating System, OS) è una collezione di software di sistema che gestisce le risorse hardware e fornisce servizi comuni per i programmi applicativi.
+	\end{definizione}
+	
+	Il nucleo del sistema operativo è il primo software che si avvia all'avvio del computer.
+	
+	\section{I livelli di astrazione forniti dal SO}
+	Il sistema operativo abbiamo capito essere come una sorta di "autorità" che gestisce tutte le risorse hardware e software per permettere all'utente di utilizzare la macchina nel modo più semplice e intuitivo possibile, avendo più o meno controllo sulle risorse (a seconda del sistema operativo che vogliamo implementare).
+	
+	In generale, un buon sistema operativo deve:
+	\begin{description}
+		\item [Fornire l'astrazione adeguata], ovvero semplificare l'esecuzione di alcune operazioni, come ad esempio l'accesso al filesystem mediante una struttura organizzata in file e cartelle. Chiaramente questa struttura è puramente logica: se non venisse implementato questo tipo di astrazione, saremmo costretti ad accedere ai nostri file indicando il disco rigido e il settore in cui questo è contenuto.
+		
+		\item [Gestire in modo efficiente le risorse], decidendo quante e quali risorse allocare per ciascun processo in esecuzione alla CPU, e impedire che un processo prevalga sugli altri (\textit{starvation}).
+		
+		\item [Controllare l'esecuzione delle applicazioni], impedendo ad esempio che un processo acceda (involontariamente) allo spazio di memoria riservato ad un altro processo, oppure impedendo che un programma generante un errore mandi in crash l'intero sistema.
+		
+		\item [Gestire l'esecuzione concorrente di più processi], suddividendo ogni processo in \textit{thread} differenti (letteralmente dei sotto-programmi in esecuzione) e dando l'illusione che esistano contemporaneamente più CPU differenti che eseguono ognuna un processo (la magia del \textbf{timesharing}, di cui si parlerà più avanti).
+	\end{description}
+	
+	\section{Processi e Thread}
+	Nella scorsa sezione abbiamo spesso citato i processi, senza mai darne una specifica definizione. La lasciamo di seguito.
+	\begin{definizione}{Processo}{}
+		Un \textbf{processo} è un'istanza di un programma in esecuzione.
+		Quando noi scriviamo un codice python, stiamo scrivendo un \textit{programma}, qualcosa che può essere eseguito (ma possiamo pensare analogamente con tutti i software che installiamo da internet).\\
+		Una volta che manderemo in esecuzione tale codice o tale programma, per la CPU quello diventerà un processo.
+	\end{definizione}
+	
+	Sempre come anticipato prima, diamo anche una definizione di Thread.
+	\begin{definizione}{Thread}{}
+		Un \textbf{thread} è la più piccola unità di esecuzione indirizzabile dal sistema operativo, e consiste sostanzialmente in un \textit{flusso di esecuzione} di un singolo processo.
+		Detto con parole più semplici, possiamo suddividere un singolo processo in più thread, ognuno che si occupa di eseguire una parte di quel processo.
+	\end{definizione}
+	Da questa definizione si evincono due importanti caratteristiche dei thread:
+	\begin{itemize}
+		\item Possono essere creati più thread diversi relativi allo stesso processo.
+		
+		\item Più thread dello stesso processo condividono lo stesso spazio di memorie per codice e variabili.
+		
+		\item Dato che ogni thread esegue una \textit{porzione diversa} dello stesso processo, ovviamente non possono essere condivisi registri come il Program Counter e i registri di calcolo.
+	\end{itemize}
+	
+	\section{La virtualizzazione della memoria}
+	Fisicamente, la memoria centrale RAM è una griglia di celle in cui, per ogni cella, possiamo memorizzare un dato di una certa lunghezza (tipicamente equivalente alla \textit{lunghezza di word} dell'architettura).
+	Nell'esecuzione dei programmi, ogni programma può memorizzare le proprie variabili in memoria, tuttavia il SO si occupa di \textbf{virtualizzare} tale processo, assegnando ad ogni processo un indirizzo di memoria "finto", che verrà poi mappato ad un indirizzo reale in RAM.
+	Ad esempio:
+	\begin{itemize}
+		\item L'indirizzo viruale \texttt{0x1000} nel Processo A viene mappato all'indirizzo fisico \texttt{0x7fff000}.
+		
+		\item Lo stesso indirizzo logico \texttt{0x1000} nel Processo B può essere invece tranquillamente mappato all'indirizzo fisico \texttt{0x8aaa000}.
+	\end{itemize}
+	A garantire che due indirizzi virtuali uguali non mappino allo stesso indirizzo fisico in memoria ci pensano il SO e la \textbf{Memory Management Unit (MMU)}.
+	
+	\section{Perché il Sistema Operativo necessita di supporto hardware}
+	
+	Il Sistema Operativo è, in fin dei conti, semplicemente un software. Se venisse eseguito sulla CPU esattamente allo stesso modo di un'applicazione utente, nulla impedirebbe a un programma utente di:
+	
+	\begin{itemize}
+		\item Scrivere codice che disabiliti la protezione della memoria del Sistema Operativo;
+		
+		\item Leggere file personali appartenenti a un altro utente;
+		
+		\item Disabilitare gli interrupt e monopolizzare la CPU a tempo indeterminato.
+	\end{itemize}
+	Risposta? Nulla. Di fatto, se un sistema operativo non sfruttasse a pieno le risorse hardware, un utente potrebbe tranquillamente fare tutte queste cose.
+	
+	\subsection{Esecuzione in due modalità}
+	Da questo problema nasce dunque la necessità di creare una barriera logica su cosa può e cosa non può fare un programma utente. Nasce così la \textbf{Dual-Mode Execution}, che definisce una gamma di istruzioni riservate all'esecuzione solo da parte del Kernel del sistema operativo.
+	
+	Come viene implementata questa problematica? Definendo uno speciale bit, detto \textbf{Mode Bit}, memorizzate all'interno di uno speciale registro della CPU (tipicamente il PSR, Program Status Register).
+	\begin{itemize}
+		\item Se tale bit assume valore 0, la CPU eseguirà l'istruzione in \textbf{Kernel Mode} (tutti i privilegi).
+		
+		\item Altrimenti, con bit valore 1, l'istruzione verrà eseguita in \textbf{User Mode}, dunque con privilegi limitati.
+	\end{itemize}
+	
+	\begin{osservazione}{E' lo stesso dell'"Esegui come amministratore"?}{}
+		Anche se si potrebbe pensare ad un'analogia con quando ci viene chiesta l'autorizzazione dell'amministratore del nostro computer per eseguire un programma, per tali situazioni ci troviamo già ad un livello di astrazione più alto, dove ci serve la conferma di \textbf{un altro utente} e \textbf{non} del \textit{sistema operativo}.
+	\end{osservazione}
+	
+	In generale, la transizione Kernel Mode -> User Mode si articola secondo i seguenti passaggi:
+	\begin{enumerate}
+		\item Viene memorizzato lo stato attuale dei processi e dei loro registri.
+		
+		\item Viene effettuata la transizione a Kernel Mode.
+		
+		\item Viene eseguita l'istruzione di sistema apposita.
+		
+		\item All'interno della codifica di ogni istruzione di sistema è presente anche un blocco di istruzioni che si occupa di \textbf{ripristinare lo stato precedente alla kernel mode}, \textbf{mettere ad 1 il Mode Bit} e \textbf{ritornare alla normale esecuzione del processo}.
+	\end{enumerate}
+	
+	Alcuni esempi di istruzioni riservate alla Kernel Mode sono ad esempio \texttt{HLT}, che "spegne" la CPU, oppure \texttt{CLI/STI} che disabilita l'invio dei segnali di interrupt da parte di dispositivi hardware esterni. Ma anche banalmente l'accesso ai file e alle directories è un'operazione da Kernel Mode.
+	Ci chiediamo dunque: come è possibile che noi riusciamo a fare queste operazioni in modo così semplice, nonostante siano formalmente riservate al sistema?
+	\smallbreak
+	Ciò avviene principalmente secondo tre modalità differenti.
+	
+	\subsubsection{Chiamate di sistema}
+	Il sistema operativo offre una lista di funzionalità Kernel Mode a cui l'utente può fare richiesta per eseguire una determinata operazione. Prendendo il precedente esempio dell'accesso al filesystem, quando clicchiamo sull'icon dell'\texttt{Esplora file}, implicitamente stiamo effettuando una chiamata al sistema operativo per permetterci di accedere ai file sul disco (quelli a cui l'utente è autorizzato, chiaramente).
+	Come già detto, sta al sistema operativo fornire queste funzionalità, e dunque ci potrebbero essere sistemi operativi più o meno permissivi in tal senso.
+	\smallbreak
+	Nell'ottica delle chiamate di sistema, ogni sistema operativo definisce una array detto \textbf{System Call Translation Table}, dove ogni elemento consiste in un puntatore ad una specifica funzionalità di sistema.
+	\smallbreak
+	Gli argomenti di una syscall (pensiamo all'esempio di prima dell'accesso ad un file mediante una funzione \texttt{open}: dobbiamo chiaramente passare il percorso del file come argomento) possono essere memorizzati mediante:
+	\begin{itemize}
+		\item Registri, in caso di argomenti molto piccoli.
+		\item Un stack di memoria esclusivamente adibito a questa funzionalità.
+		\item Lo stack dell'utente.
+	\end{itemize}
+	Per quanto utili e potenti, le chiamate di sistema sono ouno strumento estremamente oneroso da implementare, in quanto richiedono un salvataggio e ripristino dello stato dei registri per ogni chiamata. Ecco perché molti linguaggi di programmazione ottimizzano multiple chiamate alla stessa funzione accorpandole, quando possibile, in una sola.
+	
+	\begin{osservazione}{Esempi di syscalls}{etichetta}
+		Funzioni come il \texttt{printf} nel linguaggio C, oppure il \texttt{System.out.println} in Java di per sé non sono delle vere e proprie syscalls. Tuttavia, se andassimo a leggere il codice mediante le quali sono state implementate queste funzionalità, ci accorgeremo di come esse facciano a capo ad una opportuna funzionalità di sistema che permette di mandare a schermo una serie di caratteri.
+	\end{osservazione}
+	
+	\subsubsection{Eccezioni}
+	Sono gli errori che ci vengono lanciati da un programma e che ne causano il crash. Anziché mandare in crash tutta l'applicazione, il sistema operativo deve gestire tali anormalità per impedire l'interruzione del lavoro di tutta la macchina.
+	Sono comportamenti prevedibili e dunque \textbf{sincroni}, in quanto provengono da determinate istruzioni di un programma. Per fare un esempio banale, se il compilatore vede che è presente un'operazione di casting di tipo, è molto probabile che se il tipo passato non sia conforme quest'operazione lanci un'errore. Dunque, per quanto spesso siano imprevedibili, il sistema operativo e più in particolare i compilatori dei linguaggi possono attuare delle strategie per "prevedere" tali comportamenti.
+	Tuttavia non tutti i tipi di eccezioni sono correttibili: alcune, dette \textbf{aborts}, causano errori hardware o di sistema irrecuperabili.
+	
+	\subsubsection{Interruzioni hardware}
+	Come visto precedentemente, si verificano quando un dispositivo esterno di I/O interrompe il processo che stava eseguendo, e dunque invia un segnale di \texttt{INTERRUPT} al sistema operativo.
+	Questo tipo di modalità è \textbf{asincrona}, in quanto non si potrà prevedere in alcun modo quando un dispositivo esterno abbia completato la propria operazione (es: quando il pacchetto è arrivato a destinazione).
+	
+	La gestione da parte della CPU degli eventi asincroni legati ad interruzioni ed eccezioni avviene mediante un'array chiamato \textbf{Interrupt Descriptor Table (IDT)}.
+	Ogni evento asincrono viene è marcato dal sistema operativo con un numero da 0 a 255. Questa marcatura stabilisce una corrispondenza biunivoca tra l'evento in sé e l'indice della IDT in cui si trovano le istruzioni necessarie a processare quell'evento.
+	
+	A volte potrebbe accadere che il Kernel abbia bisogno di eseguire codice senza venire interrotto. Ecco perché la CPU mette a disposizione istruzioni come \texttt{CLI} per ignorare i flag di interrupt e \texttt{STI} per riabilitarne la lettura.
+	Tuttavia non tutti gli interrupt possono essere ignorati: da qui la divisione tra \textbf{Maskable Interrupts} (ignorabili) e \textbf{Non-Maskable Interrupts} (critici, non ignorabili).
+	
+	\subsubsection{Timer di interruzione}
+	Un esempio classico di interruzione che non può in alcun modo essere ignorata riguarda il \textbf{Timer Interrupt}.\\
+	Come suggerisce il nome, si tratta di un effettivo dispositivo hardware che interrompe periodicamente la CPU in modo da impedire l'esecuzione infinita o prioritaria di alcuni processi.
+	Senza tale dispositivo, un programma contenente ad esempio \texttt{while (true) {...}} verrebbe eseguito all'infinito. Per fortuna non è così, e grazie a questo timer di interruzione alcuni programmi esauriscono il proprio "tempo a disposizione" e vengono definitivamente spenti.
+	
+	\section{Protezione degli accessi in memoria}
+	Il sistema operativo ha anche il compito di garantire che ogni processo esegua le proprie istruzioni e memorizzi le proprie variabili all'interno di uno spazio di memoria ben definito.
+	Oltre a garantire che non si vadano ad utilizzare aree di memoria riservate ad altri processi, è fondamentale impedire che un processo possa accedere ad aree di memoria riservate al Kernel.
+	\smallbreak
+	Questa richiesta viene semplicemente risolta impostando degli effettivi limiti per gli indirizzi di memoria accessibili da un singolo processo.\\
+	Ad esempio, supponiamo di avere tre attori in gioco:
+	\begin{itemize}
+		\item Spazio di memoria kernel, che va da \texttt{0000} a \texttt{0999}
+		
+		\item Spazio di memoria Processo A, che va da \texttt{1000} a \texttt{1499}.
+		
+		\item Spazio di memoria processo B, che va da \texttt{1500} a \texttt{1999}.
+	\end{itemize}
+	Nel momento in cui il Processo A genererà un indirizzo in cui memorizzare una variabile o in cui accedere ad una variabile, la CPU dovrà fare un semplice controllo: se tale indirizzo non risiede nel limite di indirizzi riservati al Processo A, quell'operazione va bloccata.
+	
+	\subsection{Memory Management Unit (MMU)}
+	La Memory Management Unit (MMU) è quella \textbf{componente hardware che si occupa di tradurre gli indirizzi virtuali assegnati ai processi in indirizzi fisici nella memoria centrale}. 
+	Sostanzialmente, è tutto grazie alla MMU se i nostri processi riescono a coesistere senza intaccare l'uno nell'altro.
+	La MMU è il componente hardware, che però si occupa di leggere le varie corrispondenze contenute all'interno di una particolare struttura chiamata \textbf{Page Table}. Ogni valore della page table (\textbf{Page Table Entry (PTE)}) contiene vari campi, tra cui l'indirizzo di memoria della singola entrata, i permessi di accesso (lettura/scrittura), il livello di autorizzazione (kernel mode/user mode).
+	
+	\begin{osservazione}{Come funziona con il DMA?}{}
+		Precedentemente avevamo introdotto il DMA, ovvero quel dispositivo hardware che si occupa di gestire tutti i segnali di interruzione relativi ai dispositivi di I/O.
+		La domanda sorge spontanea: dove sono memorizzati i registri di questo controller? L'utente avrebbe modo di accedervi?
+		\smallbreak
+		I registri vengono mappati ad opportune porte di I/O, e il mapping di queste porte avviene sempre grazie alla MMU che imposta tali aree di memoria come "Kernel Mode", dunque inaccessibili all'utente.
+	\end{osservazione}
+	
+	\chapter{Il linguaggio di programmazione C}
+	Perché studiare il linguaggio di programmazione C in un corso di sistemi operativi? Oppure, più in generale, perché studiarlo proprio?
+	La risposta è semplice: C è il linguaggio più utilizzato al mondo, quello con cui sono stati scritti Windows, Linux, e quasi tutti i sistemi operativi. Si tratta di un linguaggio strettamente a basso livello (non quanto l'assembly chiaramente), che permette al programmatore di gestire la memoria del suo programma, tramite allocazioni e deallocazioni manuali.
+	Nelle seguenti sezioni, partiremo davvero dalle basi del linguaggio. Questo capitolo non vuole essere sostituitivo ad un eventuale libro dedicato, ma fornire solo le conoscenze di base per l'uso del linguaggio e di eventuali esempi futuri.
+	
+	\section{Le variabili in C}
+	Come ormai dovrebbe essere familiare a molti, una \textbf{variabile} è una locazione di memoria a cui abbiamo attribuito un nome, e in cui possiamo memorizzare dei dati.
+	Un esempio di dichiarazione di variabile nel linguaggio C è il seguente \texttt{int numero = 42;}.\\
+	\smallbreak
+	Come vediamo, la sintassi è la stessa che in altri linguaggi: tipo della variabile, nome, operatore di assegnazione, valore effettivo (se vogliamo attribuirlo da subito).\\
+	Infatti, il processo di dichiarazione di una variabile può essere suddiviso in tre momenti:
+	\begin{itemize}
+		\item \textbf{Dichiarazione}: quando esplicitiamo semplicemente il tipo e il nome della variabile, senza darle alcun valore. Esempio: \texttt{int numero;}
+		
+		\item \textbf{Inizializzazione}: può avvenire solo dopo la dichiarazione, e consiste nell'attribuire un valore ad una variabile già esistente. Esempio: \texttt{numero = 4;}
+		
+		\item \textbf{Definizione}: combina i due passi precedenti, dichiarando una variabile e inizializzandola ad un certo valore. Esempio: \texttt{int numero = 0;}
+	\end{itemize}
+	
+	\subsection{Visibilità delle variabili}
+	Nel linguaggio C, le variabili hanno due livelli di visibilità:
+	\begin{itemize}
+		\item \textbf{Visibilità locale}: quando una variabile viene definita all'interno di una funzione, può essere vista e utilizzata \textbf{solo} da comandi presenti all'interno di quella funzione.
+		\begin{lstlisting}[language=C]
+			void esempio() {
+				int x = 3;
+				printf("%d", x)
+			}
+			
+			printf("%d", x) // ERRORE!
+		\end{lstlisting} 
+		
+		\item \textbf{Visibilità globale}: si tratta di una pratica sconsigliata, in genere, ma consiste nel memorizzare le variabili fuori da ogni funzione in modo che queste siano accessibili da qualunque pezzo di codice all'interno del file.
+		
+		\begin{lstlisting}[language=C]
+			int x = 0;
+			
+			void esempio() {
+				printf("%d", x) // CORRETTO, definita globalmente.
+			}
+		\end{lstlisting}
+	\end{itemize}
+	
+	I livelli di visibilità sono qualcosa di automatico, ma i programmatori possono decidere di consigliare al compilatore dove memorizzare una data variabile:
+	\begin{itemize}
+		\item \texttt{register}: consiglia al compilatore di memorizzare la variabile all'interno di un registro, in quanto (probabilmente) ne sarà fatto frequente uso.
+		
+		\item \texttt{volatile}: indica che il valore di questa variabile potrebbe cambiare per nature indipendenti al programma in cui è stata definita.
+	\end{itemize}
+	
+	\newpage
+	\subsection{I tipi di variabili}
+	Molto velocemente, di seguito si indicano i tipi di variabili fondamentali del linguaggio, cosa permettono di memorizzare e quanto spazio in memoria occupano.
+	\begin{tabella}{|c|c|c|}
+		Tipo & Byte occupati & Cosa memorizza \\
+		\hline
+		char & 1 & Caratteri codificati in ASCII\\
+		short & 2 & Numeri interi con segno nel range [-32.768, 32767]\\
+		int & 4 & Numeri interi con segno\\
+		unsigned int & 4 & Numeri interi senza segno\\
+		float & 4 & Numeri con la virgola con una precisione "ridotta"\\
+		double & 8 & Numeri con la virgola e ampia precisione\\
+		bool & 1 & Valori booleani che memorizzano valgono 0 o 1\\
+	\end{tabella}
+	
+	Inoltre in C, come in altri linguaggi, è presente il \textbf{casting di tipo}, ovvero la conversione tra tipi diversi.
+	\begin{itemize}
+		\item \textbf{Casting implicito}, dove una variabile di un tipo viene convertita da sola in un altro.
+		Ad esempio \texttt{double d = 30.4; int i = d;}\\
+		In questo caso una variabile di tipo \texttt{double} viene messa come valore ad una variabile dichiarata come \texttt{int}, il che vuol dire che viene persa nella rappresentazione intera.
+		
+		\item \textbf{Casting esplicito}, dove diciamo esplicitamente al compilatore cosa convertire in cosa. Esempio: \texttt{double pi = 3.14; int ipi = (int) pi;}
+	\end{itemize}
+	
+	\section{Gli Array}
+	Un Array è una \textbf{sequenza di dati tutti dello stesso tipo }(omogenei tra loro).
+	L'accesso agli elementi viene effettuato mediante \texttt{indici}: ogni indice punta ad un determinato elemento. Supponendo di avere un array di \texttt{n} elementi, gli indici vanno da \texttt{0} (primo elemento) a \texttt{n-1} (ultimo elemento).
+	Un Array si può dichiarare come segue:
+	\begin{itemize}
+		\item \texttt{int array[5]}: definizione dell'array, bisogna obbligatoriamente indicare il \textbf{tipo di ogni elemento} e il \textbf{numero totale di elementi}.
+		
+		\item \texttt{int array[] = \{1,2,3\}}: dichiarazione dell'array con inizializzazione. Quando inizializziamo un array possiamo anche omettere la dimensione, in quanto il compilatore li va a contare.
+	\end{itemize}
+	In memoria, un Array è rappresentato come sequenza di locazioni di memoria, ognuna occupante un numero di byte corrispondente al tipo dell'array.
+	
+	\begin{center}
+		\begin{tikzpicture}[thick, font=\ttfamily\small]
+			
+			% Etichetta "Address:"
+			\node[anchor=east] at (-0.3, 0.9) {Address:};
+			
+			% Indirizzi di memoria sopra le celle
+			\node at (0.6, 0.9) {1000};
+			\node at (1.8, 0.9) {1004};
+			\node at (3.0, 0.9) {1008};
+			\node at (4.2, 0.9) {1012};
+			\node at (5.4, 0.9) {1016};
+			
+			% Celle dell'array (valori memorizzati)
+			\draw[fill=white] (0, 0) rectangle (6, 0.7);
+			\foreach \x in {1.2, 2.4, 3.6, 4.8} {
+				\draw (\x, 0) -- (\x, 0.7);
+			}
+			\node at (0.6, 0.35) {10};
+			\node at (1.8, 0.35) {20};
+			\node at (3.0, 0.35) {30};
+			\node at (4.2, 0.35) {40};
+			\node at (5.4, 0.35) {50};
+			
+			% Indici sotto le celle
+			\node at (0.6, -0.4) {[0]};
+			\node at (1.8, -0.4) {[1]};
+			\node at (3.0, -0.4) {[2]};
+			\node at (4.2, -0.4) {[3]};
+			\node at (5.4, -0.4) {[4]};
+			
+			% Formule e calcoli in basso
+			\node[anchor=west] at (-2.2, -1.3) {sizeof(arr) = 5 $\times$ 4 = 20 bytes};
+			
+		\end{tikzpicture}
+	\end{center}
+	
+	Giusto per accennarlo, si possono definire anche array bidimensionali, dove ogni elemento di un array bidimensionale è a sua volta un array. Un array bidimensionale viene spesso visto come una matrice di \texttt{n} righe ed \texttt{m} colonne
+	\begin{center}
+		\texttt{int matrice[2][3] = \{\{1,2,3\}, \{4,5,6\}\}}
+	\end{center}
+	E come si può immaginare, per accedere ad una cella della matrice, si deve indicizzare sia per riga che per colonna. Ad esempio per ottenere l'elemento \texttt{4} devo scrivere \texttt{matrice[1][0]}.
+	
+	\section{Le stringhe}
+	Al contrario di altri linguaggi, come ad esempio il Python o Java, le stringhe non sono un tipo nativo in C.
+	Queste sono definite come un array di caratteri, che ha come ultimo carattere il carattere di escape \texttt{'$\backslash$0'}, che indica il \textit{fine parola}.
+	La definizione di una stringa avviene dunque come segue:
+	\begin{center}
+		\texttt{char saluto[] = "Ciao";}
+	\end{center}
+	E tale stringa sarà rappresentata in memoria esattamente come abbiamo visto rappresentare un'Array, con l'aggiunta del carattere '$\backslash$0' citato prima. In questo caso avremo dunque 
+	\begin{center}
+		\texttt{['C', 'i', 'a','o','$\backslash$0']}
+	\end{center}
+	
+	\subsection{Funzioni per le stringhe}
+	Il linguaggio C mette a disposizione una libreria \texttt{string.h} che dispone anche di alcune funzioni utili nel lavorare con le stringhe.
+	
+	\begin{itemize}
+		\item \textbf{Controllare la lunghezza di una stringa}: si utilizza \texttt{strlen} al contrario del classico metodo \texttt{sizeof} utilizzato per tutti gli altri tipi di variabile. Questo in quanto \texttt{sizeof} conta anche il carattere di fine riga.
+		
+		\item Per \textbf{copiare una stringa} all'interno di un'altra possiamo usare la funzione \texttt{strcpy}, che però non effettua alcun controllo sulla lunghezza della stringa di destinazione e su eventuali overflow. Il metodo consigliato è dunque \texttt{strncpy}, considerato più sicuro in quanto implementa tali controlli.
+		
+		\item Per \textbf{confrontare due stringhe} si utilizza il metodo \texttt{strcmp}, che prende come parametri due stringhe e restituisce \texttt{0 se le stringhe sono uguali}, \texttt{1 altrimenti}.
+	\end{itemize}
+	
+	\section{I puntatori}
+	Uno dei punti di forza, se non \textit{il} punto di forza del linguaggio C è proprio la flessibilità riguardo al controllo sulla memoria.
+	Gran parte di questa gestione è garantita anche grazie ai \textbf{puntatori}, ovvero delle \textbf{variabili il cui valore è un indirizzo di memoria}.
+	La dicharazione è molto semplice: se abbiamo una variabile di tipo \texttt{int} e vogliamo dichiarare un puntatore a quella variabile intera, lo faremo semplicemente aggiungendo un asterisco accanto al nome del tipo, dunque \texttt{int*}. Vale ovviamente per ogni tipo di variabile. Chiaramente bisogna mantenere \textbf{coerenza} tra il tipo della variabile che vogliamo puntare e il tipo del puntatore.
+	\smallbreak
+	Strettamente legato al concetto di puntatore è il concetto di indirizzo. Per prendere l'indirizzo appartenente ad una variabile utilizziamo l'operatore \texttt{\&}.
+	\begin{center}
+		\texttt{int x = 42;}\\
+		\texttt{int* p = \$x}
+	\end{center}
+	Inoltre, se utilizziamo di nuovo l'operatore \texttt{*} davanti ad un puntatore, faremo riferimento al \textbf{valore contenuto nell'indirizzo di memoria puntato da quel puntatore.}
+	\begin{center}
+		\texttt{int x = 42;}\\
+		\texttt{int* p = \$x}\\
+		\texttt{printf("\%d", *p)} // Out: 42
+	\end{center}
+	Volendo, possiamo inizializzare un puntatore al valore speciale \texttt{NULL}, per indicare che non punta a nulla.
+	
+	\begin{osservazione}{Puntatori \texttt{void*}}{}
+		In alternativa a quanto visto prima, se vogliamo definire un puntatore che nel corso del programma può fare riferimento a tipi di variabili differenti (non è una good practice, però), potremmo definire un puntatore come \texttt{void*}.
+		In questo modo il nostro puntatore potrà puntare all'indirizzo di memoria di qualsiasi variabile, tuttavia \textbf{non} potremmo usare l'operatore \texttt{*} per accedere al valore dell'indirizzo puntato da quel puntatore.
+		Dovremo fare un casting esplicito al tipo della variabile puntata.
+		\begin{center}
+			\texttt{int x = 42;}\\
+			\texttt{void* p = \&x}\\
+			\texttt{printf("\%d", (int*)*p)}
+		\end{center}
+	\end{osservazione}
+	
+	Possiam anche definire dei puntatori \textbf{costanti}, ovverosia che possono cambiare il valore (cioè l'indirizzo) memorizzato al proprio interno, ma \textbf{non può cambiare il valore} associato a quell'indirizzo.
+	
+	\subsection{Aritmetica dei puntatori}
+	Di seguito alcune nozioni importanti su come funzionano i puntatori con gli Array e il tipo di operazioni aritmetiche che possonoe essere svolte sui puntatori.
+	\begin{itemize}
+		\item Un puntatore p ad un Array A punterà \textbf{sempre} al primo elemento di quell'array (dunque \texttt{int* p = arr}) è come dire \texttt{int* p = \&arr[0]}.
+		
+		\item Quando incrementiamo un puntatore di un'unità, il valore dell'indirizzo aumenta della \texttt{sizeof} del tipo della variabile puntata. Ad esempio, se abbiamo un puntatore \texttt{double* p = \&x} e facciamo \texttt{p++}, il valore dell'indirizzo di memoria andrà avanti della \texttt{sizeof(double)}, ovvero il numero di byte richiesti in memoria per memorizzare un double.\\
+		Questo può essere un modo alternativo per iterare lungo gli elementi di un Array.
+		
+		\item Sottraendo il valore di due puntatori \texttt{p1, p2} (gli indirizzi di memoria, dunque), otteniamo come risultato \textbf{il numero di elementi compresi tra p1 e p2}.\\ Attenzione! Non la dimensione complessiva di quegli elementi, ma proprio il numero di elementi in mezzo! Ad esempio:
+		\begin{center}
+			\texttt{int arr[5] = {1,2,3,4,5}}\\
+			\texttt{int* secondo = \&arr[1]}\\
+			\texttt{int* ultimo = \&arr[4]}\\
+			\texttt{$\backslash\backslash$ ultimo - secondo = 2}
+		\end{center}
+		
+		\item Possono essere effettuate operazioni di comparazioni tra puntatori, e funzionano come possiamo aspettarci.
+	\end{itemize}
+	
+	\section{La gestione della memoria}
+	Ogni programma scritto in C organizza la propria memoria nel modo descritto dal diagramma sottostante.
+	\begin{center}
+		\begin{tikzpicture}[thick, font=\ttfamily\small, scale=0.88, transform shape]
+			
+			\def\boxW{8.0}
+			
+			% Box principale esterno
+			\draw[fill=white] (0, 0) rectangle (\boxW, 6.2);
+			
+			% Separazioni orizzontali interne
+			\draw (0, 0.8) -- (\boxW, 0.8);
+			\draw (0, 1.6) -- (\boxW, 1.6);
+			\draw (0, 2.4) -- (\boxW, 2.4);
+			\draw (0, 5.4) -- (\boxW, 5.4);
+			
+			% --- TESTI INTERNI AL BOX (centrati orizzontalmente) ---
+			\node at (\boxW/2, 5.8) {argv, environ};
+			
+			\node at (\boxW/2, 4.8) {STACK};
+			\node at (\boxW/2, 3.9) {\dots\ spazio libero \dots};
+			\node at (\boxW/2, 3.0) {HEAP};
+			
+			\node at (\boxW/2, 2.0) {.bss \ (dati non inizializzati)};
+			\node at (\boxW/2, 1.2) {.data \ (dati inizializzati)};
+			\node at (\boxW/2, 0.4) {.text \ (codice)};
+			
+			% --- INDIRIZZI A SINISTRA ---
+			\node[anchor=east] at (-0.3, 5.8) {Indirizzi alti};
+			\node[anchor=east] at (-0.3, 0.4) {Indirizzi bassi};
+			
+			% --- DESCRIZIONI A DESTRA (con text width per evitare uscite dal foglio) ---
+			\tikzset{desc/.style={anchor=west, align=left, text width=5.2cm}}
+			
+			\node[desc] at (\boxW + 0.4, 5.8) {argomenti da riga di comando};
+			\node[desc] at (\boxW + 0.4, 4.8) {variabili locali, frame delle funzioni};
+			\node[desc] at (\boxW + 0.4, 3.0) {memoria allocata con malloc};
+			\node[desc] at (\boxW + 0.4, 2.0) {variabili globali/statiche azzerate};
+			\node[desc] at (\boxW + 0.4, 1.2) {variabili globali con valore iniziale};
+			\node[desc] at (\boxW + 0.4, 0.4) {istruzioni eseguibili};
+			
+		\end{tikzpicture}
+	\end{center}
+	
+	In questa sezione andremo a discutere, più o meno nel dettaglio, il funzionamento di queste componenti.
+	
+	\subsection{Lo Stack}
+	Lo \textbf{Stack} è una regione di memoria utilizzato principalmente per la memorizzazione delle funzioni e delle variabili a loro associate (che siano essi parametri passati alle funzioni o variabili locali dichiarate al loro interno).
+	Come suggerisce il nome, questa memoria opera in modalità \textbf{LIFO}, ovvero l'ultima funzione ad essere inserita sulla pila è anche la prima ad uscire (intuitivamente, se abbiamo una funzione A che chiama al suo interno una funzione B, la funzione B verrà terminata prima della sua chiamante, e dunque rimossa prima dalla pila).
+	\smallbreak
+	Ogni chiamata di funzione crea un cosiddetto \textbf{stack frame}, ovvero un blocco di celle di memoria in cui vengono memorizzati dei dati riguardanti la funzione:
+	\begin{itemize}
+		\item \textbf{Gli argomenti passati alla funzione} che, se sono pochi, vengono memorizzati all'interno di speciali registri, altrimenti vengono inseriti nello stack frame.
+		
+		\item L'indirizzo della prossima istruzione da eseguire \textbf{dopo} la fine dell'esecuzione della funzione. Questo valore viene memorizzato in quanto anche la funzione chiamata dovrà seguire un suo valore di Program Counter.
+		
+		\item Un puntatore, detto \textbf{frame pointer} che punta all'inizio dello \textbf{stack frame della funzione chiamante}.
+		
+		\item \textbf{Variabili locali} alla funzione.
+	\end{itemize}
+	
+	Inoltre, nella gestione della memoria Stack, vengono utilizzati due registri:
+	\begin{itemize}
+		\item \textbf{Stack pointer}, che punta alla cima dello stack.
+		
+		\item \textbf{Frame pointer} che, come già detto, punta ad uno specifico stack frame.
+	\end{itemize}
+	
+	Come si potrebbe intuire, un eccessivo numero di chiamate di funzione può portare al \textbf{riempimento eccessivo dello stack}. In quel caso si parla di \textbf{Stack Overflow}, e può accadere ad esempio quando si hanno troppe chiamate ricorsive ad una funzione.
+	
+	\subsection{Lo Heap}
+	Lo \textbf{Heap} è una regione di memoria dedicata all'allocazione dinamica e \textbf{manuale} delle variabili da parte dell'utente. A differenza dello Stack, la dimensione dello Heap non è conosciuta a compilazione, ma rappresenta comunque un'area di memoria molto vasta.
+	\begin{osservazione}{Il compilatore e lo Stack}{}
+		Come si è potuto intuire dalla precedente frase, quando un programma viene compilato, il compilatore analizza ogni singola funzione, con i suoi parametri, variabili locali e tipi di ritorno e conosce già la dimensione dello stack frame associato a quella funzione.
+	\end{osservazione}
+	Le variabili in C possono essere manualmente allocate tramite appositi comandi, che permetteranno alle variabili di essere memorizzate nell'Heap e non in altre aree di memoria.\\
+	I comandi predisposti sono i seguenti:
+	\begin{description}
+		\item [\texttt{malloc(n)}:] serve ad allocare manualmente un blocco di \texttt{n} bytes in memoria. Ad esempio, se volessimo allocare dinamicamente un array di 5 elementi potremmo scrivere \texttt{int* arr = malloc(5 * sizeof(int))}.
+		
+		\item[\texttt{calloc(n, size)}:] serve ad allocare \texttt{n} byte, ognuno di dimensione \texttt{size} e di inizializzare tutti quei byte al valore di default per quel tipo di dato. Tenendoci sull'esempio dell'Array di prima, se facessimo \texttt{int* arr = calloc(5, sizeof(int))} e provassimo a mandare a schermo l'Array otterremmo \texttt{[0, 0, 0, 0, 0]}.
+		
+		\item[\texttt{realloc(ptr, new\_size)}:] serve per riallocare un blocco di memoria precedentemente allocato. Supponendo di aver definito con \texttt{malloc} prima un array \texttt{arr} di 5 elementi interi, ma ci siamo resi conto che ci serve spazio per almeno 8 elementi, possiamo semplicemente fare \texttt{int* tmp = realloc(arr, 8 * sizeof(int))}.
+		
+		\item[\texttt{free(ptr)}:] fondamentale, serve a liberare un puntatore di memoria precedentemente allocato manualmente. Importantissimo è anche impostare il puntatore a \texttt{NULL} dopo averlo liberato.
+	\end{description}
+	
+	Allocando e deallocando frequentemente nella memoria Heap si potrebbe verificare la cosiddetta \textbf{frammentazione della memoria}, ossia avere complessivamente molta memoria libera, ma a blocchi separati da memoria utilizzata.
+	La seguente figura renderà bene il concetto:
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick, font=\ttfamily\small]
+			
+			\def\totalW{9.0}
+			
+			% Contorno esterno
+			\draw[fill=white] (0, 0) rectangle (\totalW, 0.7);
+			
+			% Divisioni interne e testi delle celle
+			% used: 0 - 1.0
+			\draw (1.0, 0) -- (1.0, 0.7);
+			\node at (0.5, 0.35) {used};
+			
+			% free: 1.0 - 2.4
+			\draw (2.4, 0) -- (2.4, 0.7);
+			\node at (1.7, 0.35) {free};
+			
+			% used: 2.4 - 3.8
+			\draw (3.8, 0) -- (3.8, 0.7);
+			\node at (3.1, 0.35) {used};
+			
+			% free: 3.8 - 5.0
+			\draw (5.0, 0) -- (5.0, 0.7);
+			\node at (4.4, 0.35) {free};
+			
+			% used: 5.0 - 6.3
+			\draw (6.3, 0) -- (6.3, 0.7);
+			\node at (5.65, 0.35) {used};
+			
+			% free: 6.3 - 7.3
+			\draw (7.3, 0) -- (7.3, 0.7);
+			\node at (6.8, 0.35) {free};
+			
+			% free: 7.3 - 9.0 (ultimo blocco più largo)
+			\node at (8.15, 0.35) {free};
+			
+		\end{tikzpicture}
+		\caption{Frammentazione della memoria nell'Heap.}
+		\label{fig:heap_fragmentation}
+	\end{figure}
+	
+	\subsection{Errori di memoria}
+	Spesso è proprio la libertà con la gestione della memoria conferitaci dal linguaggio ad essere causa della maggior parte degli errori che si incontrano nei programmi.
+	Esempi degli errori più classici possono essere:
+	\begin{description}
+		\item[Perdita di memoria:] si verifica quando ci dimentichiamo di liberare una locazione di memoria ormai inutilizzata.
+		
+		\item[Doppia chiamata di \texttt{free()}:] si verifica quando chiamiamo \texttt{free()} due volte consecutive sullo stesso puntatore, senza averlo prima impostato a \texttt{NULL}.
+		
+		\item[Usare un puntatore dopo averlo liberato]
+		
+		\item [Puntatori fantasma:] si verifica quando ad un puntatore vengono restituiti valori di variabili locali a funzioni.
+		
+		\item[Puntatori non inizializzati:] quando si dichiara un puntatore e non lo si inizializza a nessun valore, questo punta ad un indirizzo inutilizzato dal programma ma che potrebbe comunque servire in futuro. E' sempre buona pratica inizializzare i puntatori almeno a \texttt{NULL}.
+		
+		\item[Scrittura oltre i limiti di un Array:] quando si prova ad accedere ad indici inesistenti di un Array (es: se \texttt{int arr[5]}, non esisterà l'elemento \texttt{arr[5]} in quanto il conteggio degli indici parte da 0).
+		
+		\item[Variabili inizializzate:] una variabile non inizializzata contiene un qualsiasi valore presente precedentemente nello stack.
+		
+	\end{description}
+	
+	Esistono degli strumenti di compilazione come \texttt{valgrind} o \texttt{AddressSanitizer}, ma li citiamo solo per nozione e non per approfondirli.
+	
+	\section{La traduzione da sorgente ad eseguibile}
+	Il processo di traduzione di un programma C nel suo eseguibile è un'operazione molto lunga e articolata in diverse fasi. In questa sezione vedremo quali sono queste sezioni e le discuteremo una per una.
+	Di seguito un'immagine rappresentante la classica struttura di compilazione di un programma in C:
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick, font=\ttfamily\small, >=stealth]
+			
+			% Stile per le etichette dei file a sinistra
+			\tikzset{
+				filelabel/.style={
+					anchor=east,
+					minimum width=1.8cm,
+					align=right
+				},
+				stage/.style={
+					anchor=west,
+					align=left
+				},
+				desc/.style={
+					anchor=west,
+					align=left
+				}
+			}
+			
+			% Posizionamento dei file (da hello.c fino all'eseguibile hello)
+			\node[filelabel] (c) at (0, 0)    {hello.c};
+			\node[filelabel] (i) at (0, -1.8) {hello.i};
+			\node[filelabel] (s) at (0, -3.6) {hello.s};
+			\node[filelabel] (o) at (0, -5.4) {hello.o};
+			\node[filelabel] (e) at (0, -7.5) {hello};
+			
+			% Frecce verticali di transizione
+			\draw[->] (c.south) -- (i.north);
+			\draw[->] (i.south) -- (s.north);
+			\draw[->] (s.south) -- (o.north);
+			\draw[->] (o.south) -- (e.north);
+			
+			% Fase 1: Preprocessore
+			\node[stage] at (0.4, -0.9) {Fase 1: Preprocessore (cpp)};
+			\node[desc]  at (2.5, -1.8) {$\leftarrow$ testo puro in C, nessuna direttiva};
+			
+			% Fase 2: Compilatore
+			\node[stage] at (0.4, -2.7) {Fase 2: Compilatore (cc1)};
+			\node[desc]  at (2.5, -3.6) {$\leftarrow$ testo in assembly};
+			
+			% Fase 3: Assemblatore
+			\node[stage] at (0.4, -4.5) {Fase 3: Assemblatore (as)};
+			\node[desc]  at (2.5, -5.4) {$\leftarrow$ file oggetto (binario, ELF su Linux)};
+			
+			% Fase 4: Linker
+			\node[stage] at (0.4, -6.3) {Fase 4: Linker (ld)};
+			\node[stage] at (1.0, -6.8) {+ altri file .o + librerie (.a / .so)};
+			\node[desc]  at (2.5, -7.5) {$\leftarrow$ eseguibile (binario ELF)};
+			
+		\end{tikzpicture}
+		\caption{Pipeline di compilazione di un programma in C: dal sorgente (\texttt{.c}) all'eseguibile finale (\texttt{hello}) attraverso le quattro fasi fondamentali.}
+		\label{fig:c_compilation_pipeline}
+	\end{figure}
+	
+	\subsection{Il preprocessore}
+	Si tratta del primissimo stadio dell'operazione di compilazione, e si occupa sostanzialmente di \textbf{manipolare il testo del programma} che abbiamo scritto. Parlando in modo più tecnico, si occupa di:
+	\begin{itemize}
+		\item Gestire tutti gli \texttt{\#include}. Questo viene fatto \textbf{copiando e incollando} il codice del file incluso all'interno del nostro file.
+		
+		\item Sostituire tutti i \texttt{\#define} con la corrispondente sostituzione scelta. Il comando \texttt{\#define MAX 100} \textit{alias} per una variabile all'interno del nostro programma. Nell'esempio fornito stiamo solo definendo un valore speciale \texttt{MAX} che vale 100, ma potremmo anche fare in modo che d'ora in poi nel nostro codice non dovremmo più dichiarare gli interi come \texttt{int} bensì come \texttt{intero} scrivendo semplicemente \texttt{\#define intero int}.
+		
+		\item Rimozione dei commenti sostituendoli con un singolo spazio bianco.
+	\end{itemize}
+	Questa fase trasforma il file \texttt{hello.c -> hello.i}.
+	
+	\subsection{La compilazione}
+	Si tratta della fase che si occupa di \textbf{tradurre il codice scritto in C nelle corrispettive direttive scritte in Assembly}.
+	Anche se un progetto include più file, ogni file con estensione .c viene compilato separatamente.
+	Questa fase trasforma il file \texttt{hello.i -> hello.s/asm}
+	
+	\subsection{L'assemblaggio}
+	Fase in cui entra in gioco il cosiddetto \textbf{assembler}, che si occupa di \textbf{convertire il testo scritto in Assembly in istruzioni macchina}. Non entreremo nel dettaglio di quale corrispondenza viene scelta a livello di bit, ma ciò dipende dal tipo di architettura della macchina (CISC/RISC come visto nella sezione~\ref{sec:instruction_set_architecture}). Questa fase genera il file \texttt{hello.s/asm -> hello.o}.
+	
+	\subsection{Il linking}
+	Si tratta della fase finale del processo di traduzione, e si occupa sostanzialmente di \textbf{unire tutti i file oggetto del progetto in un singolo file eseguibile}.
+	In particolare, vengono fatte queste operazioni intermedie:
+	\begin{itemize}
+		\item \textbf{Risoluzione dei simboli:} se ad esempio nel file \texttt{main.c} chiamiamo una funzione \texttt{calcola(a, b)}, il linker si occuperà di cercare in tutti i file oggetto una funzione con quel nome. In caso non dovesse trovarla, solleverà un errore tipo \texttt{undefined reference to 'calcola'}.
+		
+		\item \textbf{Riallocazione:} unisce tutti i file di codice in una singola sezione \texttt{.text} e tutte le sezioni dati in una sezione \texttt{.data}.
+	\end{itemize}
+	
+	Alla fine di questo processo di traduzione viene finalmente \textbf{generato il file eseguibile}.
+	
+	\subsection{Librerie statiche e dinamiche}
+	Durante l'operazione di linking, possono essere generati due tipi diversi di librerie.
+	\begin{description}
+		\item [Libreria statica:] si tratta di un file con estensione \texttt{.a} (che sta appunto per \textit{archivio}) che contiene una collezione di file oggetto. Durante il processo di linking, \textit{tutto} il codice di questa libreria viene copiato all'interno del programma principale.\\
+		
+		\item[Libreria dinamica:] si tratta di un file con estensione \texttt{.so} pensato per essere condiviso tra più file diversi. Si tratta di un'ottima scelta quando non si vuole far crescere la dimensione dell'eseguibile. Il grande vantaggio sta nel fatto che la copia delle funzioni utili non avviene a compilazione, bensì quando una funzione viene chiamata (il linker si occupa solo di inserire dei riferimenti per ogni funzione e il file in cui questa è definita).
+	\end{description}
 	
 \end{document}
