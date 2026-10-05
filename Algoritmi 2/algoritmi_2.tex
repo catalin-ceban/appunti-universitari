@@ -321,7 +321,7 @@
 		Nota bene che questa implementazione non appesantisce così tanto il costo di memorizzazione della struttura dati, in quanto per ogni nodo $u$ si aggiunge $\mathcal{O}(\operatorname{deg}(u))$ di costo computazionale, portando il totale ad $\mathcal{O}(n+3m = \mathcal{O}(n+m))$.
 	\end{osservazione}
 	
-	\chapter{Passeggiate e cammini}
+	\section{Passeggiate e cammini}
 	
 	\begin{definizione}{Cammino}{}
 		Un \textbf{cammino} nel grafo è una passeggiata in cui non viene ripetuto alcun vertice.
@@ -551,7 +551,7 @@
 		return L
 	\end{lstlisting}
 	
-	\begin{algoritmo}{Ricerca di un ciclo in un grafo ottimizzata}{}
+	\begin{algoritmo}{Ricerca di un ciclo in un grafo}{}
 		Andremo a commentare solo le nuove scelte implementative:
 		Si è scelto di aggiungere un array \texttt{vis} che verrà usato per tenere traccia degli elementi visitati. Ciò viene fatto stabilendo una biezione tra l'identificativo del nodo e il suo indice all'interno dell'array \texttt{vis}. Così facendo il controllo in testa al ciclo while diventa semplicemente un controllo accedendo ad un elemento dell'array tramite indice, dunque eseguibile in tempo costante.
 		L'aggiunta di un array \texttt{vis} che ha una grandezza massima dell'ordine di del numero di nodi $n$ aumenta il costo spaziale da $\Theta(n)$ a $\Theta(n + n) = \Theta(n)$, dunque rimane nello stesso ordine asintotico.
@@ -571,5 +571,719 @@
 			\item \textbf{Costo spaziale:} $\Theta(n)$
 		\end{itemize}
 	\end{itemize}
+	
+	\section{Visite di un grafo}
+	Prima di discutere i modi in cui si possono effettuare le visite su un grafo, diamo alcune definizioni importanti.
+	
+	\begin{definizione}{Nodo raggiungibile}{}
+		Un nodo $y$ si dice \textbf{raggiungibile} da $x$ se $\exists$ un cammino da $x$ a $y$.
+	\end{definizione}
+	
+	\begin{definizione}{Grafo connesso}{}
+		Un grafo $G$ si dice \textbf{connesso} se $\forall x, y \in V(G),\, \exists$ un cammino da $x$ a $y$.
+	\end{definizione}
+	
+	Le visite nascono per rispondere alla problematica classica: \textit{Esiste un cammino da $x$ a $y$?}
+	
+	Il metodo più sicuro consiste nel \textbf{visitare}, a partire dal nodo $x$, uno ad uno tutti i nodi del grafo. Ovviamente, se durante tale visita si incontra il nodo $y$, la risposta alla domanda sarà affermativa.
+	
+	Ciò si può fare principalmente in due modi:
+	
+	\begin{description}
+		\item [DFS (\textit{Depth-First-Search}, Visita in profondità):] 
+		Funziona come l'esplorazione di un labirinto: si sceglie un percorso e si avanza finché non si trova un vicolo cieco. A quel punto si torna indietro fino al primo incrocio in cui si sono lasciate strade inesplorate e si prova un'altra via.
+		
+		\item [BFS (\textit{Breadth-First-Search}, Visita in ampiezza):] 
+		Preso un nodo iniziale, si visitano prima tutti i suoi vicini diretti, poi i vicini dei vicini, e così via.
+	\end{description}
+	
+	\subsection{DFS - Depth-First-Search}
+	Vediamo per prima la visita DFS.
+	
+	In base alla brevissima e introduttiva descrizione dell'algoritmo fornita poco fa, possiamo delinearne un'idea algoritmica di base:
+	\begin{enumerate}
+		\item Partiamo da un nodo $x$ e lo segniamo come visitato.
+		\item Scegliamo una strada inesplorata verso cui procedere.
+		\item Segniamo il nodo scelto come visitato e ripetiamo la visita ricorsivamente o iterativamente.
+	\end{enumerate}
+	
+	La modalità di backtracking verrà implementata mediante una pila (\emph{stack}), che lavora secondo il principio LIFO (\emph{Last In, First Out}). Dunque, quando dobbiamo tornare indietro, basta effettuare un'operazione di \texttt{pop()} per tornare al nodo precedentemente esaminato.
+	
+	Vediamo una prima implementazione iterativa dell'algoritmo:
+	
+	\begin{lstlisting}[style=stile-listings, language=Python, caption={Implementazione iterativa della DFS}]
+		DFS(G, x):
+			vis = [0] * n
+			S = uno stack
+			S.push(x)
+			vis[x] = 1
+			
+			while S.size() != 0:
+				y = S.top()
+				if esiste un vicino z di y che non è stato visitato (vis[z] == 0):
+					S.push(z)
+					vis[z] = 1
+				else:
+					S.pop()
+		
+			return vis
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Analisi dettagliata dell'algoritmo DFS}{}
+		Analizziamo riga per riga il funzionamento dell'implementazione:
+		\begin{itemize}
+			\item \texttt{vis = [0] * n}: Inizializziamo l'array per tenere traccia dei nodi visitati.
+			
+			\item \texttt{S = uno stack}: Inizializziamo lo stack per permettere il backtracking.
+			
+			\item \texttt{S.push(x)} e \texttt{vis[x] = 1}: Aggiungiamo il nodo di partenza allo stack e lo segniamo come visto.
+			
+			\item \texttt{while S.size() != 0}: Iteriamo finché lo stack non rimane vuoto, il che vorrà dire che ogni nodo raggiungibile è stato esaminato.
+			
+			\item \texttt{y = S.top()}: Prendiamo il nodo in cima allo stack, che rappresenta il nodo corrente.
+			
+			\item \textbf{Controllo del vicino}: Se la condizione di entrata è rispettata (esiste un vicino $z$ tale che \texttt{vis[z] == 0}), vuol dire che possiamo continuare per un'altra strada, cioè quella verso $z$. Di conseguenza effettuiamo il \texttt{push} di $z$ e lo marchiamo come visitato.
+			
+			\item \textbf{Gestione del vicolo cieco (\emph{else})}: Altrimenti, significa che abbiamo raggiunto un ``vicolo cieco'' e che dobbiamo tornare indietro. Nel pratico, questo si traduce nel rimuovere l'elemento in cima alla pila tramite \texttt{S.pop()}, così che alla prossima iterazione i controlli vengano fatti sul nodo da cui siamo arrivati e sui suoi rimanenti vicini.
+			
+		\end{itemize}
+	\end{algoritmo}
+	
+	Seppur si tratti di un'implementazione molto descrittiva dell'algoritmo, analizziamo il controllo condizionale: dobbiamo prendere il nodo $y$, controllarne i vicini e verificare che almeno per un vicino $z$ valga la condizione \texttt{vis[z] == 0}. 
+	
+	Questo controllo corrisponde a una ricerca sequenziale che, come ben sappiamo, richiede tempo $O(n)$ nel caso peggiore per singolo nodo, se non opportunamente ottimizzata.
+	
+	È poi facile verificare come il ciclo \texttt{while} si ripeta tante volte quanti sono i nodi del grafo, dunque $\Theta(n)$.
+	
+	Combinando queste due osservazioni, otteniamo che il costo di questa versione è $O(n^2)$, che risulta non essere particolarmente ottimale.
+	
+	\smallbreak
+	Proponiamo di seguito una versione ottimizzata dell'algoritmo.	
+	\begin{lstlisting}[style=stile-listings, language=Python]
+		def DFS_ottimizzato(G, x):
+			vis = [0] * len(G)
+			vis[x] = 1
+			
+			s = Stack()
+			s.push(x)
+			
+			while s.size() != 0:
+				current = s.pop()
+				for v in current.neighbor: # (2)
+					if vis[v] == 0:
+						vis[v] = 1
+						s.push(v)
+			
+			return vis
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Visita DFS ottimizzata}{dfs_ottimizzata}
+		La differenza rispetto alla versione non ottimizzata risiede in due passaggi chiave:
+		\begin{enumerate}
+			\item In \textbf{(1)} estraiamo il nodo corrente dalla pila. Così facendo lo eliminiamo dalla pila e non dal grafo, evitando modifiche distruttive alla struttura dati; in questo modo il nodo \texttt{current} non verrà mai più controllato nelle iterazioni successive.
+			\item In \textbf{(2)} andiamo a verificare ciascun vertice adiacente a quello appena estratto. Se non è ancora stato visitato, lo marchiamo come visitato e lo inseriamo nella pila, così da poter proseguire l'esplorazione a partire da esso.
+		\end{enumerate}
+	\end{algoritmo}
+	
+	Questa versione dell'algoritmo presenta la seguente complessità:
+	\begin{itemize}
+		\item \textbf{Costo spaziale}: $\Theta(n)$, dovuto all'array dei nodi visitati e allo spazio occupato dalla pila nel caso peggiore.
+		\item \textbf{Costo temporale}: il ciclo \texttt{while} viene eseguito $n$ volte, esattamente una volta per ciascun vertice. All'interno del ciclo viene eseguito un lavoro costante $\Theta(1)$ per l'operazione di estrazione (\texttt{pop}) e un costo pari a $O(\operatorname{deg}(\text{current}))$ per scorrere l'intera lista di adiacenza del nodo estratto.
+	\end{itemize}
+	
+	Il costo computazionale complessivo del ciclo è quindi descritto dalla seguente sommatoria:
+	\begin{align*}
+		\sum_{i=1}^n \Big( O(1) + O(\operatorname{deg}(G[i])) \Big)
+		&= \sum_{i=1}^n 1 + \sum_{i=1}^n \operatorname{deg}(G[i]) = \\
+		&= O(n) + O(2m) = O(n + 2m) = O(n + m)
+	\end{align*}
+	
+	Per completezza, essendo i grafi un soprainsieme degli alberi, scriviamo una versione ricorsiva della DFS divisa in una funzione ausiliaria e nella visita effettiva.
+	
+	\begin{lstlisting}[language=Python]
+		def dfs(G, x):
+			vis = [0] * n
+			return dfs_ric(G, x, vis)
+			
+		def dfs_ric(G, x, vis):
+			vis[x] = 1
+			for v in x.neighbr:
+				if vis[v] == 0:
+					dfs_ric(G, v, vis)
+	\end{lstlisting}
+	
+	La visita costa sempre $O(n+m)$. L'unica limitazione è lo stack delle funzioni, che per grafi molto pieni potrebbe andare in \textit{recursion depth}.
+	
+	\begin{dimostrazione}{Correttezza della DFS ricorsiva}{}
+		Dimostriamo ora che questo algoritmo funziona.
+		
+		Appuntiamo che se un nodo $y$ è raggiungibile a partire da $x$, allora esiste un cammino che collega $x \to y$ e dunque $\text{vis}[y] = 1$.
+		Se $y$ è raggiungibile da $x \implies \exists W = (v_0, v_1, \dots, v_k)$ cammino che collega $x$ ($v_0$) e $y$ ($v_k$).
+		
+		Per assurdo, assumiamo che $\text{vis}[y] = 0$.
+		Siccome $\text{vis}[x] = 1 \implies \exists$ un indice $i$ con $\text{vis}[v_i] = 1$ e $\text{vis}[v_{i+1}] = 0$.
+		Se $\text{vis}[v_i] = 1$ allora $v_i$ è stato visitato ed è stato inserito nello stack $S$.
+		Dato che l'algoritmo è terminato, significa che ad un certo punto $v_i$ è stato rimosso dallo stack.
+		
+		\textbf{Contraddizione}: se è stato rimosso, vuol dire che tutti gli adiacenti a $v_i$ erano a loro volta stati visitati. Tuttavia prima avevamo detto che $\text{vis}[v_{i+1}] = 0$, dunque abbiamo dimostrato per assurdo che l'algoritmo funziona.
+	\end{dimostrazione}
+	
+	Proponiamo ora un esercizio che ci aiuterà a lavorare con i grafi e con la visita in profondità (DFS).
+	
+	\begin{esercizio}{Calcolo delle componenti connesse tramite DFS}{}
+		Modificare l'algoritmo di visita DFS al fine di calcolare $\text{num\_comp}$, ovvero il numero totale di componenti connesse di un grafo, e popolare un array $\text{comp}[]$ con valori appartenenti a $\{1, \dots, \text{num\_comp}\}$ tale che:
+		\[
+		\text{comp}[x] = \text{comp}[y] \iff x \text{ e } y \text{ appartengono alla stessa componente connessa}
+		\]
+	\end{esercizio}
+	
+	\paragraph{Esempio.}
+	Consideriamo il seguente grafo disconnesso formato da due componenti connesse:
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=1.0, every node/.style={circle, draw, font=\small, inner sep=2pt, minimum size=6mm}]
+			% Componente 1
+			\node (1) at (0, 0.5) {1};
+			\node (6) at (1, 1.2) {6};
+			\node (2) at (1, -0.2) {2};
+			
+			\draw[thick] (1) -- (6);
+			\draw[thick] (6) -- (2);
+			\draw[thick] (2) -- (1);
+			
+			% Componente 2
+			\node (3) at (2.5, 1.2) {3};
+			\node (4) at (2.5, -0.2) {4};
+			\node (5) at (3.5, 0.5) {5};
+			
+			\draw[thick] (3) -- (5);
+			\draw[thick] (5) -- (4);
+			\draw[thick] (4) -- (3);
+		\end{tikzpicture}
+	\end{center}
+	
+	In questo caso il risultato dell'algoritmo sarà:
+	\[
+	\text{num\_comp} = 2, \qquad \text{comp} = [1, 1, 2, 2, 2, 1]
+	\]
+	dove la posizione $i$-esima dell'array $\text{comp}$ indica la componente di appartenenza del nodo $i$.
+	
+	Diamo prima un'idea generale della struttura dell'algoritmo:	
+	\begin{enumerate}
+		\item \textbf{Inizializzazione delle strutture dati globali}:
+		Inizializziamo l'array globale $\text{comp}$ di dimensione $n$ impostando tutti i valori a $0$. Impostiamo inoltre la variabile globale $\text{num\_comp} = 0$.
+		
+		\item \textbf{Avvio della DFS}:
+		Selezioniamo il primo nodo non ancora visitato, incrementiamo il contatore ($\text{num\_comp} = \text{num\_comp} + 1$) ed eseguiamo la DFS a partire da esso.
+		
+		\item \textbf{Assegnazione della componente durante la DFS}:
+		All'interno della funzione DFS, per ogni vertice $v$ raggiunto durante la visita, impostiamo:
+		\[
+		\text{comp}[v] = \text{num\_comp}
+		\]
+		L'utilità dell'array \texttt{comp} sta anche nel fatto che può benissimo rimpiazzare l'array \texttt{vis} che avevamo precedentemente usato per marcare i nodi visitati. Avendolo inizializzato con tutti 0, i nodi non ancora visitati avranno \texttt{comp[v] = 0}.
+		
+		\item \textbf{Scorrimento di tutti i vertici}:
+		Terminata la singola DFS, si prosegue scorrendo l'elenco dei vertici del grafo:
+		\begin{itemize}
+			\item Se \texttt{comp[v] != 0}, il nodo è già stato visitato e possiamo passare al successivo.
+			\item Altrimenti, incrementiamo \texttt{num\_comp = num\_comp +1} e riavviamo la DFS dal nodo $v$.
+		\end{itemize}
+	\end{enumerate}
+	
+	Avendo discusso l'idea dell'algoritmo, possiamo fornirne un esempio di implementazione
+	\begin{lstlisting}[style=stile-listings, language=Python]
+		trova_comp(G):
+			comp = [0] * n
+			num_comp = 0
+			S = Stack()
+			
+			for v in G:
+				if comp[v] == 0:
+					num_comp += 1
+					S.push(v)
+					comp[v] = num_comp
+			
+					while S.size() != 0:
+						current = S.pop()
+						for w in current.neighbor:
+							if comp[w] == 0:
+								comp[w] = num_comp
+								S.push(w)
+			
+			return comp, num_comp
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Algoritmo per la ricerca delle componenti connesse}{alg_trova_comp}		
+		\begin{itemize}
+			\item \textbf{Inizializzazione}: Viene creato un vettore \texttt{comp} di dimensione $n$ inizializzato a $0$, che servirà anche a segnalare i nodi visitati, un contatore \texttt{num\_comp} impostato a $0$ e una struttura dati di tipo \texttt{Stack}.
+			
+			\item \textbf{Identificazione di una nuova componente}: Nel ciclo \texttt{for v in G}, l'istruzione \texttt{if comp[v] == 0} verifica se il nodo $v$ non è ancora stato visitato. Se questa condizione è vera, significa che ci troviamo su una \textbf{nuova componente connessa}, in quanto il nodo corrente non appartiene a nessuna componente precedentemente esplorata.
+			
+			\item \textbf{Assegnazione ed esplorazione}:
+			\begin{enumerate}
+				\item Si incrementa il contatore delle componenti (\texttt{num\_comp += 1}).
+				\item Si inserisce il nodo sorgente $v$ nello stack \texttt{S} e se ne assegna l'indice della componente corrispondente (\texttt{comp[v] = num\_comp}).
+				\item Tramite il ciclo \texttt{while S.size() != 0}, si procede all'estrazione di ogni nodo (\texttt{current = S.pop()}) ed all'analisi dei suoi vicini (\texttt{for w in current.neighbor}). Per ciascun vicino non ancora visitato (\texttt{comp[w] == 0}), viene registrata l'appartenenza alla componente corrente e il nodo viene inserito nello stack per ulteriori esplorazioni.
+			\end{enumerate}
+		\end{itemize}
+		
+	\end{algoritmo}
+	
+	Il costo computazionale dell'algoritmo è lo stesso di una normale DFS, dunque risulta essere $\mathcal{O}(n+m)$. Si potrebbe pensare che la DFS venga eseguita una volta per ogni nodo, ma per come abbiamo segnalato i nodi visitati, l'esplorazione viene eseguita \textbf{una sola volta per ogni componente connessa}.
+	
+	\newpage
+	\section{Generici problemi su grafi}
+	Prima di continuare il discorso sulle visite, vediamo alcuni esempi di operazioni sui grafi diretti (o orientati).
+	\begin{definizione}{Albero di ricerca}{def_albero_ricerca}
+		Dati due nodi $x$ e $y$, gli archi che utilizziamo per raggiungere $y$ a partire da $x$ formano il cosiddetto \textbf{albero di ricerca}. 
+		
+		Si ricorda che un albero è definito come un \textbf{grafo connesso e aciclico}.
+	\end{definizione}
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=1.1, >=stealth]
+			% Stili dei nodi e degli archi
+			\tikzstyle{nodo} = [circle, draw=black, fill=white, inner sep=0pt, minimum size=18pt, font=\small\bfseries]
+			\tikzstyle{arco} = [line width=0.8pt, black]
+			\tikzstyle{albero} = [->, line width=1.5pt, Orange]
+			
+			% Posizionamento nodi
+			\node[nodo] (1) at (0,0) {1};
+			\node[nodo] (2) at (2,0) {2};
+			\node[nodo] (3) at (2,-1.5) {3};
+			\node[nodo] (5) at (2,1.5) {5};
+			\node[nodo] (4) at (4,0) {4};
+			\node[nodo] (6) at (5,1.5) {6};
+			
+			% Archi del grafo originale (in nero)
+			\draw[arco] (1) -- (5);
+			\draw[arco] (1) -- (2);
+			\draw[arco] (1) -- (3);
+			\draw[arco] (5) -- (2);
+			\draw[arco] (2) -- (3);
+			\draw[arco] (5) -- (4);
+			\draw[arco] (2) -- (4);
+			\draw[arco] (3) -- (4);
+			\draw[arco] (5) -- (6);
+			\draw[arco] (4) -- (6);
+			
+			% Archi dell'albero di ricerca (in arancione orientato)
+			\draw[albero] ([yshift=2pt]1.east) -- ([yshift=2pt]2.west);
+			\draw[albero] ([yshift=-2pt]2.east) -- ([yshift=-2pt]4.west);
+			\draw[albero] ([xshift=2pt]4.south) -- ([xshift=2pt]3.east);
+			\draw[albero] ([xshift=-2pt]4.north) -- ([xshift=-2pt]5.south east);
+			\draw[albero] ([yshift=2pt]5.east) -- ([yshift=2pt]6.west);
+		\end{tikzpicture}
+	\end{center}
+	
+	Tale albero viene memorizzato mediante il cosiddetto \textbf{"vettore dei padri"}, ovvero un array in cui, per ogni indice $i$, memorizziamo la provenienza dell'esplorazione.
+	
+	Nell'esempio precedente, il vettore dei padri è rappresentato da:
+	\[
+	P = \begin{bmatrix}
+		\overset{1}{1}, & \overset{2}{1}, & \overset{3}{4}, & \overset{4}{2}, & \overset{5}{4}, & \overset{6}{5}
+	\end{bmatrix}
+	\]
+	in cui, per ogni elemento ad indice $i$, è specificato da quale nodo proviene $i$.
+	
+	Il nodo radice dell'albero si trova identificando quell'elemento in cui $P[i] == i$, cioè il valore del nodo è uguale al suo indice nell'array.
+	
+	\begin{esercizio}{Distanza di un nodo dalla radice}{}
+		Dato un vettore dei padri $P$ e un vertice $x$, vogliamo trovare la distanza di $x$ dalla radice dell'albero.
+	\end{esercizio}
+	
+	\begin{lstlisting}[language=Python, caption={Risoluzione iterativa}]
+		def distRad(P, x):
+			count = 0
+			while P[x] != x:
+				x = P[x]
+				count += 1
+			return count
+	\end{lstlisting}
+	
+	\begin{lstlisting}[language=Python, caption={Risoluzione ricorsiva}]
+		def distRad(P, x):
+			if P[x] == x:
+				return 0
+			return 1 + distRad(P, P[x])
+	\end{lstlisting}
+	
+	Questo algoritmo potrà essere utilizzato in futuro nel corso.
+	
+	Avendo definito il vettore dei padri, possiamo implementare la visita in profondità (DFS) sfruttando tale struttura. In questa implementazione, il vettore dei padri $P$ viene inizializzato con valori \texttt{null} per indicare i vertici non ancora visitati.
+	
+	\begin{lstlisting}[style=stile-listings, caption={Algoritmo DFS con vettore dei padri}]
+		def dfs_ric(G, x, P):
+			for v in x.neighbor:
+				if P[v] == null:
+					P[v] = x
+					dfs_ric(G, v, P)
+				
+		def dfs(G, x):
+			P = [null] * n
+			P[x] = x
+			dfs_ric(G, x, P)
+			return P
+	\end{lstlisting}
+	
+	\subsection{Problema di bicolorazione di un grafo}
+	Consideriamo un insieme di $n$ corsi e $m$ studenti. Vogliamo programmare gli esami in due settimane, cioè in modo tale che due esami differenti non possano essere collocati nella stessa settimana. 
+	
+	Supponiamo che ciascuno studente debba sostenere esattamente due corsi. Questa assunzione è motivata dal fatto che, se uno studente avesse un numero di corsi superiore a tre, sarebbe impossibile evitare di posizionarne almeno due nella stessa settimana.
+	\smallbreak
+	E' molto importante che, nella risoluzione di un problema di grafi, sappiamo individuare quale dato nel problema corrisponde ai nodi e quale agli archi.
+	
+	Nel nostro caso, consideriamo un esempio con 4 corsi e 4 studenti, dove ogni studente è associato a una coppia di corsi da frequentare e superare:
+	
+	\begin{itemize}
+		\item Corso $1$: studenti $\{1, 2\}$
+		\item Corso $2$: studenti $\{2, 3\}$
+		\item Corso $3$: studenti $\{3, 4\}$
+		\item Corso $4$: studenti $\{1, 3\}$
+	\end{itemize}
+	
+	Come possiamo osservare, siccome ogni studente è una coppia di esami, questa corrisponde esattamente alla definizione di arco in un grafo. Dunque il grafo $G = (\text{Corsi}, \text{studenti})$ risultante per questo esempio è rappresentato di seguito:
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=1.2, every node/.style={circle, draw, thick, inner sep=2pt}]
+			\node[fill=violet!30] (1) at (1, 2) {$1$};
+			\node[fill=orange!30] (2) at (0, 1) {$2$};
+			\node[fill=orange!30] (3) at (2, 1) {$3$};
+			\node[fill=violet!30] (4) at (1.5, 0) {$4$};
+			
+			\draw[thick] (1) -- (2);
+			\draw[thick] (1) -- (3);
+			\draw[thick] (2) -- (3);
+			\draw[thick] (3) -- (4);
+		\end{tikzpicture}
+	\end{center}
+	
+	Dove i colori dei nodi indicano la settimana assegnata all'esame:
+	\begin{itemize}
+		\item[$\color{violet}\blacksquare$] Settimana $1$
+		\item[$\color{orange}\blacksquare$] Settimana $2$
+	\end{itemize}
+	
+	Come possiamo notare, nell'esempio fornito non è possibile soddisfare il requisito desiderato senza violare i vincoli, poiché i vertici $1$, $2$ e $3$ formano un triangolo (un ciclo di lunghezza dispari).
+	
+	Il problema della programmazione degli esami in due settimane si riconduce al classico \textbf{problema di bi-colorazione dei grafi}, ovvero determinare se è possibile assegnare uno di due colori (le due settimane) a ciascun vertice in modo tale che ogni arco congiunga due vertici di colore diverso.
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=1]
+			% Vertici del ciclo esterno
+			\node[circle, draw, thick, fill=violet!30, inner sep=2.5pt] (o1) at (-2, 2) {};
+			\node[circle, draw, thick, fill=orange!30, inner sep=2.5pt] (o2) at (2, 2) {};
+			\node[circle, draw, thick, fill=violet!30, inner sep=2.5pt] (o3) at (2, -2) {};
+			\node[circle, draw, thick, fill=orange!30, inner sep=2.5pt] (o4) at (-2, -2) {};
+			
+			% Vertici del ciclo interno
+			\node[circle, draw, thick, fill=orange!30, inner sep=2.5pt] (i1) at (-1, 1) {};
+			\node[circle, draw, thick, fill=violet!30, inner sep=2.5pt] (i2) at (1, 1) {};
+			\node[circle, draw, thick, fill=orange!30, inner sep=2.5pt] (i3) at (1, -1) {};
+			\node[circle, draw, thick, fill=violet!30, inner sep=2.5pt] (i4) at (-1, -1) {};
+			
+			% Ciclo esterno
+			\draw[thick] (o1) -- (o2) -- (o3) -- (o4) -- cycle;
+			
+			% Ciclo interno
+			\draw[thick] (i1) -- (i2) -- (i3) -- (i4) -- cycle;
+			
+			% Archi tra ciclo esterno e interno
+			\draw[thick] (o1) -- (i1);
+			\draw[thick] (o2) -- (i2);
+			\draw[thick] (o3) -- (i3);
+			\draw[thick] (o4) -- (i4);
+		\end{tikzpicture}
+	\end{center}
+	
+	\begin{proposizione}{Impossibilità della bi-colorazione}{}
+		Il problema di bi-colorazione \textbf{non ha soluzione} per i grafi che contengono \textbf{cicli di lunghezza dispari}.
+	\end{proposizione}
+	
+	L'intuizione dietro questa proprietà è che, percorrendo un ciclo di lunghezza dispari alternando i colori, dovendo assegnare colori diversi a vertici adiacenti, si arriverà inevitabilmente a un punto in cui due vertici adiacenti richiederanno lo stesso colore, rendendo impossibile una colorazione valida.
+	
+	Quando poniamo un nodo ad un gruppo (ad esempio $1$), allora tutti i suoi adiacenti dovranno appartenere all'altro gruppo ($2$) e viceversa.
+	
+	Vediamo l'effettivo codice che, preso in input un grafo, restituisce un Array \texttt{part} rappresentante la partizione. Se l'Array restituito risulta essere vuoto, significa che tale grafo non era bi-colorabile.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python]
+		def dfs_part(G, x):
+			part = [0] * n
+			part[x] = 1
+			s = stack()
+			s.push(x)
+			
+			while s.size() != 0:
+				y = s.top()
+				for v in y.neighbr:
+					if part[v] == 0:
+						part[v] = 3 - part[y]
+						s.push(v)
+					else:
+						if part[v] == part[y]:
+							return []
+			return part
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Spiegazione dell'algoritmo di partizione}{}
+		Il codice sfrutta una visita in profondità (DFS) modificata per verificare se un grafo ammette una partizione (ad esempio se è bipartito).
+		\begin{itemize}
+			\item L'array \texttt{part} tiene traccia dello stato di colorazione di ciascun nodo: $0$ indica non visitato/non colorato, mentre $1$ e $2$ rappresentano le due classi di partizione.
+			\item Per ogni adiacente $v$ del nodo corrente $y$:
+			\begin{enumerate}
+				\item Se $v$ non è stato ancora visitato (`part[v] == 0`), gli viene assegnato il colore opposto rispetto a $y$ tramite la formula $3 - \text{part}[y]$, e viene aggiunto allo stack per la visita.
+				
+				\item Se $v$ è già stato visitato, si controlla che non abbia lo stesso colore del nodo corrente $y$. In caso di conflitto (\texttt{part[v] == part[y]}), il grafo non può essere partizionato e l'algoritmo termina restituendo una partizione vuota.
+			\end{enumerate}
+		\end{itemize}
+		
+	\end{algoritmo}
+	
+	\section{Lavoro su grafi orientati}
+	
+	In un grafo orientato, la visita DFS funziona ugualmente, ma bisogna prestare attenzione all'orientamento degli archi. Tuttavia nel pratico non cambia nulla, in quanto nella lista di adiacenza di un nodo saranno presenti solo i riferimenti ai nodi che può effettivamente raggiungere.
+	
+	Inoltre, l'\textbf{albero delle visite generato dalla DFS su un grafo diretto} si dice \textbf{arborescenza}.
+	
+	\begin{esercizio}{Ordinamento topologico di un grafo}{}
+		Si consideri un processo suddiviso in $n$ sotto-attività (o \textit{task}) $x_1, \dots, x_n$, soggette a una serie di vincoli di precedenza:
+		\begin{itemize}
+			\item $x_1$ prima di $x_2$
+			\item $x_3$ prima di $x_2$
+			\item $x_3$ prima di $x_1$
+			\item $x_4$ prima di $x_3$
+		\end{itemize}
+		Trovare un ordine di task che rispetti le varie dipendenze fornite in input.
+	\end{esercizio}
+	
+	È naturale modellare le attività $x_i$ come i nodi di un grafo diretto. Per quanto riguarda gli archi, stabiliamo la seguente convenzione grafica per rappresentare la relazione di dipendenza temporale:
+	\[
+	\text{``$x_i$ viene prima di $x_j$''} \quad \iff \quad x_i \longleftarrow x_j
+	\]
+	
+	\begin{definizione}{Ordine topologico}{}
+		Risolvere questo problema equivale a individuare un \textbf{ordine topologico} dei nodi del grafo, ovvero una permutazione dei suoi vertici $(v_1, v_2, \dots, v_n)$ tale che, per ogni arco orientato $(u, v) \in E$, il vertice $u$ preceda il vertice $v$ nell'ordinamento.
+	\end{definizione}
+	
+	Chiaramente, una soluzione non esiste sempre. Si consideri ad esempio il seguente insieme di vincoli:
+	\begin{itemize}
+		\item $x_1$ prima di $x_3$
+		\item $x_3$ prima di $x_2$
+		\item $x_2$ prima di $x_1$
+	\end{itemize}
+	
+	Rappresentando graficamente queste dipendenze si ottiene una struttura ciclica:
+	
+	\begin{center}
+		\begin{tikzpicture}[
+			node distance=2cm,
+			vertice/.style={circle, draw, thick, minimum size=7mm, inner sep=0pt}
+			]
+			\node[vertice] (x2) at (90:1.5cm) {$x_2$};
+			\node[vertice] (x1) at (210:1.5cm) {$x_1$};
+			\node[vertice] (x3) at (330:1.5cm) {$x_3$};
+			
+			\draw[->, thick] (x1) -- (x2);
+			\draw[->, thick] (x2) -- (x3);
+			\draw[->, thick] (x3) -- (x1);
+		\end{tikzpicture}
+	\end{center}
+	
+	\begin{proposizione}{Inesistenza dell'ordine topologico}{}
+		Se il \textbf{grafo orientato} $G$ definito dai processi \textbf{contiene un ciclo diretto}, allora \textbf{non esiste} alcun ordine topologico.
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		Procediamo per assurdo. Assumiamo che esista un ciclo diretto formato dalla sequenza di vertici $(v_1, \dots, v_k)$ e che, contemporaneamente, esista un ordine topologico valido per il grafo.
+		
+		Se $v_i$ precede $v_{i+1}$ lungo il ciclo, allora per soddisfare la condizione di chiusura del ciclo deve esistere un arco che dal termine della sequenza ritorna all'inizio. Tuttavia, la presenza dell'arco $(v_i, v_{i+1})$ rende impossibile preservare l'ordinamento topologico lineare, poiché per definizione tutti gli archi orientati devono puntare coerentemente nella medesima direzione della sequenza (da destra verso sinistra nella notazione stabilita). Di conseguenza, almeno un arco lungo il ciclo violerà necessariamente la relazione d'ordine.
+	\end{dimostrazione}
+	
+	\begin{proposizione}{Proprietà dei cicli nei grafi diretti}{}
+		Se $\nexists$ un ciclo in un grafo diretto $\implies \exists$ un ordine topologico.
+	\end{proposizione}
+	
+	\begin{proposizione}{Esistenza di vertici senza archi uscenti}{}
+		Se $G$ è un grafo diretto senza cicli $\implies \exists$ un vertice $v$ senza archi uscenti.
+	\end{proposizione}
+	
+	\begin{proposizione}{Presenza di cicli nei grafi diretti}{}
+		Per ogni vertice $v$, se $\exists$ almeno un arco uscente da $v \implies G$ contiene un ciclo.
+	\end{proposizione}
+	
+	\begin{definizione}{DAG (Directed Acyclic Graph)}{}
+		Per notazione, indichiamo con \textbf{DAG} (\textit{Directed Acyclic Graph}) un grafo diretto privo di cicli.
+	\end{definizione}
+	
+	\subsection{Ricerca di un ordine topologico}
+	Vogliamo definire un algoritmo per trovare un \textbf{ordine topologico} in un grafo orientato aciclico (DAG).
+	
+	\begin{osservazione}{Proprietà fondamentale}{}
+		Per la proposizione precedente, sappiamo che se in un grafo orientato esiste un ordine topologico, allora esiste \textbf{almeno un nodo senza archi uscenti} (ovvero un nodo pozzo).
+	\end{osservazione}
+	
+	Da questa osservazione nasce l'idea per un primo algoritmo. L'idea di base consiste nell'eseguire iterativamente le seguenti operazioni:
+	\begin{enumerate}
+		\item Scorriamo tutti i vertici del grafo e individuiamo un vertice privo di archi uscenti.
+		
+		\item Lo rimuoviamo dal grafo.
+		
+		\item Ripetiamo il procedimento finché non sono stati rimossi tutti i vertici.
+	\end{enumerate}
+	
+	Formalizziamo questo approccio tramite il seguente pseudo-codice:
+	
+	\begin{lstlisting}[style=stile-listings, caption={Algoritmo ingenuo per l'ordine topologico}]
+		Ord(G: grafo diretto aciclico):
+			L = []
+			while len(G) != 0:
+				v = trova_nodo_senza_archi_uscenti(G)
+				L.append(v)
+				cancella_nodo_e_archi(G, v)
+			return L
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Ordine topologico (inefficiente)}{}
+		Analizziamo nel dettaglio le singole istruzioni dell'algoritmo e i relativi costi computazionali:
+		\begin{itemize}
+			\item \textbf{Inizializzazione e ciclo principale}: Il ciclo \texttt{while} viene eseguito $\Theta(n)$ volte, poiché a ogni iterazione viene rimosso esattamente un nodo dal grafo.
+			
+			\item \textbf{Ricerca del nodo senza figli}: Per individuare un vertice senza archi uscenti (ovvero un nodo la cui lista di adiacenza sia vuota), dobbiamo scorrere i nodi del grafo, con un costo di $O(n)$.
+			
+			\item \textbf{Cancellazione del nodo}: La rimozione del nodo $v$ dal grafo e la successiva eliminazione di tutte le sue occorrenze nelle liste di adiacenza degli altri nodi richiede di scandire l'intera struttura dati, con un costo pari a $O(n + m)$.
+		\end{itemize}
+		
+		Il costo totale dell'algoritmo risulta quindi essere:
+		\[
+		\Theta(n) \cdot O(n + m) = O(n(n + m))
+		\]
+	\end{algoritmo}
+	
+	\begin{osservazione}{Presenza di più nodi pozzo}{}
+		Anche se nel grafo dovessero essere presenti più nodi contemporaneamente privi di archi uscenti, l'algoritmo funziona correttamente. Esso restituirà comunque un ordine topologico valido (ricordando che per uno stesso DAG possono esistere più ordini topologici distinti).
+	\end{osservazione}
+	
+	Come si nota dall'analisi della complessità, si tratta di un metodo \textbf{molto costoso} dal punto di vista computazionale, oltre al fatto che modifica in modo distruttivo la struttura del grafo originale.
+	
+	Per risolvere questo problema, possiamo utilizzare un algoritmo già noto: la \textbf{visita in profondità (DFS)}. Per la natura stessa della DFS, l'algoritmo scende lungo un cammino fino alla massima profondità possibile prima di effettuare il \textit{backtracking}.
+	
+	L'idea fondamentale per ottimizzare il calcolo dell'ordine topologico è dunque la seguente:
+	\begin{enumerate}
+		\item Si avanza nella visita fino a raggiungere l'ultimo nodo di un cammino (ossia un nodo da cui non partono archi uscenti) e lo si aggiunge alla lista.
+		
+		\item Risalendo poi nella ricorsione durante la fase di \textit{backtracking}, si aggiungono man mano i nodi da cui si è arrivati.
+	\end{enumerate}
+	
+	Di seguito viene presentata una possibile implementazione in pseudo-codice di una visita in profondità (DFS) che restituisce la lista dei nodi visitati. L'approccio si divide in una funzione ausiliaria che inizializza le strutture dati e una funzione ricorsiva che effettua la visita effettiva del grafo.
+	
+	\begin{lstlisting}[language=Python]
+		def dfs(G, x):
+			vis = [0] * n
+			L = []
+			dfs_ric(G, x, vis, L)
+			return L
+			
+		def dfs_ric(G, x, vis, L):
+			vis[x] = 1
+			for v in x.neighbr:
+				if vis[v] == 0:
+					dfs_ric(G, v, vis, L)
+			L.append(x)
+	\end{lstlisting}
+	
+	Il costo computazionale di questa implementazione è proprio quello di una classica DFS, dunque pari a $\mathcal{O}(n + m)$.
+	
+	\begin{algoritmo}{Ordine topologico (efficiente)}{}
+		\begin{enumerate}
+			\item La funzione \texttt{dfs} si occupa di inizializzare il vettore dei visitati \texttt{vis} di dimensione $n$ (posto interamente a $0$) e la lista vuota \texttt{L} che conterrà l'ordine dei nodi. Viene quindi invocata la funzione ricorsiva \texttt{dfs\_ric}.
+			
+			\item All'interno di \texttt{dfs\_ric}, il nodo corrente $x$ viene marcato come visitato ponendo \texttt{vis[x] = 1}. Successivamente si esplorano tutti i vicini $v$ del nodo $x$ tramite la lista delle adiacenze (\texttt{x.neigh}). Se un vicino $v$ non è stato ancora visitato (\texttt{vis[v] == 0}), la funzione viene richiamata ricorsivamente su di esso.
+			
+			\item Infine, l'istruzione \texttt{L.append(x)} inserisce il nodo nella lista al termine dell'esplorazione dei suoi rami discendenti, realizzando di fatto un ordinamento topologico inverso (post-order).
+		\end{enumerate}
+	\end{algoritmo}
+	
+	
+	
+	\begin{esercizio}{Ricerca di un ciclo diretto}{}
+		Progettare un algoritmo che, dato un grafo diretto in cui ogni vertice ha grado uscente $\ge 1$, individui e restituisca un ciclo diretto.
+	\end{esercizio}
+	
+	L'algoritmo è molto simile a quello visto per trovare un ciclo in un grafo generico (non orientato).
+	
+	\begin{lstlisting}[style=stile-listings, language=Python, caption={Algoritmo per la ricerca di un ciclo diretto}]
+		def trovaCicloDiretto(G):
+		L = []  # Per memorizzare i nodi del ciclo
+		x = vertice qualsiasi
+		L.append(x)
+		
+		vis = [0] * n
+		vis[x] = 1  # Segniamo il nodo come visitato
+		
+		current = x
+		next = x.neighbr[0]
+		
+		# Iteriamo finche non troviamo un nodo gia visitato
+		while vis[next] == 0:
+		vis[next] = 1
+		L.append(next)
+		
+		current = next
+		next = current.neighbr[0]  # (1)
+		
+		while L[0] != next:
+		L.remove()
+		
+		return L
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Ricerca di un ciclo diretto}{}	
+		\begin{enumerate}
+			\item \textbf{Inizializzazione}: Viene creata una lista $L$ per memorizzare il percorso e un vettore di tracciamento \texttt{vis} di dimensione $n$ inizializzato a $0$. Si seleziona un vertice di partenza arbitrario $x$, lo si inserisce in $L$ e si imposta \texttt{vis[x] = 1}.
+			\item \textbf{Esplorazione}: Si imposta \texttt{current = x} e come vertice successivo \texttt{next} il primo adiacente uscente (\texttt{x.neighbr[0]}).
+			\item \textbf{Ricerca del ciclo}: Finché il nodo \texttt{next} non è stato visitato (\texttt{vis[next] == 0}):
+			\begin{itemize}
+				\item Si marca \texttt{next} come visitato (\texttt{vis[next] = 1}).
+				\item Si aggiunge \texttt{next} alla lista $L$.
+				\item Si avanza ponendo \texttt{current = next} e selezionando il nuovo vicino uscente \texttt{next = current.neighbr[0]} (istruzione \textbf{(1)}).
+			\end{itemize}
+			\item \textbf{Estrazione della sequenza del ciclo}: Quando il ciclo \texttt{while} termina, significa che \texttt{next} è un nodo già visitato (è stato ri-incontrato). Il secondo ciclo \texttt{while} rimuove gli elementi in testa a $L$ finché l'elemento di testa non coincide con \texttt{next}, lasciando in $L$ solo ed esclusivamente i nodi che compongono il ciclo diretto trovato.
+		\end{enumerate}
+		
+		L'unica sostanziale differenza rispetto al caso non orientato è un'accortezza: nell'istruzione \textbf{(1)} possiamo permetterci di assegnare come prossimo nodo sempre il primo dei vicini (\texttt{current.neighbr[0]}). Infatti, essendo il grafo \textbf{diretto}, anche la presenza di un eventuale doppio arco orientato tra due soli nodi costituisce a tutti gli effetti un ciclo valido.
+	\end{algoritmo}
+	
+	\begin{esercizio}{Problema dell'antenato comune più vicino}{}
+		Dato $P$ il vettore dei padri di un albero e dati due vertici $x$ ed $y$, l'obiettivo è trovare l'antenato comune più vicino (noto anche come Lowest Common Ancestor o LCA) tra $x$ e $y$.
+	\end{esercizio}
+	
+	Presentiamo una soluzione basata sull'utilizzo di liste puntate per risalire la gerarchia dei padri fino alla radice.
+	
+	\begin{lstlisting}[style=stile-listings]
+		def sol1(P, x, y):
+			L1, L2 liste puntate
+			Do:
+				L1.push(x)
+				x = P[x]
+			while x != P[x]
+			
+			Do:
+				L2.push(y)
+				y = P[y]
+			while y != P[y]
+			
+			Current = L1[0]
+			while L1[1] == L2[1]:
+				Current = L1[1]
+				L1.remove()
+				L2.remove()
+			
+			return Current
+	\end{lstlisting}
+	
+	\begin{osservazione}{}{}
+		Essendo \texttt{L1} ed \texttt{L2} liste puntate, gli elementi vengono aggiunti in testa durante la risalita verso la radice. Di conseguenza, alla fine dell'inserimento, il primo elemento della lista corrisponde proprio alla radice dell'albero, mentre gli ultimi elementi rappresentano i nodi di partenza $x$ ed $y$.
+	\end{osservazione}
 	
 \end{document}

@@ -1,4 +1,5 @@
 \usepackage[dvipsnames, table, x11names, svgnames]{xcolor}
+\usepackage{caption}
 \usepackage{anyfontsize}
 \usepackage{etoolbox}
 \usepackage[italian]{babel}
@@ -29,6 +30,7 @@
 \titlespacing*{\chapter}{0pt}{0pt}{2pt}
 \titlespacing*{\section}{0pt}{5pt}{3pt}
 \titlespacing*{\subsection}{0pt}{5pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{5pt}{3pt}
 
 \newcommand{\generaFrontespizio}[4]{
     \begin{titlepage}
@@ -123,6 +125,8 @@
 
 \newtcbtheorem[number within=section]{algoritmo}{Spiegazione algoritmo}{stileBox=coloreProposizioni}{alg}
 
+\newtcbtheorem[number within=section]{esercizio}{Esercizio}{stileBox=coloreTeoremi}{es}
+
 \lstdefinestyle{stile-listings}{
 	basicstyle=\ttfamily\small,
 	inputencoding=utf8,
@@ -158,18 +162,26 @@
 
 \newcolumntype{C}{>{\Centering\arraybackslash}X}
 
-\NewEnviron{tabella}[1]{
-	\vspace{0.5em}
+\NewEnviron{tabella}[2][]{%
+	\par\vspace{0.5em}%
+	\begingroup
 	\centering
-	\renewcommand{\arraystretch}{2}
-	\begin{tabularx}{\textwidth}{#1}
+	\renewcommand{\arraystretch}{1.5}%
+	\begin{tabularx}{\textwidth}{#2}
 		\hline
 		\rowcolor{BrickRed!60!white}
 		\BODY
 		\hline
-	\end{tabularx}
+	\end{tabularx}%
+	\if\relax\detokenize{#1}\relax
+	% Nessuna caption fornita
+	\else
+	\vspace{0.5em}%
+	\captionof{table}{#1}%
+	\fi
 	\par
-	\vspace{0.5em}
+	\endgroup
+	\vspace{0.5em}%
 }
 
 

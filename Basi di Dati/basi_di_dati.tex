@@ -633,360 +633,1365 @@
 	
 	Se tra le sottoclassi di una gerarchia si verificano contemporaneamente il vincolo di disgiunzione e quello di copertura, si dice che l'insieme delle sottoclassi è una \textbf{partizione} della classe padre.
 	
-	
-	% --- NEW PAGE (48) ---
-	
-	\section{La costruzione di una base di dati}
+	\section{Le fasi per la costruzione di una base di dati}
 	
 	Il ciclo di vita e il processo di sviluppo di una base di dati si articola nelle seguenti fasi principali:
 	
 	\begin{itemize}
-		\item \textbf{Analisi dei requisiti}: consiste nell'analizzare il problema e comprenderne a fondo le specifiche, fornite dall'utente o committente tipicamente in linguaggio naturale.
+		\item \textbf{Analisi dei requisiti}: consiste nell'analizzare il problema e comprenderne a fondo le specifiche fornite dall'utente o committente, tipicamente in linguaggio naturale.
 		
 		\item \textbf{Progettazione}: si suddivide a sua volta nella progettazione dei dati e nella progettazione delle applicazioni.
 		\begin{itemize}
-			\item \textbf{Progettazione concettuale}: ha lo scopo di individuare le entità di interesse e le associazioni tra di esse, formalizzandole tramite un apposito modello concettuale ad alto livello (ad esempio il modello E-R o i diagrammi delle classi UML).
+			\item \textbf{Progettazione concettuale}: ha lo scopo di individuare le entità di interesse e le associazioni tra di esse, formalizzandole tramite un apposito modello concettuale ad alto livello (ad esempio il modello E-R o i diagrammi delle classi UML) che serve a descrivere la realtà di riferimento da un punto di vista abbastanza astratto, in maniera totalmente indipendente da quella con cui saranno organizzati i dati dal DBMS.
+			
 			\item \textbf{Progettazione logica}: consiste nella traduzione dello schema concettuale nel modello logico scelto (ad esempio il modello relazionale), definendo puntualmente le strutture dati logiche e le relazioni intercorrenti tra esse.
+			
 			\item \textbf{Progettazione fisica dei dati}: riguarda gli aspetti implementativi di basso livello, definendo l'organizzazione fisica e le strutture di memorizzazione dei dati su disco (file di memorizzazione, indici, metodi di accesso).
+			
 			\item \textbf{Progettazione delle applicazioni}: definizione dell'architettura e della logica dei programmi software che interagiranno con la base di dati.
 		\end{itemize}
 		
 		\item \textbf{Realizzazione}: fase in cui il database viene effettivamente implementato sul DBMS prescelto, popolato e integrato con le applicazioni software.
 	\end{itemize}
 	
-	\begin{osservazione}{}{}
-		Nel corso della trattazione, spesso considereremo la fase di analisi dei requisiti come parte integrante del processo complessivo di progettazione.
-	\end{osservazione}
-	% --- NEW PAGE (2) ---
+	\chapter{Progettazione concettuale}
+	Nel corso del seguente capitolo analizzeremo la prima fase della progettazione di una base di dati, forse la più fondamentale, che ci permetterà di tracciare le basi per la creazione delle relazioni e delle tabelle in memoria.
 	
-	\section{Componenti di una base di dati}
-	
-	\begin{osservazione}{}{}
-		Siccome d'ora in poi lavoreremo esclusivamente su basi di dati relazionali, le definizioni e le considerazioni che seguono si basano su questa fondamentale premessa.
-	\end{osservazione}
-	
-	In una base di dati possiamo individuare due componenti principali:
-	
-	\begin{description}
-		\item [Lo schema:] Sostanzialmente invariante nel tempo, descrive la struttura di rappresentazione dei dati (ovvero il modo in cui i dati sono organizzati e rappresentati, comunemente in tabelle). Rappresenta l'\textbf{aspetto intensionale} ed è il principale \textbf{oggetto della progettazione}.
-		
-		\item [L'istanza:] Costituita dai valori attuali che vengono strutturati dallo schema. Rappresenta l'effettiva entrata all'interno di una tabella, contenente i valori specifici di uno specifico dato memorizzato nello schema. Tali valori possono cambiare anche molto rapidamente nel tempo (\textbf{aspetto estensionale}).
-	\end{description}
-	% --- NEW PAGE (7) ---
-	
-	\chapter{Fasi della progettazione}
-	
-	I prodotti delle varie fasi della progettazione sono degli ``schemi''. Ogni schema segue un certo modello di dati e si articola in tre livelli principali:
-	
-	\begin{itemize}
-		\item \textbf{Schema concettuale}: rappresenta i dati in modo indipendente da qualsiasi sistema di gestione di database (DBMS) specifico, concentrandosi unicamente sulla realtà di interesse.
-		\item \textbf{Schema logico}: traduce lo schema concettuale in base al modello logico del DBMS scelto (ad esempio relazionale, a grafo, orientato agli oggetti), rimanendo comunque indipendente dai dettagli fisici di memorizzazione.
-		\item \textbf{Schema fisico}: descrive l'implementazione concreta dello schema logico sul supporto di memorizzazione, gestendo indici, strutture di file e allocazioni di memoria specifiche del sistema.
-	\end{itemize}
-	% --- NEW PAGE (9) ---
-	
-	\section{Modelli di dati}
-	
-	Nell'ambito delle basi di dati si distinguono due tipi principali di modelli.
-	
-	\begin{definizione}{Modello concettuale}{}
-		I \textbf{modelli concettuali} servono per analizzare e descrivere le classi di dati del contesto informativo e le loro correlazioni in maniera del tutto indipendente dalle modalità con cui saranno organizzati all'interno di un DBMS.
+	Durante la fase di progettazione concettuale, in cui si va a delineare il \textbf{modello concettuale} derivato dall'analisi del problema, è prevalente l'\textbf{aspetto intensionale della progettazione}.
+	\begin{definizione}{Aspetto intensionale}{}
+		L'aspetto intensionale è quel lato della progettazione che definisce quali entità esistono, quali attributi hanno e quali vincoli devono rispettare. E' \textbf{invariante nel tempo}.
 	\end{definizione}
+	Il modello concettuale più diffuso è sicuramente il \textbf{modello E-R}, del quale parleremo maggiormente nella prossima sezione.
 	
-	I modelli concettuali prevedono l'uso di \textbf{rappresentazioni grafiche convenzionali}, utili ai fini della documentazione e della comunicazione (ad esempio: \textit{E-R}, \textit{UML}).
-	% --- NEW PAGE (10) ---
+	\section{Il modello E-R}
+	Il modello E-R è un modello grafico utilizzato per descrivere la struttura astratta di una base di dati, indicando gli oggetti coinvolti e le relazioni tra questi.
+	Mette le basi su alcuni costrutti fondamentali.
 	
-	\section{Modelli di dati}
-	
-	Si distinguono due tipi principali di modelli di dati.
-	
-	\begin{definizione}{Modelli logici}{}
-		I \textbf{modelli logici} sono utilizzati per organizzare i dati in maniera indipendente dalle strutture fisiche e in modo che siano disponibili ai programmi che utilizzano il DBMS.
-	\end{definizione}
-	% --- NEW PAGE (13) ---
-	
-	\section{Modello Entità-Relazione}
-	
-	Il \textbf{Modello Entità-Relazione} (anche noto come \textit{Entity-Relationship Model} o $E$-$R$) rappresenta il modello concettuale più diffuso nella progettazione delle basi di dati.
-	
-	\begin{osservazione}{Varianti del modello}{}
-		Del modello Entità-Relazione esistono diverse versioni che presentano leggere differenze, vertenti soprattutto sulle convenzioni grafiche adottate per la rappresentazione dei concetti fondamentali.
-	\end{osservazione}
-	% --- NEW PAGE (14) ---
-	
-	\section{I costrutti del modello E-R}
-	
-	I principali costrutti presi in considerazione nel modello Entità-Relazione (E-R) sono:
-	
-	\begin{itemize}
-		\item \textbf{Entità}
-		\item \textbf{Relazione (Associazione)}
-		\item \textbf{Attributo}
-		\item \textbf{Identificatore}
-		\item \textbf{Generalizzazione}
-		\item \dots
-	\end{itemize}
-	% --- NEW PAGE (15) ---
-	
-	\section{Entità}
-	
-	L'entità rappresenta la \textbf{primissima cosa da identificare} quando si analizza un problema.
-	
+	\subsection{Entità}
 	\begin{definizione}{Entità}{}
-		Un'\textbf{entità} è una classe di oggetti (fatti, persone, cose) dell'applicazione di interesse con proprietà comuni e con esistenza ``autonoma''.
-		
-		In altre parole, si tratta di \textbf{classi di oggetti omogenei tra loro}, i quali condividono la stessa struttura, ovvero presentano gli stessi attributi.
+		\textbf{Classi di oggetti omogenei tra loro e con esistenza autonoma}. Ciò vuol dire che un'entità, per esistere, non deve essere necessariamente collegata o dipendente da qualcos'altro. Sono, insieme alle associazioni, l'aspetto più importante del problema, dato che, informalmente parlando, le entità si trasformeranno nelle \textit{tabelle} durante la progettazione del modello logico. Un esempio di entità potrebbe essere un \texttt{Professore} o un \texttt{Corso} nell'ottica di una base di dati universitaria. L'entità è quell'oggetto a cui, nella descrizione della realtà di riferimento, si attribuisce particolare importanza e a cui è richiesto che vengano fatte afferire delle informazioni (gli attributi).
+		\smallbreak
+		Ogni entità ha un \textbf{nome identificativo} (che può essere qualsiasi, ma ovviamente si tende a scegliere nomi che facciano capire cosa si sta modellando) che per convenzione si scrive al \textbf{singolare}.
 	\end{definizione}
+	E' importante distinguere il concetto di entità da quello di \textbf{istanza}, in quanto quest'ultima non rappresenta una classe di oggetti dello stesso tipo bensì \textbf{il singolo oggetto, il singolo elemento della classe}.
+	Nel modello concettuale rappresentiamo le entità, non le singole istanze.
 	
-	\begin{osservazione}{}{}
-		Generalmente, le entità sono quegli elementi del problema a cui viene data molta importanza all'interno del dominio applicativo.
-	\end{osservazione}
-	
-	\subsection*{Esempi}
-	Di seguito vengono riportati alcuni esempi tipici di entità:
-	
-	\begin{itemize}
-		\item \textbf{Impiegato}
-		\item \textbf{Conto corrente}
-		\item \textbf{Fattura}
-		\item \textbf{Ordine}
-		\item \textbf{Città}
-		\item \textbf{Studente}
-	\end{itemize}
-	% --- NEW PAGE (16) ---
-	
-	\section{Associazione}
-	
-	\begin{definizione}{Associazione}{}
-		Un'\textbf{associazione} rappresenta un fatto che lega, una correlazione o un legame logico fra due o più entità, che sia significativo per l'applicazione di interesse.
-	\end{definizione}
-	
-	Un'associazione viene comunemente indicata anche con altri termini:
-	\begin{itemize}
-		\item \textbf{Relationship}: termine originale in inglese;
-		\item \textbf{Relazione}: il nome più corretto, benché il termine possa assumere accezioni diverse nel contesto delle basi di dati;
-		\item \textbf{Correlazione}.
-	\end{itemize}
-	
-	\begin{osservazione}{Dipendenza dalle entità}{}
-		Un'associazione ha senso esclusivamente in quanto collega delle entità: senza le entità collegate, l'associazione non possiede alcuna "vita propria".
-	\end{osservazione}
-	
-	\paragraph{Esempi:}
-	\begin{itemize}
-		\item \textbf{Residenza} (tra le entità \textit{Persona} e \textit{Città})
-		\item \textbf{Afferenza} (tra le entità \textit{Impiegato} e \textit{Dipartimento})
-	\end{itemize}
-	% --- NEW PAGE (17) ---
-	
-	\section{Entità: schema e istanza}
-	
-	\begin{definizione}{Entità e istanza}{}
-		\begin{description}
-			\item[Entità:] rappresenta una classe di oggetti, persone, concetti o fatti con caratteristiche comuni (\textit{omogenei}) che vengono inseriti nello schema concettuale.
-			\item[Occorrenza (o istanza) di entità:] rappresenta il singolo elemento appartenente alla classe (ad esempio il singolo oggetto o la singola persona, non i dati specifici).
-		\end{description}
-	\end{definizione}
-	
-	\begin{osservazione}{Rappresentazione nello schema concettuale}{}
-		Nello schema concettuale rappresentiamo unicamente le \textbf{entità} e non le singole istanze, in quanto in questa fase di progettazione concettuale la base di dati non esiste ancora e non è stata popolata.
-	\end{osservazione}
-	% --- NEW PAGE (18) ---
-	
-	\section{Rappresentazione grafica delle entità}
-	
-	Nel modello Entità-Relazione (E-R), le entità vengono rappresentate graficamente attraverso dei rettangoli contenenti al loro interno il nome dell'entità corrispondente.
-	
-	\begin{center}
-		\begin{tikzpicture}[
-			entita/.style={
-				rectangle,
-				draw=black,
-				fill=BrickRed!20,
-				minimum width=4.5cm,
-				minimum height=2cm,
-				align=center,
-				font=\bfseries\Large
-			}
-			]
-			\node[entita] (studente) at (0, 3) {Studente};
-			\node[entita] (impiegato) at (6, 3) {Impiegato};
-			\node[entita] (citta) at (0, 0) {Città};
-			\node[entita] (libro) at (6, 0) {Libro};
-		\end{tikzpicture}
-	\end{center}
-	% --- NEW PAGE (19) ---
-	
-	\subsection{Entità: commenti e convenzioni}
-	
-	Ogni entità ha un nome che la identifica univocamente all'interno dello schema concettuale. Nella definizione di tali identificatori è opportuno adottare alcuni accorgimenti metodologici:
-	
-	\begin{itemize}
-		\item \textbf{Espressività}: i nomi dovrebbero essere espressivi, ovvero in grado di far comprendere immediatamente la tipologia di oggetti della realtà di interesse a cui ci si riferisce.
-		\item \textbf{Convenzioni di denominazione}:
-		\begin{itemize}
-			\item Usare di regola il \textbf{singolare} per i nomi di entità.
-		\end{itemize}
-	\end{itemize}
-	% --- NEW PAGE (20) ---
-	
-	\section{Associazione: schema e istanza}
-	
-	\begin{definizione}{Associazione}{}
-		Un'\textbf{associazione} rappresenta una classe di fatti o legami tra entità "omogenei", ovvero con significato e caratteristiche comuni che vengono inseriti nello schema.
-	\end{definizione}
-	
-	\begin{definizione}{Occorrenza di associazione}{}
-		Un'\textbf{occorrenza} (o \textbf{istanza}) \textbf{di associazione} è un singolo elemento della classe di legami, identificato dalle occorrenze delle entità che esso collega.
-	\end{definizione}
-	% --- NEW PAGE (21) ---
-	
-	\section{Associazioni e occorrenze}
-	
-	\begin{definizione}{Occorrenza di un'associazione}{}
-		\begin{itemize}
-			\item \textbf{Associazione binaria}: un'occorrenza di un'associazione binaria è una coppia di occorrenze di entità, una per ciascuna entità coinvolta.
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
 			
-			\item \textbf{Associazione $n$-aria}: un'occorrenza di un'associazione $n$-aria è una $n$-upla di occorrenze di entità, una per ciascuna entità coinvolta.
-		\end{itemize}
+			% Definizione del colore rosa chiaro dei blocchi
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			
+			% Stile per le entità
+			\tikzset{
+				entity/.style={
+					draw,
+					fill=softpink,
+					minimum width=3.8cm,
+					minimum height=1.6cm,
+					font=\sffamily\bfseries\large,
+					align=center
+				}
+			}
+			
+			% Griglia 2x2 delle entità
+			\node[entity] (studente)  at (0, 2.4)   {Studente};
+			\node[entity] (impiegato) at (5.2, 2.4) {Impiegato};
+			\node[entity] (citta)     at (0, 0)     {Città};
+			\node[entity] (libro)     at (5.2, 0)   {Libro};
+			
+		\end{tikzpicture}
+		\caption{Un esempio della rappresentazione grafica delle entità nel modello E-R}
+		\label{fig:entita_grafica}
+	\end{figure}
+	
+	\subsection{Associazioni}
+	\begin{definizione}{Associazione}{etichetta}
+		Legame logico che si stabilisce tra due o più entità che hanno qualcosa in comune. Queste \textit{non} sono autonome, in quanto affinché esista un'associazione è necessario ci siano almeno 2 entità coinvolte in questa. Mantenendo l'esempio di \texttt{Professore} e \texttt{Corso}, un'associazione che li lega potrebbe essere \texttt{Insegnamento}. 
+		\smallbreak
+		A seconda della convenzione utilizzata, le associazioni potrebbero essere indicate da un sostantivo oppure da un verbo.
 	\end{definizione}
+	Anche qui, è importante distinguere tra associazione e \textbf{occorrenza}, in quanto quest'ultima individua il singolo elemento della classe di legami, identificato dalle istanze delle entità che collega.
+	In generale un'associazione si dice \textbf{n-aria} quando collega contemporaneamente $n$ entità.
 	
-	\begin{osservazione}{}{}
-		L'arità dell'associazione indica sostanzialmente \textbf{quante} entità sono coinvolte nella suddetta associazione.
-	\end{osservazione}
-	% --- NEW PAGE (25) ---
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			
+			% Colore coerente con i diagrammi E-R precedenti
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			
+			% Dimensioni per i rombi (semidiametro orizzontale e verticale)
+			\def\rx{1.8}
+			\def\ry{0.8}
+			
+			% -------------------------------------------------------------
+			% 1. Relazione "Scritto" (a sinistra)
+			% -------------------------------------------------------------
+			\coordinate (c1) at (0, 0);
+			\draw[fill=softpink] (c1) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (c1) {Scritto};
+			
+			% -------------------------------------------------------------
+			% 2. Relazione "Residenza" (a destra)
+			% -------------------------------------------------------------
+			\coordinate (c2) at (4.5, 0);
+			\draw[fill=softpink] (c2) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (c2) {Residenza};
+			
+		\end{tikzpicture}
+		\caption{Rappresentazione grafica di associazioni senza le entità coinvolte.}
+		\label{fig:relazioni_rombi}
+	\end{figure}
 	
-	\section{Associazioni e convenzioni di denominazione}
+	Vediamo adesso alcune categorie particolari di associazioni che si potrebbero incontrare nella scrittura del modello E-R.
 	
-	Ogni associazione ha un nome che la identifica univocamente all'interno dello schema concettuale. 
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			
+			\def\rx{1.8}
+			\def\ry{0.8}
+			
+			% Entità: Impiegato e Città
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (imp) at (0, 0) {Impiegato};
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (cit) at (7, 0) {Città};
+			
+			% Relazione inferiore: Residenza
+			\coordinate (cRes) at (3.5, 0);
+			\draw[fill=softpink] (cRes) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (cRes) {Residenza};
+			
+			% Relazione superiore: Sede di lavoro
+			\coordinate (cSed) at (3.5, 2.4);
+			\draw[fill=softpink] (cSed) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large, align=center] at (cSed) {Sede di\\lavoro};
+			
+			% Collegamenti della relazione Residenza
+			\draw (imp.east) -- ([xshift=-\rx cm]cRes);
+			\draw ([xshift=\rx cm]cRes) -- (cit.west);
+			
+			% Collegamenti della relazione Sede di lavoro
+			\draw (imp.north) -- ++(0, 1.65) -- ([xshift=-\rx cm]cSed);
+			\draw (cit.north) -- ++(0, 1.65) -- ([xshift=\rx cm]cSed);
+		\end{tikzpicture}
+		\caption{Multiple associazioni sulle stesse entità}
+		\label{fig:impiegato_citta_relazioni}
+	\end{figure}
 	
-	Per garantire la chiarezza dello schema, la scelta dei nomi deve seguire specifiche convenzioni:
-	\begin{itemize}
-		\item \textbf{Espressività}: I nomi dovrebbero essere espressivi, ossia in grado di far comprendere immediatamente il tipo di legame rappresentato.
-		\item \textbf{Convenzioni sintattiche}:
-		\begin{itemize}
-			\item Usare la forma singolare anche per i nomi delle associazioni.
-			\item Usare possibilmente sostantivi anziché verbi.
-		\end{itemize}
-	\end{itemize}
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			
+			\def\rx{1.8}
+			\def\ry{0.8}
+			
+			% Entità: Fornitore, Prodotto e Dipartimento
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (forn) at (0, 0) {Fornitore};
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (prod) at (7, 0) {Prodotto};
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (dip)  at (3.5, -2.4) {Dipartimento};
+			
+			% Relazione ternaria: Fornitura
+			\coordinate (cForn) at (3.5, 0);
+			\draw[fill=softpink] (cForn) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (cForn) {Fornitura};
+			
+			% Collegamenti della relazione ternaria
+			\draw (forn.east) -- ([xshift=-\rx cm]cForn);
+			\draw ([xshift=\rx cm]cForn) -- (prod.west);
+			\draw ([yshift=-\ry cm]cForn) -- (dip.north);
+		\end{tikzpicture}
+		\caption{Associazione n-aria (in questo caso ternaria).}
+		\label{fig:relazione_ternaria_fornitura}
+	\end{figure}
 	
-	\begin{osservazione}{Uso dei sostantivi per le associazioni}{}
-		Sebbene nella modellazione ER sia molto comune utilizzare formali forme verbali per descrivere le relazioni, una convenzione diffusa suggerisce l'impiego preferenziale dei sostantivi per definire il nome delle associazioni.
-	\end{osservazione}
-	% --- NEW PAGE (30) ---
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			
+			\def\rx{1.9}
+			\def\ry{0.8}
+			
+			% Entità: Persona
+			\node[draw, fill=softpink, minimum width=3.6cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (pers) at (0, 0) {Persona};
+			
+			% Relazione ricorsiva: Conoscenza
+			\coordinate (cCon) at (0, 2.2);
+			\draw[fill=softpink] (cCon) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (cCon) {Conoscenza};
+			
+			% Collegamenti ad anello della relazione ricorsiva
+			\draw (pers.west) -- ++(-0.9, 0) |- ([xshift=-\rx cm]cCon);
+			\draw (pers.east) -- ++(0.9, 0) |- ([xshift=\rx cm]cCon);
+		\end{tikzpicture}
+		\caption{Associazione ricorsiva, cioè che coinvolge un'entità con sé stessa.}
+		\label{fig:relazione_ricorsiva_conoscenza}
+	\end{figure}
 	
-	\section{Attributo}
-	
+	\newpage
+	\subsection{Attributi}
 	\begin{definizione}{Attributo}{}
-		Un \textbf{attributo} è una proprietà elementare di un'entità o di una associazione. All'interno del modello vengono inserite \textit{tutte e sole} le proprietà di interesse ai fini dell'applicazione.
-		
-		Formalmente, un attributo associa a ogni occorrenza di entità o di associazione un valore appartenente a un insieme prefissato, detto \textbf{dominio dell'attributo}.
-	\end{definizione}
-	% --- NEW PAGE (32) ---
-	
-	\section{Attributi composti}
-	
-	\begin{definizione}{Attributo composto}{}
-		Gli \textbf{attributi composti} sono attributi che raggruppano più informazioni insieme. Nello specifico, raggruppano attributi di una medesima entità o associazione che presentano affinità nel loro significato o che vengono utilizzati come un unico attributo.
+		Proprietà elementare, caratteristica di un'entità o di un'associazione. Si potrebbe pensare agli attributi del modello concettuale in modo similare agli attributi di classe nella programmazione ad oggetti.
 	\end{definizione}
 	
-	Ad esempio, gli attributi \textit{Via}, \textit{Numero civico} e \textit{CAP} possono essere composti per formare l'attributo \textit{Indirizzo}.
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			\definecolor{darkred}{RGB}{140, 35, 55}
+			
+			\def\rx{1.8}
+			\def\ry{0.8}
+			
+			% Entità: Studente e Corso
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (stud) at (0, 0) {Studente};
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (corso) at (7, 0) {Corso};
+			
+			% Relazione: Esame
+			\coordinate (cEsame) at (3.5, 0);
+			\draw[fill=softpink] (cEsame) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (cEsame) {Esame};
+			
+			% Collegamento tra entità e relazione
+			\draw (stud.east) -- ([xshift=-\rx cm]cEsame);
+			\draw ([xshift=\rx cm]cEsame) -- (corso.west);
+			
+			% Attributi di Studente
+			\draw ([xshift=-0.8cm]stud.north) -- ++(0, 0.9) coordinate (aCognome);
+			\filldraw[fill=darkred] (aCognome) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\normalsize] {Cognome};
+			
+			\draw ([xshift=0.8cm]stud.north) -- ++(0, 0.9) coordinate (aNome);
+			\filldraw[fill=darkred] (aNome) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\normalsize] {Nome};
+			
+			\draw (stud.south) -- ++(0, -0.9) coordinate (aMatr);
+			\filldraw[fill=darkred] (aMatr) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\normalsize] {Matricola};
+			
+			\draw ([xshift=0.4cm, yshift=0.62cm]cEsame) -- ++(0, 0.9) coordinate (aVoto);
+			\filldraw[fill=darkred] (aVoto) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\normalsize] {Voto};
+			
+			% Attributi di Corso
+			\draw (corso.north) -- ++(0, 0.9) coordinate (aTitolo);
+			\filldraw[fill=darkred] (aTitolo) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\normalsize] {Titolo};
+			
+			\draw (corso.south) -- ++(0, -0.9) coordinate (aCodice);
+			\filldraw[fill=darkred] (aCodice) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\normalsize] {Codice};
+		\end{tikzpicture}
+		\caption{Modello E-R con entità, associazioni, e i loro attributi.}
+		\label{fig:attributi}
+	\end{figure}
 	
-	\begin{osservazione}{Scelta di modellazione}{}
-		Si decide in seguito, in base alle operazioni previste, se utilizzare i singoli elementi separatamente o la loro composizione. Questa scelta dipende sempre dall'importanza che tale informazione ricopre all'interno del problema specifico.
-	\end{osservazione}
-	% --- NEW PAGE (34) ---
+	Gli attributi possono anche essere \textbf{composti}, cioè attributi che raggruppano più informazioni insieme. Un esempio di attributo composto potrebbe essere l'indirizzo di residenza di una persona, in quanto l'informazione indirizzo può essere ulteriormente scomposta in \textit{Via}, \textit{Numero civico} e \textit{CAP}, ad esempio.
+	In un'applicazione la scelta di mantenere un attributo composto anziché suddividerlo nelle sue componenti atomiche dipende dall'importanza che quell'attributo in seguito all'analisi del problema.
 	
-	\definecolor{coloreEntita}{RGB}{240, 140, 140}
-	\definecolor{coloreAttributi}{RGB}{140, 160, 250}
-	\definecolor{coloreAssociazione}{RGB}{140, 210, 140}
+	\newpage
+	\subsection{Cardinalità di associazioni}
+	\begin{definizione}{Cardinalità di associazioni}{}
+		Si tratta di una coppia di valori che si attribuisce ad ogni entità coinvolta in un'associazione. Si tratta di una rappresentazione grafica dei concetti di \textbf{univoco} e \textbf{multivalore} visti precedentemente.
+		\smallbreak
+		Specificano il numero minimo e massimo di occorrenze dell'associazione a cui un'istanza della prima entità può essere collegato rispetto ad istanze della seconda entità.
+	\end{definizione}
 	
-	\section{Esempio: La base di dati di una società}
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			
+			\def\rx{1.8}
+			\def\ry{0.8}
+			
+			% Entità: Studente e Docente
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (stud) at (0, 0) {Tutor};
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (doc)  at (8.6, 0) {Docente};
+			
+			% Relazione: Tutoraggio
+			\coordinate (cTut) at (4.3, 0);
+			\draw[fill=softpink] (cTut) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (cTut) {Tutoraggio};
+			
+			% Linee di collegamento
+			\draw (stud.east) -- ([xshift=-\rx cm]cTut);
+			\draw ([xshift=\rx cm]cTut) -- (doc.west);
+			
+			% Cardinalità (nodi separati con coordinate assolute)
+			\node[font=\sffamily\bfseries] at (2.35, 0.65) {(1,2)};
+			\node[font=\sffamily\bfseries] at (6.25, 0.65) {(0,5)};
+		\end{tikzpicture}
+		\caption{Relazione tra un tutor e un docente, che si legge nel seguente modo: Un tutor fa il tutoraggio ad 1 massimo 2 docenti. Un docente può avere da 0 a 5 tutor che fanno tutoriaggio.}
+		\label{fig:tutoraggio_studente_docente}
+	\end{figure}
 	
-	Nel contesto della progettazione concettuale di una base di dati, analizziamo i requisiti di una società. Per facilitare l'identificazione dei costrutti del modello Entità-Relazione (ER), il testo è stato associato alla seguente legenda cromatica:
-	
-	\begin{center}
-		\colorbox{coloreEntita}{\makebox[2.5cm]{\strut \textbf{Entità}}} \qquad
-		\colorbox{coloreAttributi}{\makebox[2.5cm]{\strut \textbf{Attributi}}} \qquad
-		\colorbox{coloreAssociazione}{\makebox[2.5cm]{\strut \textbf{Associazione}}}
-	\end{center}
-	
-	\vspace{1em}
-	
-	La società comprende più \colorbox{coloreEntita}{dipartimenti}, ognuno con \colorbox{coloreAttributi}{nome} e \colorbox{coloreAssociazione}{localizzato in} una \colorbox{coloreEntita}{sede}; più dipartimenti in sedi diverse possono avere lo stesso \colorbox{coloreAttributi}{nome}, e in una \colorbox{coloreAssociazione}{sede} possono esserci \colorbox{coloreAssociazione}{più dipartimenti}.
-	
-	\vspace{1em}
-	
-	Ad ogni Dipartimento \colorbox{coloreAssociazione}{afferisce} in certo numero di \colorbox{coloreEntita}{impiegati}, ognuno a partire da una certa \colorbox{coloreAttributi}{data}, e uno de\colorbox{coloreAssociazione}{gli} impiegati \colorbox{coloreAssociazione}{svolge il ruolo} di \colorbox{coloreEntita}{Direttore} del Dipartimento.
-	
-	\vspace{1em}
-	
-	Ogni impiegato \colorbox{coloreAssociazione}{partecipa} ad uno o più \colorbox{coloreEntita}{progetti}, ognuno con un \colorbox{coloreAttributi}{nome} ed un \colorbox{coloreAttributi}{budget} assegnato.
-	
-	\vspace{1.5em}
-	
-	\begin{osservazione}{Obiettivo del progetto}{}
-		Sulla base dei requisiti sopra elencati e debitamente classificati, l'obiettivo è quello di progettare lo \textbf{schema concettuale} (Diagramma ER) che rappresenti fedelmente la realtà di interesse della società.
-	\end{osservazione}
-	% --- NEW PAGE (36) ---
-	
-	\section{Altri costrutti del modello E-R}
-	
-	Nel modello Entità-Relazione (E-R), oltre ai costrutti di base come entità e relazioni, si introducono ulteriori concetti per arricchire l'espressività dello schema concettuale:
-	
+	Vediamo adesso più nel dettaglio le varie tipologie di cardinalità:
 	\begin{itemize}
-		\item \textbf{Cardinalità}:
+		\item \textbf{Partecipazione minima}
 		\begin{itemize}
-			\item Cardinalità di associazioni;
-			\item Cardinalità di attributo.
+			\item \textbf{0}: indica che la partecipazione di un'istanza dell'entità di partenza all'associazione è \textbf{opzionale}. Ciò vuol dire che potrebbe esserci anche una singola occorrenza dell'entità di partenza che non è associata a nessuna occorrenza dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{parziale} che avevamo già visto.
+			
+			\item \textbf{1}: indica che ogni istanza dell'entità di partenza è associata ad almeno un'occorrenza dell'altra entità. E' il corrispettivo dell'associazione \textbf{totale} che avevamo già visto.
 		\end{itemize}
 		
-		\item \textbf{Identificatore}:
+		\item \textbf{Partecipazione massima}:
 		\begin{itemize}
-			\item Identificatore interno;
-			\item Identificatore esterno.
+			\item \textbf{1}: indica che ogni occorrenza dell'entità di partenza è collegata al massimo ad un'occorrenza dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{univoca} che avevamo già visto.
+			
+			\item \textbf{N}: indica che ogni occorrenza dell'entitò di partenza può essere collegata a più occorrenze dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{multivalore} che avevamo già visto.
 		\end{itemize}
-		
-		\item \textbf{Generalizzazione}.
 	\end{itemize}
-	% --- NEW PAGE (37) ---
 	
-	\section{Cardinalità di un'associazione}
-	
-	\begin{definizione}{Cardinalità di un'associazione}{}
-		La \textbf{cardinalità} di un'associazione è espressa da una coppia di valori associata a ogni entità che partecipa all'associazione.
+	Con riferimento alle cardinalità appena mostrate, possiamo distinguere varie tipologie di associazioni:
+	\begin{itemize}
+		\item \textbf{Uno ad uno}, si verifica quando la cardinalità dell'entità è del tipo (1, 1).
 		
-		Tali valori specificano il numero minimo e massimo di occorrenze dell'associazione cui \textbf{ciascuna occorrenza di una entità} può partecipare, ovvero il numero di occorrenze dell'altra entità a cui essa può essere collegata.
+		\item \textbf{Uno a molti}, si verifica quando la cardinalità è del tipo (1, N).
+		
+		\item \textbf{Molti a molti}, si verifica quando entrambe le entità coinvolte hanno cardinalità (0, N) oppure (1, N).
+	\end{itemize}
+	
+	E' possibile delineare la cardinalità anche per gli attributi: quando questa non viene indicata è implicitamente (1, 1).
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			\definecolor{darkred}{RGB}{140, 35, 55}
+			
+			% Entità: Impiegato
+			\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (imp) at (0, 0) {Impiegato};
+			
+			% Punti di aggancio degli attributi con pallino rosso scuro
+			\coordinate (pTarga)   at (3.1, 1.4);
+			\coordinate (pNome)    at (3.3, 0);
+			\coordinate (pPatente) at (3.0, -1.5);
+			
+			% Linee di collegamento
+			\draw (imp.east |- 0, 0.45) -- (pTarga);
+			\draw (imp.east) -- (pNome);
+			\draw (imp.east |- 0, -0.55) -- (pPatente);
+			
+			% Pallini degli attributi
+			\filldraw[fill=darkred] (pTarga) circle (3.5pt);
+			\filldraw[fill=darkred] (pNome) circle (3.5pt);
+			\filldraw[fill=darkred] (pPatente) circle (3.5pt);
+			
+			% Nodi degli attributi (box rosa allineati a sinistra)
+			\node[draw, fill=softpink, anchor=west, inner sep=4pt, font=\sffamily\bfseries\large] at (3.4, 1.4) {Targa auto};
+			\node[draw, fill=softpink, anchor=west, inner sep=4pt, font=\sffamily\bfseries\large] at (3.6, 0) {Nome};
+			\node[draw, fill=softpink, anchor=west, inner sep=4pt, font=\sffamily\bfseries\large] at (3.3, -1.5) {Numero patente};
+			
+			% Cardinalità separate e posizionate in modo indipendente
+			\node[font=\sffamily\bfseries\large] at (1.9, 1.3) {(0,N)};
+			\node[font=\sffamily\bfseries\large] at (1.9, -1.4) {(0,1)};
+		\end{tikzpicture}
+		\caption{Esempio di cardinalità su attributi.}
+		\label{fig:impiegato_attributi_cardinalita}
+	\end{figure}
+	
+	\subsection{Identificatore di un'entità}
+	\begin{definizione}{Identificatore}{}
+		L'identificatore è quell'attributo o quell'insieme di attributi che permettono di identificare univocamente un'istanza di entità.\\
+		Questi identificatori possono essere costituiti da:
+		\begin{itemize}
+			\item Uno o più attributi interni all'entità.
+			
+			\item Uno o più attributi esterni ottenuti attraverso associazioni.
+		\end{itemize}
 	\end{definizione}
-	% --- NEW PAGE (39) ---
 	
-	\section{Valori di cardinalità}
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			\definecolor{darkred}{RGB}{140, 35, 55}
+			
+			% Entità: Automobile e Persona (affiancate sulla stessa riga orizzontale)
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (auto) at (0, 0) {Automobile};
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (pers) at (7.8, 0) {Persona};
+			
+			% Punti per gli attributi di Automobile
+			\coordinate (pTarga)   at (2.5, 1.1);
+			\coordinate (pModello) at (2.6, 0);
+			\coordinate (pColore)  at (2.5, -1.1);
+			
+			% Linee per gli attributi di Automobile
+			\draw (auto.east |- 0, 0.45) -- (pTarga);
+			\draw (auto.east) -- (pModello);
+			\draw (auto.east |- 0, -0.45) -- (pColore);
+			
+			% Pallini e testi degli attributi di Automobile (Targa con pallino nero identificatore)
+			\filldraw[fill=black] (pTarga) circle (3.5pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\large] {Targa};
+			\filldraw[fill=darkred] (pModello) circle (3.5pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\large] {Modello};
+			\filldraw[fill=darkred] (pColore) circle (3.5pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\large] {Colore};
+			
+			% Punti per gli attributi di Persona
+			\coordinate (pData) at (10.3, 1.1);
+			\coordinate (pCogn) at (10.4, 0);
+			\coordinate (pNome) at (10.3, -1.1);
+			
+			% Linee per gli attributi di Persona
+			\draw (pers.east |- 0, 0.45) -- (pData);
+			\draw (pers.east) -- (pCogn);
+			\draw (pers.east |- 0, -0.45) -- (pNome);
+			
+			% Barra verticale dell'identificatore composto di Persona
+			\draw[thick] (9.7, -1.4) -- (9.7, 1.4);
+			\filldraw[fill=black] (9.7, 1.4) circle (3.5pt);
+			
+			% Pallini e testi degli attributi di Persona
+			\filldraw[fill=darkred] (pData) circle (3.5pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\large] {Data Nascita};
+			\filldraw[fill=darkred] (pCogn) circle (3.5pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\large] {Cognome};
+			\filldraw[fill=darkred] (pNome) circle (3.5pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\large] {Nome};
+		\end{tikzpicture}
+		\caption{Esempio di identificatori interni semplici e composti.}
+		\label{fig:identificatori_semplice_composto}
+	\end{figure}
 	
-	Per semplicità e convenzione, nella specifica delle cardinalità si utilizzano principalmente tre simboli, distinti a seconda che si consideri la cardinalità minima o quella massima:
+	\begin{osservazione}{Natura degli identificatori}{}
+		\begin{itemize}
+			\item Un entità deve avere \textbf{almeno} un identificatore, ma può averne anche più di uno.
+			
+			\item Un identificatore esterno è possibile solo per entità che partecipano ad un'associazione con cardinalità (1, 1).
+			
+			\item Per le associazioni non occorre un identificatore in quanto non rappresentano un fatto bensì un legame logico.
+		\end{itemize}
+	\end{osservazione}
+	
+	\subsection{Generalizzazioni}
+	\begin{definizione}{Generalizzazione}{}
+		Una generalizzazione è un costrutto che mette in relazione una o più entità $E_1, E_2, \dots, E_n$ con un'entità $E$ che le comprende come casi particolari. In poche parole, le entità $E_1,\dots, E_n$ sono delle sottoclassi (o \textbf{specializzazioni}) dell'entità $E$, e dunque ereditano tutte le caratteristiche dell'entità padre potendo poi definirne di nuove.
+	\end{definizione}
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			\definecolor{darkred}{RGB}{140, 35, 55}
+			
+			% Entità genitore: Dipendente
+			\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (dip) at (0, 3) {Dipendente};
+			
+			% Entità figlie: Impiegato, Funzionario e Dirigente
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (imp) at (-4, 0) {Impiegato};
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (funz) at (0, 0) {Funzionario};
+			\node[draw, fill=softpink, minimum width=3.2cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (dir) at (4, 0) {Dirigente};
+			
+			% Freccia spessa di generalizzazione rivolta verso l'entità genitore
+			\draw[fill=darkred, draw=black] (-0.2, 1.6) -- (-0.2, 2.05) -- (-0.45, 2.05) -- (0, 2.3) -- (0.45, 2.05) -- (0.2, 2.05) -- (0.2, 1.6) -- cycle;
+			
+			% Linee di collegamento orizzontali e verticali dalle figlie alla freccia
+			\draw (imp.north) -- (-4, 1.6) -- (4, 1.6) -- (dir.north);
+			\draw (funz.north) -- (0, 1.6);
+		\end{tikzpicture}
+		\caption{Gerarchia di generalizzazione.}
+		\label{fig:gerarchia_generalizzazione_dipendente}
+	\end{figure}
+	
+	Una generalizzazione può essere
+	\begin{description}
+		\item [Totale:] quando ogni occorrenza dell'entità padre appartiene ad almeno un'occorrenza di una delle specializzazioni (in parole povere, quando un istanza del padre è del tipo di almeno un figlio). Un esempio potrebbe essere, \texttt{Persona <- Maggiorenne, Minorenne}. In questo caso è totale in quanto una persona è maggiorenne oppure minorenne.
+		
+		\item[Parziale:] quando esiste almeno un'occorrenza dell'entità padre che non appartiene ad alcuna categoria. Ad esempio \texttt{Animale <- Cane, Gatto}. Ovviamente cani e gatti non sono gli unici animali esistenti.
+		
+		\item[Esclusiva:] quando ogni occorrenza del padre può appartenere al massimo ad una categoria. Vale l'esempio di prima dei maggiorenni e minorenni.
+		
+		\item[Sovrapposta:] quando esiste almeno un'istanza dell'entità padre che appartiene a più categorie contemporaneamente. Un esempio in questo caso potrebbe essere \texttt{Persona <- Studente, Lavoratore}, in quanto una persona può contemporaneamente essere uno studente ma anche un lavoratore.
+	\end{description}
+	
+	Concluso il discorso sui costrutti che riguardano il modello E-R, spendiamo due parole anche per parlare della documentazione da associare quando si sviluppa un modello concettuale.
 	
 	\begin{description}
-		\item[Cardinalità minima ($0$ e $1$):] definisce il numero minimo di occorrenze con cui un'entità deve partecipare alla relazione.
+		\item [Dizionario delle entità:] consiste in una tabella in cui si riportano le entità descritte nel modello assieme ad alcune informazioni importanti riguardanti queste: \textbf{nome, breve descrizione, attributi, identificatore univoco}.
+		
+		\item[Dizionario delle associazioni:] come quello delle entità, si tratta di una tabella volta a descrivere tutte le associazioni presenti nel modello. Si includono informazioni come: \textbf{nome, breve descrizione, entità coinvolte, attributi dell'associazione}.
+		
+		\item[Vincoli non esprimibili:] il modello concettuale è un ottimo strumento per rappresentare la realtà di riferimento del problema, tuttavia non è abbastanza esaustivo per quanto riguarda eventuali vincoli stabiliti sulla base di dati. Nell'ottica di una base di dati aziendale si potrebbe, ad esempio, impedire che un dirigente abbia uno stipendio inferiore a quello di un impiegato normale (ci rendiamo conto che è impossibile esprimere tale vincolo sul modello E-R). 
+	\end{description}
+	
+	\chapter{Progettazione logica}
+	Come seconda fase nella progettazione di una base di dati abbiamo la progettazione logica, in cui ci avviciniamo maggiormente all'architettura del DBMS e per questo bisogna definire il modello con cui si voglio opportunamente memorizzare i dati.\\
+	In questo corso faremo esclusivamente uso del modello relazionale, che a breve vedremo con maggior dettaglio.
+	
+	\section{Il modello relazionale}
+	Il modello relazionale si basa sul concetto matematico di \textbf{relazione}: tali relazioni si traducono in maniera naturale in tabelle (infatti talvolta i due termini potrebbero essere scambiati).
+	Prima di passare alla definizione formale di questo modello, vediamo alcune definizioni di oggetti matematici che ci serviranno:
+	
+	\begin{definizione}{Dominio}{}
+		Un \textbf{dominio} è un insieme potenzialmente infinito di valori. Ricordando lo studio di una funzione, il dominio di questa era l'insieme dei valori $x\in \mathbb{R}$ a cui la funzione associava un valore.
+		\smallbreak
+		Possiamo scegliere anche esempi più comuni di dominio: l'insieme dei numeri naturali, l'insieme dei valori in un sistema di numerazione binario (banalmente solo 0 e 1), l'insieme delle stringhe lunghe 20 caratteri, ...
+	\end{definizione}
+	
+	\begin{definizione}{Prodotto cartesiano}{}
+		Siano $D_1, D_2, \dots, D_k$ domini non necessariamente distinti. Il \textbf{prodotto cartesiano} tra tali domini è denotato come
+		\[
+			D_1 \times D_2 \times \dots \times D_k
+		\]
+		che, insiemisticamente, può essere visto come quella sequenza ordinata di valori in cui ogni valore è preso da un dominio diverso.
+		\[
+			\{(v_1, v_2, \dots, v_k) | v_1 \in D_1, v_2 \in D_2, \dots, v_k \in D_k\}
+		\]
+	\end{definizione}
+	
+	\begin{definizione}{Relazione matematica}{}
+		Una \textbf{relazione}, in matematica, è un qualsiasi \textbf{sottoinsieme del prodotto cartesiano di uno o più domini}.
+		\smallbreak
+		
+		Il \textbf{grado di una relazione} è il numero di domini coinvolti nel prodotto cartesiano che hanno prodotto quella relazione (dunque se abbiamo il prodotto cartesiano tra 5 domini e prendiamo una relazione su quel prodotto, il suo grado sarà 5).
+		\smallbreak
+		
+		Gli elementi di una relazione sono detti \textbf{tuple} o \textbf{n-uple}, e il numero di n-uple di una relazione rappresenta la sua \textbf{cardinalità}.
+		
+		L'ordine fra gli elementi di una tupla (che sono presi ognuno da ogni dominio, in modo \textbf{ordinato}) è \textbf{importante}, mentre è irrilevante l'ordine delle tuple di una relazione (essendo essa un insieme).	
+	\end{definizione}
+	Supponiamo di avere due domini: $D_1 = \{\text{bianco, nero}\}, D_2 = \{1, 2, 3\}$.\\
+	Il prodotto cartesiano sarà
+	\[
+		D_1 \times D_2 = \{\text{(bianco, 1), (bianco, 2), (bianco, 3), (nero, 1), (nero, 2), (nero, 3)}\}
+	\]
+	Presa una relazione $R = \{\text{(bianco, 1), (nero, 1), (nero, 3)}\}$, questa avrà grado 2 (in quanto è stata generata dal prodotto cartesiano di 2 domini) e cardinalità 3 (in quanto ha 3 elementi).
+	
+	Forniamo adesso dell'altra notazione riguardante relazioni e tuple.
+	Sia $R$ una relazione di grado $k$. Sia $t \in R$. Sia $i \in \{1, \dots, k\}$. Denotiamo con $t[i]$ oppure $t.i$ l'\textbf{i-esima componente di t}.
+	Per l'esempio di prima, supponiamo $t = \{(\text{nero}, 1)\}$. Abbiamo che t[1] = nero, t[2] = 1, t[1,2] = (nero, 1).
+	
+	Abbiamo già detto che nei database relazionali c'è una fortissima corrispondenza tra il concetto di tabella e quello di relazione. Il problema è che se ci viene data una tabella così senza descrizioni, decifrarne il contenuto diventa quasi impossibile.
+	
+	E' per questo che nasce l'importanza di definire degli attributi nelle tabelle.
+	\begin{definizione}{Attributo}{}
+		Un \textbf{attributo} è definito da un \textbf{nome} \texttt{A} e dal \textbf{dominio} di tutti i valori che \texttt{A} può assumere.
+	\end{definizione}
+	
+	\begin{definizione}{Schema di relazione e tuple}{}
 		\begin{itemize}
-			\item \textbf{$0$ -- Partecipazione opzionale (associazione parziale):} una singola occorrenza può non partecipare all'associazione, non avendo alcun collegamento con le occorrenze dell'altra entità.
-			\item \textbf{$1$ -- Partecipazione obbligatoria (associazione totale):} ogni singola occorrenza deve necessariamente partecipare all'associazione, risultando quindi collegata ad almeno un'occorrenza dell'altra entità.
+			\item Sia \texttt{R} un insieme di attributi diversi (\textbf{schema di relazione}, sarebbe l'intestazione della tabella). Una n-upla su \texttt{R} è una \textbf{funzione che associa ad ogni attributo A in R un elemento del dominio di A}.\\
+			In poche parole, una n-upla, quella che informalmente chiameremmo \textit{riga della tabella} o \textit{istanza della tabella} viene matematicamente definita come una funzione che ad ogni colonna associa il suo effettivo valore, preso appunto dal dominio di valori consentiti dall'attributo.
+			
+			\item Se \texttt{t} è una n-upla su \texttt{R} ed \texttt{A} è un attributo di \texttt{R}, indichiamo con \texttt{t(A)} il valore assunto dalla funzione \texttt{t} in corrispondenza dell'attributo \texttt{A}.\\
+			Sempre in parole molto povere, facendo \texttt{t(A)} ci viene restituito il valore che l'attributo \texttt{A} assume nella riga \texttt{t}.
+			
+			\item Se $Y \subseteq X$, dove X è lo schema di una relazione R, denotiamo con t[Y] l'insieme dei valori assunti dagli attributi $y \in Y$ nella tupla t.
+		\end{itemize}		
+	\end{definizione}
+	
+	Infine, possiamo definire lo \textbf{schema di una base di dati relazionale} come l'insieme di tutti gli schemi di relazione che hanno nomi differenti.
+	\begin{tabella}[Dati relativi a città, regione di appartenenza e popolazione]{|X|X|X|}
+		\hline
+		\textbf{Città} & \textbf{Regione} & \textbf{Popolazione} \\
+		\hline
+		Roma    & Lazio     & 3000000 \\
+		\hline
+		Milano  & Lombardia & 1500000 \\
+		\hline
+		Genova  & Liguria   & 800000  \\
+		\hline
+		Pisa    & Toscana   & 150000  \\
+	\end{tabella}
+	
+	\subsection{Chiavi di una relazione}
+	Abbiamo già implicitamente parlato di chiavi quando, nel modello concettuale, citavamo gli identificatori di un'entità. Avendo però ora definito più concetti, possiamo fornire una definizione leggermente più formale di chiave.
+	\begin{definizione}{Chiave}{}
+		Una \textbf{chiave} è un attributo o un insieme di attributi che identifica univocamente una tupla.
+		\smallbreak
+		Supponendo che \texttt{X} sia un insieme di attributi che formano una chiave, valgono le seguenti proprietà:
+		\begin{itemize}
+			\item Se $t_1, t_2, t_1 \neq t_2$ tuple di una relazione R, allora $t_1[X] \neq t_2[X]$.
+			
+			\item $X$ è il più piccolo insieme che soddisfa la proprietà precedente.
+		\end{itemize}
+	\end{definizione}
+	La chiave composta dal minor numero di attributi possibili ad identificare una tupla si dice \textbf{chiave primaria}.
+	Questa gode di due fondamentali proprietà:
+	\begin{itemize}
+		\item Non può avere valori nulli.
+		
+		\item Consente di mettere in relazione tabelle diverse.
+	\end{itemize}
+	
+	\section{Ristrutturazione del modello concettuale}
+	Come mai la fase di ristrutturazione del modello concettuale appartiene alla progettazione logica?\\
+	Ricordando quando detto nei primi capitoli, è molto importante progettare una base di dati mantenendo i paradigmi di indipendenza fisica e logica. Se nella prima fase di progettazione concettuale abbiamo descritto la realtà in modo completamente astratto e indipendente dalla memorizzazione fisica dei dati, con questa fase di ristrutturazione dovremo andare ad analizzare il modello concettuale già nell'ottica di voler organizzare i dati in tabelle e relazioni tra queste.
+	Questo avviene in quanto l'obiettivo principale della progettazione logica è quello di \textbf{tradurre il modello concettuale in uno schema logico che rappresenti i dati nella stessa maniera}.
+	\small
+	Questa fase di ristrutturazione si articola in 4 attività principali.
+	
+	\subsection{Analisi delle ridondanze}
+	Nello schema E-R, una ridondanza è la ripetizione di un'informazione utile ma derivabile da altre, ad esempio:
+	\begin{itemize}
+		\item Tramite operazioni di interrogazione sulla base di dati.
+		
+		\item Da altri attributi dell'entità stessa. Ad esempio, non ha senso inserire gli attributi \texttt{IVA, PrezzoNetto, PrezzoLordo} in un'entità \texttt{Prodotto}, in quanto questi attributi sono calcolabili a partire da almeno due di loro.
+		
+		\item Ridondanza derivata da più associazioni sulle stesse entità, ma \textbf{solo se le istanze delle associazioni rappresentano lo stesso risultato}.
+	\end{itemize}
+	
+	\subsection{Eliminazione delle generalizzazioni}
+	Il modello relazionale abbiamo visto essere in grado di rappresentare solo tabelle, non costrutti di ereditarietà come classi e oggetti. Per questo motivo è necessario eliminare tutte le gerarchie rappresentate nel modello concettuale, e ciò può essere fatto in 3 modi differenti:
+	\begin{enumerate}
+		\item \textbf{Accorpamento delle figlie nel padre (Roll-up)}
+		\begin{itemize}
+			\item \textbf{Cosa si fa:} Si elimina ogni entità figlia. L'entità padre assorbe tutti gli attributi specifici delle entità figlie e tutte le relazioni a cui partecipavano. Viene inoltre introdotto un apposito attributo \textit{selettore} (discriminatore di tipo), ad esempio \texttt{TipoPersona = \{'Studente', 'Docente'\}}, per identificare a quale sottocategoria appartiene ciascuna istanza.
+			\item \textbf{Vantaggi:}
+			\begin{itemize}
+				\item Estrema semplicità nella gestione delle proprietà e operazioni comuni.
+			\end{itemize}
+			\item \textbf{Svantaggi:}
+			\begin{itemize}
+				\item Introduzione di valori nulli (\texttt{NULL}): se un'istanza è uno studente, tutti gli attributi propri del docente assumeranno valore nullo.
+				\item Potenziale spreco di spazio su memoria secondaria e degradazione dell'integrità dei vincoli a livello di colonna.
+			\end{itemize}
+			\item \textbf{Condizioni e casi d'uso:} 
+			Sempre applicabile senza vincoli di tipo di gerarchia. È la scelta ideale quando le entità figlie possiedono \textbf{pochi attributi specifici} e \textbf{poche relazioni proprie}, e la maggior parte delle operazioni coinvolge l'insieme complessivo delle istanze (padre e figlie insieme).
 		\end{itemize}
 		
-		\item[Cardinalità massima ($1$ ed $N$):] specifica il vincolo sul numero massimo di associazioni possibili per ciascuna occorrenza.
+		\item \textbf{Accorpamento del padre nelle figlie (Roll-down)}
 		\begin{itemize}
-			\item \textbf{$1$ -- Partecipazione esclusiva (associazione univoca):} ogni occorrenza dell'entità può essere collegata al massimo ad una sola occorrenza dell'altra entità.
-			\item \textbf{$N$ -- Associazione multivalore:} non viene posto alcun limite superiore al numero di occorrenze con cui l'entità può essere associata.
+			\item \textbf{Cosa si fa:} Si elimina l'entità padre e si mantengono unicamente le entità figlie. Ciascuna entità figlia eredita tutti gli attributi della classe padre (inclusa la chiave primaria) e tutte le relazioni a cui il padre prendeva parte.
+			\item \textbf{Vantaggi:}
+			\begin{itemize}
+				\item Assenza totale di valori nulli dovuti alla gerarchia: ogni relazione contiene unicamente attributi significativi per le sue istanze.
+				\item Accessi veloci e selettivi per tutte le operazioni mirate a una singola categoria figlia.
+			\end{itemize}
+			\item \textbf{Svantaggi:}
+			\begin{itemize}
+				\item Ridondanza concettuale: gli attributi e le relazioni originarie del padre vengono replicati nelle specifiche di ogni singola figlia.
+			\end{itemize}
+			\item \textbf{Condizioni e casi d'uso:} 
+			Questo metodo è applicabile in modo naturale \textbf{solo se la generalizzazione è TOTALE}. Se fosse parziale, esisterebbero istanze del padre non appartenenti ad alcuna figlia, le quali andrebbero irrimediabilmente perdute eliminando l'entità radice. È inoltre altamente raccomandato che sia \textbf{esclusiva} (disgiunta), per evitare di duplicare la stessa entità in più tabelle figlie. Si predilige quando le entità figlie hanno molti attributi distinti e le interrogazioni avvengono quasi sempre separatamente su ciascuna figlia.
 		\end{itemize}
-	\end{description}
-	% --- NEW PAGE (42) ---
+		
+		\item \textbf{Sostituzione della generalizzazione con associazioni}
+		\begin{itemize}
+			\item \textbf{Cosa si fa:} Si mantengono separate sia l'entità padre sia le entità figlie. La gerarchia viene rimpiazzata da associazioni binarie uno a uno (1:1) tra il padre e ciascuna entità figlia. Ogni tabella figlia adotta come chiave primaria la stessa chiave del padre, fungendo contemporaneamente da chiave esterna verso quest'ultimo.
+			\item \textbf{Vantaggi:}
+			\begin{itemize}
+				\item Massima flessibilità e generalità: è sempre applicabile, indipendentemente dal fatto che la gerarchia sia totale/parziale o esclusiva/sovrapposta.
+				\item Rispetto rigoroso della semantica originale, assenza di campi nulli anomali e nessuna duplicazione di tuple.
+			\end{itemize}
+			\item \textbf{Svantaggi:}
+			\begin{itemize}
+				\item Impatto sulle prestazioni: per ricostruire l'insieme completo delle informazioni di un'istanza figlia è sempre necessaria una complessa operazione di congiunzione tra le informazioni del padre e quelle della singola classe.
+			\end{itemize}
+			\item \textbf{Condizioni e casi d'uso:} 
+			Sempre applicabile. È la soluzione di riferimento in caso di generalizzazioni \textbf{parziali} e/o \textbf{sovrapposte}, oppure quando sia l'entità genitore che quelle figlie dispongono di numerosi attributi e relazioni distinti e sussistono accessi eterogenei (sia generalisti che mirati alle sottoclassi).
+		\end{itemize}
+	\end{enumerate}
 	
-	\section{Classificazione di associazioni}
+	\subsection{Partizionamento/accorpamento di entità e associazioni}
+	Si tratta forse dell'operazione più ambigua, in quanto non dipende tanto dall'astrazione che abbiamo fatto del problema, bensì di come devono essere acceduti i dati dall'applicazione.
+	Questa fase può svolgersi secondo 4 diverse modalità a seconda del caso.
 	
-	Con riferimento alle cardinalità massime, considerando entrambe le entità coinvolte, distinguiamo le seguenti tipologie di relazioni:
+	\begin{enumerate}
+		\item \textbf{Partizionamento verticale di entità}: supponiamo di avere un'entità \texttt{Impiegato}, che contiene sia i dati anagrafici che lavorativi. Supponiamo anche che la nostra applicazione debba accedere separatamente ai dati lavorativi e quelli anagrafici. In questo caso potremmo pensare di suddividere l'entità \texttt{Impiegato(codice, cognome, indirizzo, data\_nascita, livello, stipendio, ritenute)} in due entità separate \texttt{DatiAnagrafici(codice, cognome, indirizzo, data\_nascita), DatiLavorativi(stipendio, livello, ritenute)}. In seguito queste due entità verranno collegate da un'apposita associazione che le mette in relazione in quanto fanno riferimento allo stesso impiegato.
+		\begin{center}
+			\begin{tikzpicture}[thick, scale=0.85, every node/.style={transform shape}]
+				\definecolor{softpink}{RGB}{245, 206, 214}
+				\definecolor{darkred}{RGB}{140, 35, 55}
+				
+				\def\rx{1.6}
+				\def\ry{0.7}
+				
+				% Entità: Dati anagrafici e Dati lavorativi
+				\node[draw, fill=softpink, minimum width=2.8cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize, align=center] (anag) at (0, 0) {Dati\\anagrafici};
+				\node[draw, fill=softpink, minimum width=2.8cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize, align=center] (lav)  at (8.0, 0) {Dati\\lavorativi};
+				
+				% Relazione: Impiegato
+				\coordinate (cImp) at (4.0, 0);
+				\draw[fill=softpink] (cImp) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+				\node[font=\sffamily\bfseries\normalsize] at (cImp) {Impiegato};
+				
+				% Linee di collegamento tra entità e relazione
+				\draw (anag.east) -- ([xshift=-\rx cm]cImp);
+				\draw ([xshift=\rx cm]cImp) -- (lav.west);
+				
+				% Cardinalità distanziate verticalmente dal rombo
+				\node[font=\sffamily\bfseries\normalsize] at (2.4, 0.75) {(1,1)};
+				\node[font=\sffamily\bfseries\normalsize] at (5.6, 0.75) {(1,1)};
+				
+				% Identificatore esterno su Dati lavorativi
+				\draw[thick] (6.0, -0.4) -- (6.0, 0.4);
+				\filldraw[fill=black] (6.0, -0.4) circle (3pt);
+				
+				% Attributi di Dati anagrafici
+				\draw ([xshift=-1cm]anag.north) -- ++(0, 0.75) coordinate (aCognome);
+				\filldraw[fill=darkred] (aCognome) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Cognome};
+				
+				\draw ([xshift=0.7cm]anag.north) -- ++(0, 0.75) coordinate (aCodice);
+				\filldraw[fill=black] (aCodice) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Codice};
+				
+				\draw ([xshift=-0.7cm]anag.south) -- ++(0, -0.75) coordinate (aIndirizzo);
+				\filldraw[fill=darkred] (aIndirizzo) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small] {Indirizzo};
+				
+				\draw ([xshift=0.7cm]anag.south) -- ++(0, -0.75) coordinate (aDataNasc);
+				\filldraw[fill=darkred] (aDataNasc) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small, align=center] {Data\\nascita};
+				
+				% Attributi di Dati lavorativi
+				\draw ([xshift=-0.7cm]lav.north) -- ++(0, 0.75) coordinate (aStipendio);
+				\filldraw[fill=darkred] (aStipendio) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Stipendio};
+				
+				\draw ([xshift=1cm]lav.north) -- ++(0, 0.75) coordinate (aLivello);
+				\filldraw[fill=darkred] (aLivello) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Livello};
+				
+				\draw (lav.south) -- ++(0, -0.75) coordinate (aRitenute);
+				\filldraw[fill=darkred] (aRitenute) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small] {Ritenute};
+			\end{tikzpicture}
+			\captionof{figure}{Esempio di partizionamento verticale}
+			\label{fig:partizionamento_impiegato_compatto}
+		\end{center}
+		
+		\item \textbf{Partizionamento orizzontale di associazioni}: supponiamo di avere una base di dati che mantiene le informazioni riguardo ai giocatori di una squadra da calcio, sia presenti che passati.
+		\begin{center}
+			\begin{tikzpicture}[thick, scale=0.85, every node/.style={transform shape}]
+				\definecolor{softpink}{RGB}{245, 206, 214}
+				\definecolor{darkred}{RGB}{140, 35, 55}
+				
+				\def\rx{1.7}
+				\def\ry{0.75}
+				
+				% Entità: Giocatore e Squadra
+				\node[draw, fill=softpink, minimum width=2.8cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize] (gioc) at (0, 0) {Giocatore};
+				\node[draw, fill=softpink, minimum width=2.8cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize] (squad) at (8.0, 0) {Squadra};
+				
+				% Relazione: Composizione
+				\coordinate (cComp) at (4.0, 0);
+				\draw[fill=softpink] (cComp) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+				\node[font=\sffamily\bfseries\normalsize] at (cComp) {Composizione};
+				
+				% Linee di collegamento tra entità e relazione
+				\draw (gioc.east) -- ([xshift=-\rx cm]cComp);
+				\draw ([xshift=\rx cm]cComp) -- (squad.west);
+				
+				% Cardinalità distanziate verticalmente
+				\node[font=\sffamily\bfseries\normalsize] at (2.4, 0.75) {(1,N)};
+				\node[font=\sffamily\bfseries\normalsize] at (5.6, 0.75) {(1,N)};
+				\node[font=\sffamily\bfseries\normalsize] at (4.5, -0.9) {(0,1)};
+				
+				% Attributi di Giocatore
+				\draw ([xshift=-0.7cm]gioc.north) -- ++(0, 0.75) coordinate (aRuolo);
+				\filldraw[fill=darkred] (aRuolo) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Ruolo};
+				
+				\draw ([xshift=0.7cm]gioc.north) -- ++(0, 0.75) coordinate (aCogn);
+				\filldraw[fill=black] (aCogn) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Cognome};
+				
+				% Attributi di Squadra
+				\draw ([xshift=-0.7cm]squad.north) -- ++(0, 0.75) coordinate (aCitta);
+				\filldraw[fill=darkred] (aCitta) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Città};
+				
+				\draw ([xshift=0.7cm]squad.north) -- ++(0, 0.75) coordinate (aNomeS);
+				\filldraw[fill=black] (aNomeS) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Nome};
+				
+				% Attributi della relazione Composizione
+				\coordinate (pAcq) at (2.8, -1.0);
+				\coordinate (pCes) at (5.2, -1.0);
+				
+				\draw ([xshift=-0.6cm, yshift=-0.45cm]cComp) -- (pAcq);
+				\draw ([xshift=0.6cm, yshift=-0.45cm]cComp) -- (pCes);
+				
+				\filldraw[fill=darkred] (pAcq) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small, align=center] {Data\\acquisto};
+				\filldraw[fill=darkred] (pCes) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small, align=center] {Data\\cessione};
+			\end{tikzpicture}
+			\label{fig:relazione_composizione_giocatore_squadra}
+		\end{center}
+		In un caso come questo, supponiamo ci sia richiesto di far accedere separatamente ai dati dei giocatori passati e di quelli correnti. Potremmo dividere dividere l'associazione \texttt{Composizione} in due associazioni tra \texttt{Composizione attuale} e \texttt{Composizione passata}, in modo da gestire separatamente i due casi.
+		
+		\begin{center}
+			\begin{tikzpicture}[thick, scale=0.85, every node/.style={transform shape}]
+				\definecolor{softpink}{RGB}{245, 206, 214}
+				\definecolor{darkred}{RGB}{140, 35, 55}
+				
+				\def\rx{1.8}
+				\def\ry{0.75}
+				
+				% Entità: Giocatore e Squadra
+				\node[draw, fill=softpink, minimum width=2.8cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize] (gioc) at (0, 0) {Giocatore};
+				\node[draw, fill=softpink, minimum width=2.8cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize] (squad) at (8.0, 0) {Squadra};
+				
+				% Relazione superiore: Comp. attuale
+				\coordinate (cAtt) at (4.0, 1.6);
+				\draw[fill=softpink] (cAtt) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+				\node[font=\sffamily\bfseries\normalsize, align=center] at (cAtt) {Comp.\\attuale};
+				
+				% Relazione inferiore: Comp. passata
+				\coordinate (cPas) at (4.0, -1.6);
+				\draw[fill=softpink] (cPas) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+				\node[font=\sffamily\bfseries\normalsize, align=center] at (cPas) {Comp.\\passata};
+				
+				% Linee di collegamento per la relazione superiore
+				\draw (gioc.north) -- ++(0, 0.95) -- ([xshift=-\rx cm]cAtt);
+				\draw (squad.north) -- ++(0, 0.95) -- ([xshift=\rx cm]cAtt);
+				
+				% Linee di collegamento per la relazione inferiore
+				\draw (gioc.south) -- ++(0, -0.95) -- ([xshift=-\rx cm]cPas);
+				\draw (squad.south) -- ++(0, -0.95) -- ([xshift=\rx cm]cPas);
+				
+				% Cardinalità separate e distanziate dalle linee
+				\node[font=\sffamily\bfseries\normalsize] at (1.6, 1.95) {(1,1)};
+				\node[font=\sffamily\bfseries\normalsize] at (6.4, 1.95) {(1,N)};
+				\node[font=\sffamily\bfseries\normalsize] at (1.8, -1.95) {(1,N)};
+				\node[font=\sffamily\bfseries\normalsize] at (6.2, -1.95) {(1,N)};
+				
+				% Attributi di Giocatore
+				\draw ([xshift=-0.7cm]gioc.north) -- ++(0, 0.75) coordinate (aRuolo);
+				\filldraw[fill=darkred] (aRuolo) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Ruolo};
+				
+				\draw ([xshift=-0.7cm]gioc.south) -- ++(0, -0.75) coordinate (aCognome);
+				\filldraw[fill=black] (aCognome) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small] {Cognome};
+				
+				% Attributi di Squadra
+				\draw ([xshift=0.7cm]squad.north) -- ++(0, 0.75) coordinate (aNome);
+				\filldraw[fill=black] (aNome) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Nome};
+				
+				\draw ([xshift=0.7cm]squad.south) -- ++(0, -0.75) coordinate (aCitta);
+				\filldraw[fill=darkred] (aCitta) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small] {Città};
+				
+				% Attributo di Comp. attuale
+				\coordinate (pAcqAtt) at (2.5, 2.7);
+				\draw ([xshift=-0.9cm, yshift=0.38cm]cAtt) -- (pAcqAtt);
+				\filldraw[fill=darkred] (pAcqAtt) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small, align=center] {Data\\acquisto};
+				
+				% Attributi di Comp. passata
+				\coordinate (pAcqPas) at (2.7, -2.7);
+				\coordinate (pCesPas) at (5.3, -2.7);
+				
+				\draw ([xshift=-0.7cm, yshift=-0.45cm]cPas) -- (pAcqPas);
+				\draw ([xshift=0.7cm, yshift=-0.45cm]cPas) -- (pCesPas);
+				
+				\filldraw[fill=darkred] (pAcqPas) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small, align=center] {Data\\acquisto};
+				\filldraw[fill=darkred] (pCesPas) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small, align=center] {Data\\cessione};
+			\end{tikzpicture}
+			\captionof{figure}{Partizionamento orizzontale di associazioni.}
+			\label{fig:storicizzazione_composizione}
+		\end{center}
+		
+		\item \textbf{Eliminazione di attributi multivalore}. Possiamo avere due istanze di attributi multivalore:
+		\begin{itemize}
+			\item Un attributo che ha cardinalità (0, N) oppure (1, N). In tal caso, l'attributo deve diventare un'entità a sé stante, associata all'entità di cui era attributo.
+			\begin{center}
+				\resizebox{\linewidth}{!}{%
+					\begin{tikzpicture}[thick]
+						\definecolor{softpink}{RGB}{245, 206, 214}
+						\definecolor{darkred}{RGB}{140, 35, 55}
+						
+						\def\rx{1.6}
+						\def\ry{0.75}
+						
+						% PARTE SINISTRA: Entità Agenzia con attributo multivalore
+						
+						% Entità Agenzia sinistra
+						\node[draw, fill=softpink, minimum width=2.6cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize] (ag1) at (0, 0) {Agenzia};
+						
+						% Attributo identificatore: Nome
+						\draw (ag1.north) -- ++(0, 0.75) coordinate (pNome1);
+						\filldraw[fill=black] (pNome1) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Nome};
+						
+						% Attributi laterali: Indirizzo, Città e Telefono
+						\coordinate (pInd1) at (2.0, 0.65);
+						\coordinate (pCit1) at (2.1, 0);
+						\coordinate (pTel1) at (2.0, -0.65);
+						
+						\draw (ag1.east |- 0, 0.38) -- (pInd1);
+						\draw (ag1.east) -- (pCit1);
+						\draw (ag1.east |- 0, -0.38) -- (pTel1);
+						
+						\filldraw[fill=darkred] (pInd1) circle (3pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\small] {Indirizzo};
+						\filldraw[fill=darkred] (pCit1) circle (3pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\small] {Città};
+						\filldraw[fill=darkred] (pTel1) circle (3pt) node[anchor=west, xshift=3pt, font=\sffamily\bfseries\small] {Telefono};
+						
+						% Cardinalità per l'attributo multivalore Telefono
+						\node[font=\sffamily\bfseries\small] at (1.0, -0.85) {(1,N)};
+						
+						% PARTE DESTRA: Reificazione dell'attributo in entità Telefono e relazione Utenza
+						
+						% Entità Agenzia e Telefono
+						\node[draw, fill=softpink, minimum width=2.6cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize] (ag2) at (7.3, 0) {Agenzia};
+						\node[draw, fill=softpink, minimum width=2.6cm, minimum height=1.3cm, font=\sffamily\bfseries\normalsize] (tel2) at (14.5, 0) {Telefono};
+						
+						% Relazione: Utenza
+						\coordinate (cUtenza) at (10.9, 0);
+						\draw[fill=softpink] (cUtenza) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+						\node[font=\sffamily\bfseries\normalsize] at (cUtenza) {Utenza};
+						
+						% Linee di collegamento tra entità e relazione
+						\draw (ag2.east) -- ([xshift=-\rx cm]cUtenza);
+						\draw ([xshift=\rx cm]cUtenza) -- (tel2.west);
+						
+						% Cardinalità separate e distanziate
+						\node[font=\sffamily\bfseries\normalsize] at (9.0, 0.75) {(1,N)};
+						\node[font=\sffamily\bfseries\normalsize] at (12.8, 0.75) {(1,1)};
+						
+						% Attributi dell'entità Agenzia destra
+						\draw ([xshift=-0.65cm]ag2.north) -- ++(0, 0.75) coordinate (aCit2);
+						\filldraw[fill=darkred] (aCit2) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Città};
+						
+						\draw ([xshift=0.65cm]ag2.north) -- ++(0, 0.75) coordinate (aNome2);
+						\filldraw[fill=darkred] (aNome2) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Nome};
+						
+						\draw (ag2.south) -- ++(0, -0.75) coordinate (aInd2);
+						\filldraw[fill=darkred] (aInd2) circle (3pt) node[below=3pt, font=\sffamily\bfseries\small] {Indirizzo};
+						
+						% Attributo dell'entità Telefono
+						\draw (tel2.north) -- ++(0, 0.75) coordinate (aNum2);
+						\filldraw[fill=darkred] (aNum2) circle (3pt) node[above=3pt, font=\sffamily\bfseries\small] {Numero};
+					\end{tikzpicture}%
+				}
+			\end{center}
+			
+			\item In caso di un attributo che comprende più informazioni (come il precedente esempio di \texttt{Indirizzo = Via, Numero civico, CAP}), questo deve essere separato nei suoi attributi atomici.
+			
+		\end{itemize}
+		
+	\end{enumerate}
 	
+	\subsection{Scelta degli identificatori primari}
+	Come abbiamo visto prima, la \textbf{chiave primaria} di un'entità è il più piccolo insieme di attributi che identifica in modo univoco ogni tupla. Guardando con occhio di riguardo anche la progettazione logica, possiamo aggiungere un paio di vincoli:
 	\begin{itemize}
-		\item \textbf{Uno a uno} $(1, 1)$
-		\item \textbf{Uno a molti} $(1, N)$
-		\item \textbf{Molti a molti} $(N, M)$
+		\item Preferibilmente scegliere tra identificatori interno. Se non possibile, è consentito aggiungere un codice artificiale che identifichi la tupla.
+		
+		\item Deve essere un attributo che viene utilizzato nelle operazioni più frequenti ed importanti.
 	\end{itemize}
-
+	
+	\section{La traduzione da schema concettuale a logico}
+	Dopo aver rivisto e ristrutturato il modello concettuale con un occhio di riguardo per quella che sarà la rappresentazione dei dati secondo il modello logico, è arrivato il momento di capire come tradurre effettivamente i costrutti del modello concettuale in quelli del modello logico scelto (quello relazionale, nel nostro caso).
+	
+	\subsection{Le entità}
+	Di una cosa siamo certi: le entità diventeranno le \textbf{tabelle} (o relazioni) del nostro modello logico. Ogni tabella dovrà anche preservare l'insieme degli attributi descritti dal modello concettuale.
+	
+	\subsection{Le associazioni}
+	Per le associazioni, ovvero le effettive relazioni che vengono stabilite tra due o più schemi, il discorso è leggermente più delicato, in quanto non esiste un modo strettamente deterministico per rappresentarle.\\
+	Prima di discutere separatamente ogni tipo di associazione che possiamo incontrare all'interno dello schema E-R e la rispettiva traduzione nel modello logico, dobbiamo introdurre un fondamentale concetto delle basi di dati relazionali.
+	
+	\begin{definizione}{Vincolo di integrità referenziale}{}
+		Si tratta di uno dei tanti vincoli di integrità che si stabiliscono all'interno di una base di dati relazionale.\\
+		In particolare, questo vincolo stabilisce un \textbf{collegamento logico tra due schemi attraverso uno o più attributi con dominio comune}.
+		\smallbreak
+		Parlando in modo più formale, supponiamo di avere una tabella $R_1$ con un insieme di attributi $X$. Prendiamo adesso un'altra tabella $R_2$.
+		Stabilendo un vincolo di integrità referenziale fra le tabelle $R_1$ ed $R_2$ su $X$ significa \textbf{imporre} che i valori assunti da $X$ in $R_1$ debbano comparire come valori della chiave primaria di $R_2$. Tale insieme di attributi, nella tabella di "arrivo" $R_1$ viene detto \textbf{chiave esterna} o \textbf{foreign key}.
+		\smallbreak
+		In parole povere, stiamo dicendo che se in $R_1$ abbiamo un insieme di attributi $X$, affinché il vincolo di integrità referenziale con $R_2$ sia valido dobbiamo avere la certezza che $R_2$ contenga i valori di chiave primaria espressi da $X$ in almeno una n-upla.
+	\end{definizione}
+	
+	Avendo definito il concetto di chiave esterna, possiamo procedere ad analizzare uno ad uno i tipi di associazione.
+	
+	\subsubsection{Associazioni: Molti a molti}
+	Un'associazione \textit{molti a molti} si traduce come una vera e propria \textbf{tabella} che ha come chiave \textbf{l'insieme degli attributi chiave delle tabelle coinvolte nell'associazione}. Inoltre, tale tabella include anche eventuali attributi dell'associazione.
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			
+			\def\rx{1.4}
+			\def\ry{0.7}
+			
+			% Entità E1 ed E2
+			\node[draw, fill=white, minimum width=2.4cm, minimum height=1.2cm, font=\sffamily\bfseries\large] (e1) at (0, 0) {$E_1$};
+			\node[draw, fill=white, minimum width=2.4cm, minimum height=1.2cm, font=\sffamily\bfseries\large] (e2) at (9.0, 0) {$E_2$};
+			
+			% Relazione R
+			\coordinate (cR) at (4.5, 0);
+			\draw[fill=softpink] (cR) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (cR) {$R$};
+			
+			% Linee di collegamento tra entità e relazione
+			\draw (e1.east) -- ([xshift=-\rx cm]cR);
+			\draw ([xshift=\rx cm]cR) -- (e2.west);
+			
+			% Cardinalità distanziate verticalmente dalle linee
+			\node[font=\sffamily\bfseries\normalsize] at (2.4, 0.45) {(min,N)};
+			\node[font=\sffamily\bfseries\normalsize] at (6.6, 0.45) {(min,M)};
+			
+			% Identificatore K1 di E1
+			\draw (e1.west) -- (-2.4, 0);
+			\filldraw[fill=black] (-2.4, 0) circle (3pt) node[above=4pt, font=\sffamily\bfseries\normalsize] {$K_1$};
+			
+			% Identificatore K2 di E2
+			\draw (e2.east) -- (11.4, 0);
+			\filldraw[fill=black] (11.4, 0) circle (3pt) node[above=4pt, font=\sffamily\bfseries\normalsize] {$K_2$};
+		\end{tikzpicture}
+		\caption{Modello concettuale generico di una associazione molti a molti.}
+	\end{figure}
+	
+	Secondo quanto detto prima, il frammento di schema mostrato si traduce con le seguenti relazioni:
+	\begin{center}
+		E1(\textbf{K1}, attributi di E1...)\\
+		E2(\textbf{K2}, attributi di E2...)\\
+		R(\textbf{K1}, \textbf{K2}, attributi dell'associazione...)\\
+	\end{center}
+	E stabilendo anche i vincoli di integrità referenziale:
+	\begin{itemize}
+		\item Tra K1 in R e K1 in E1.
+		\item Tra K2 in R e K2 in E2.
+	\end{itemize}
+	
+	Generalmente, è consigliato rinominare gli attributi che costituiscono un vincolo di integrità referenziale, dando come nome un qualcosa di indicativo della tabella di provenienza (es: se l'attributo di partenza si chiama \texttt{Codice} e proviene dalla tabella \texttt{Impiegato}, potremmo chiamare la chiave esterna come \texttt{FK\_Codice\_Impiegato} oppure semplicemente \texttt{Impiegato}. In caso di chiavi composte da più attributi, possiamo rinominarle come \texttt{Impiegato1}, \texttt{Impiegato2}, ...). 
+	
+	\newpage
+	Particolare attenzione deve essere posta sulle associazioni molti a molti ricorsive, in quanto in quel caso è di vitale importanza il nome delle chiavi esterne.
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.70\linewidth}{!}{
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			\definecolor{darkred}{RGB}{140, 35, 55}
+			
+			\def\rx{2.2}
+			\def\ry{0.9}
+			
+			% Entità: Prodotto
+			\node[draw, fill=softpink, minimum width=3.8cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (prod) at (0, 0) {Prodotto};
+			
+			% Relazione ricorsiva ingrandita: Composizione
+			\coordinate (cComp) at (0, 2.5);
+			\draw[fill=softpink] (cComp) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (cComp) {Composizione};
+			
+			% Linee dell'anello ricorsivo ampliate verso l'esterno
+			\draw (prod.west) -- ++(-1.6, 0) -- ++(0, 2.5) -- ([xshift=-\rx cm]cComp);
+			\draw (prod.east) -- ++(1.6, 0) -- ++(0, 2.5) -- ([xshift=\rx cm]cComp);
+			
+			% Ruoli ricorsivi distanziati orizzontalmente dal box di Prodotto
+			\node[font=\sffamily\bfseries\normalsize] at (-3.1, -0.45) {Composto};
+			\node[font=\sffamily\bfseries\normalsize] at (3.3, -0.45) {Componente};
+			
+			% Cardinalità distanziate verticalmente e orizzontalmente
+			\node[font=\sffamily\bfseries\large] at (-2.7, 2.9) {(0,N)};
+			\node[font=\sffamily\bfseries\large] at (2.7, 2.9) {(0,N)};
+			
+			% Attributo della relazione: Quantità
+			\draw ([xshift=0.5cm, yshift=0.68cm]cComp) -- ++(0, 0.7) coordinate (aQuant);
+			\filldraw[fill=darkred] (aQuant) circle (3.5pt) node[anchor=west, xshift=4pt, font=\sffamily\bfseries\normalsize] {Quantità};
+			
+			% Attributi di Prodotto maggiormente spaziati tra loro
+			\draw ([xshift=-1.3cm]prod.south) -- ++(0, -0.85) coordinate (aCosto);
+			\filldraw[fill=darkred] (aCosto) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\normalsize] {Costo};
+			
+			\draw (prod.south) -- ++(0, -0.85) coordinate (aNome);
+			\filldraw[fill=darkred] (aNome) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\normalsize] {Nome};
+			
+			\draw ([xshift=1.3cm]prod.south) -- ++(0, -0.85) coordinate (aCodice);
+			\filldraw[fill=black] (aCodice) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\normalsize] {Codice};
+		\end{tikzpicture}
+		}
+		\caption{Esempio di associazione molti a molti ricorsiva.}
+	\end{figure}
+	
+	La derivazione di questo modello concettuale sarà
+	\begin{center}
+		Prodotto(\textbf{Codice}, Nome, Costo)\\
+		Composizione(\textbf{CodiceComposto}, \textbf{CodiceComponente}, Quantita)
+	\end{center}
+	In questo caso i due codici presenti nella tabella \texttt{Composizione} non saranno altro che codici di prodotti però inseriti come chiavi esterne.
+	
+	Un ultimo esempio sulle associazioni molti-a-molti per associazioni n-arie:
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.70\linewidth}{!}{
+		\begin{tikzpicture}[thick]
+			\definecolor{softpink}{RGB}{245, 206, 214}
+			\definecolor{darkred}{RGB}{140, 35, 55}
+			
+			\def\rx{2.2}
+			\def\ry{0.9}
+			
+			% Coordinate centrali delle entità e della relazione ternaria
+			\coordinate (cFornitura) at (4.8, 0);
+			
+			% Entità: Fornitore, Prodotto, Dipartimento
+			\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (forn) at (0, 0) {Fornitore};
+			\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (prod) at (9.6, 0) {Prodotto};
+			\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (dip)  at (4.8, -2.8) {Dipartimento};
+			
+			% Relazione ternaria: Fornitura
+			\draw[fill=softpink] (cFornitura) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+			\node[font=\sffamily\bfseries\large] at (cFornitura) {Fornitura};
+			
+			% Linee di collegamento tra entità e relazione
+			\draw (forn.east) -- ([xshift=-\rx cm]cFornitura);
+			\draw ([xshift=\rx cm]cFornitura) -- (prod.west);
+			\draw ([yshift=-\ry cm]cFornitura) -- (dip.north);
+			
+			% Cardinalità distanziate verticalmente e orizzontalmente dalle linee
+			\node[font=\sffamily\bfseries\large] at (3.0, 0.8) {(0,N)};
+			\node[font=\sffamily\bfseries\large] at (6.6, 0.8) {(1,N)};
+			\node[font=\sffamily\bfseries\large, anchor=west] at (4.95, -1.9) {(1,N)};
+			
+			% Attributo della relazione: Quantità
+			\draw ([yshift=\ry cm]cFornitura) -- ++(0, 0.75) coordinate (aQuant);
+			\filldraw[fill=darkred] (aQuant) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Quantità};
+			
+			% Attributi di Fornitore
+			\draw ([xshift=-1.0cm]forn.north) -- ++(0, 0.75) coordinate (aNomeF);
+			\filldraw[fill=darkred] (aNomeF) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Nome};
+			
+			\draw ([xshift=1.0cm]forn.north) -- ++(0, 0.75) coordinate (aPiva);
+			\filldraw[fill=black] (aPiva) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Partita IVA};
+			
+			% Attributi di Prodotto
+			\draw ([xshift=-1.0cm]prod.north) -- ++(0, 0.75) coordinate (aGen);
+			\filldraw[fill=darkred] (aGen) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Genere};
+			
+			\draw ([xshift=1.0cm]prod.north) -- ++(0, 0.75) coordinate (aCod);
+			\filldraw[fill=black] (aCod) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Codice};
+			
+			% Attributi di Dipartimento
+			\draw ([xshift=-0.9cm]dip.south) -- ++(0, -0.75) coordinate (aNomeD);
+			\filldraw[fill=black] (aNomeD) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\large] {Nome};
+			
+			\draw ([xshift=0.9cm]dip.south) -- ++(0, -0.75) coordinate (aTel);
+			\filldraw[fill=darkred] (aTel) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\large] {Telefono};
+		\end{tikzpicture}
+		}	
+		\caption{Esempio di associazione n-aria molti-a-molti.}
+	\end{figure}
+	
+	In questo caso si deriva come ci si aspetterebbe, ma si è scelto di mostrare un esempio per evitare che il lettore si cogliesse impreparato. Il fulcro è sempre creare una tabella per l'associazione e mettere al suo interno aventuali attributi dell'associazione e, come chiave primaria, l'insieme delle chiavi di ogni tabella coinvolta.\\
+	La derivazione risulta dunque:
+	\begin{center}
+		Fornitore(\textbf{PartitaIVA}, Nome)\\
+		Prodotto(\textbf{Codice}, Genere)\\
+		Dipartimento(\textbf{Nome}, Telefono)\\
+		Fornitura(\textbf{Fornitore}, \textbf{Prodotto}, \textbf{Dipartimento}, Quantita)
+	\end{center}
+	
+	\subsubsection{Associazioni: Uno a molti}
+	Per questo tipo di associazioni, si può procedere in due modalità diverse:
+	\begin{enumerate}
+		\item \textbf{Creare una tabella per l'associazione}, al cui interno si metterà:
+		\begin{itemize}
+			\item Come \textbf{chiave primaria}, la \textbf{chiave primaria della tabella che partecipa all'associazione con cardinalità (min,1)} (che sarà anche chiave esterna, legata da vincolo di integrità referenziale).
+			\item Come \textbf{chiave esterna}, la \textbf{chiave primaria della tabella che partecipa all'associazione con cardinalità (min,N)}.
+		\end{itemize}
+		
+		\item \textbf{Inserire nella tabella che partecipa con cardinalità (min,1) un vincolo di integrità referenziale alla chiave primaria della tabella che partecipa con (min, N)}. Tutti gli eventuali attributi dell'associazione andranno a finire nella tabella con cardinalità (min,1).
+	\end{enumerate}
+	
+	Vediamo di seguito un esempio di modello concettuale, e discutiamo le due possibili traduzioni nel modello logico.
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.70\linewidth}{!}{%
+			\begin{tikzpicture}[thick]
+				\definecolor{softpink}{RGB}{245, 206, 214}
+				\definecolor{darkred}{RGB}{140, 35, 55}
+				
+				\def\rx{2.0}
+				\def\ry{0.8}
+				
+				% Entità: Giocatore e Squadra
+				\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (gioc) at (0, 0) {Giocatore};
+				\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (squad) at (8.6, 0) {Squadra};
+				
+				% Relazione: Contratto
+				\coordinate (cContr) at (4.3, 0);
+				\draw[fill=softpink] (cContr) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+				\node[font=\sffamily\bfseries\large] at (cContr) {Contratto};
+				
+				% Linee di collegamento tra entità e relazione
+				\draw (gioc.east) -- ([xshift=-\rx cm]cContr);
+				\draw ([xshift=\rx cm]cContr) -- (squad.west);
+				
+				% Cardinalità distanziate e posizionate in modo indipendente
+				\node[font=\sffamily\bfseries\large] at (2.5, 0.75) {(1,1)};
+				\node[font=\sffamily\bfseries\large] at (6.3, 0.75) {(0,N)};
+				
+				% Attributo della relazione: Ingaggio
+				\draw ([xshift=-0.7cm, yshift=0.52cm]cContr) -- ++(0, 0.75) coordinate (aIngaggio);
+				\filldraw[fill=darkred] (aIngaggio) circle (3.5pt) node[anchor=west, xshift=14pt, font=\sffamily\bfseries\large] {Ingaggio};
+				
+				% Attributi dell'entità Giocatore
+				\draw ([xshift=-1.5cm]gioc.north) -- ++(0, 0.75) coordinate (aCogn);
+				\filldraw[fill=darkred] (aCogn) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Cognome};
+				
+				\draw ([xshift=0.6cm]gioc.north) -- ++(0, 0.75) coordinate (aDataNasc);
+				\filldraw[fill=darkred] (aDataNasc) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large, align=center] {Nascita};
+				
+				\draw (gioc.south) -- ++(0, -0.75) coordinate (aRuolo);
+				\filldraw[fill=darkred] (aRuolo) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\large] {Ruolo};
+				
+				% Barra orizzontale identificatore composto per Giocatore (Cognome + Data nascita)
+				\draw[thick] (-1.8, 0.95) -- (1.8, 0.95);
+				\filldraw[fill=black] (1.8, 0.95) circle (3.5pt);
+				
+				% Attributi dell'entità Squadra
+				\draw ([xshift=-1.0cm]squad.north) -- ++(0, 0.75) coordinate (aCitta);
+				\filldraw[fill=darkred] (aCitta) circle (3.5pt) node[anchor=west, xshift=6pt, font=\sffamily\bfseries\large] {Città};
+				
+				\draw ([xshift=1.0cm]squad.north) -- ++(0, 0.75) coordinate (aNomeS);
+				\filldraw[fill=black] (aNomeS) circle (3.5pt) node[anchor=west, xshift=12pt, font=\sffamily\bfseries\large] {Nome};
+				
+				\draw (squad.south) -- ++(0, -0.75) coordinate (aColori);
+				\filldraw[fill=darkred] (aColori) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\large] {Colori sociali};
+			\end{tikzpicture}%
+		}
+		\caption{Esempio di associazione uno-a-molti tra due entità}
+		\label{fig:relazione_contratto_giocatore_squadra}
+	\end{figure}
+	
+	Seguendo il primo modo descritto, ovvero quello di creare una nuova tabella, la derivazione sarà la seguente:
+	\begin{center}
+		Giocatore(\textbf{Cognome}, \textbf{Nascita}, Ruolo)\\
+		Squadra(\textbf{Nome}, ColoriSociali, Citta)\\
+		Contratto(\textbf{Cognome}, \textbf{Nascita}, \textit{Squadra}, Ingaggio)
+	\end{center}
+	Il \textbf{vantaggio} di questa rappresentazione è che, creando una tabella apposita per la relazione tra le due tabelle, \textit{non dovremmo preoccuparci di eventuali valori nulli o di istanze delle tabelle che non hanno corrispondenza nell'associazione}.
+	Il principale svantaggio consiste invece nel fatto che stiamo definendo un'ulteriore schema per la nostra relazione, dunque un ulteriore tabella da indicizzare per il DBMS (parleremo dell'efficienza più avanti nel corso).
+	
+	Se invece volessimo derivare il precedente modello nel secondo modo, otterremmo:
+	\begin{center}
+		Squadra(\textbf{Nome}, Citta, ColoriSociali)\\
+		Giocatore(\textbf{Nome}, \textbf{Nascita}, Ruolo, \textit{Squadra}, Ingaggio)
+	\end{center}
+	In questa rappresentazione, all'interno della tabella \texttt{Giocatore} (quella che partecipa con cardinalità (1,1) all'associazione) mettiamo un vincolo di chiave esterna alla chiave primaria della tabella \texttt{Squadra} e l'attributo dell'associazione \texttt{Ingaggio}.
+	
+	Questo metodo rappresenta la soluzione più semplice e compatta, in quanto non richiede la creazione di tabelle aggiuntive ma si limita ad aggiungere attributi ad una già esistente.
+	Lo svantaggio è legato alla possibile presenza di valori nulli all'interno dell'entità \textit{debole}: se questa partecipasse all'associazione con una cardinalità (0,1) significherebbe che ci potrebbero essere istanze della tabella che non hanno correlazione con quella associata. Per tabelle con un gran numero di record, si potrebbe verificare un ingente spreco di memoria.
+	
+	\begin{definizione}{Entità debole}{}
+		Un'entità (o successivamente una tabella nel modello relazionale) si definisce \textbf{debole} quando \textbf{la sua esistenza dipende dall'esistenza di una o più entità}.\\
+		In genere, sono considerate deboli quelle entità al cui interno sono presenti chiavi esterne di un'altra entità, in quanto per essere definite devono prima essere definite le entità da cui provengono tali chiavi esterne.
+	\end{definizione}
+	
+	Andiamo a vedere anche per le associazioni uno-a-molti le casistiche di ricorsività oppure n entità coinvolte.
+	
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.40\linewidth}{!}{%
+			\begin{tikzpicture}[thick]
+				\definecolor{softpink}{RGB}{245, 206, 214}
+				\definecolor{darkred}{RGB}{140, 35, 55}
+				
+				\def\rx{2.0}
+				\def\ry{0.8}
+				
+				% Entità: Persona
+				\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (pers) at (0, 0) {Persona};
+				
+				% Relazione ricorsiva: Paternità
+				\coordinate (cPat) at (0, 2.4);
+				\draw[fill=softpink] (cPat) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+				\node[font=\sffamily\bfseries\large] at (cPat) {Paternità};
+				
+				% Linee dell'anello ricorsivo modellate singolarmente
+				\draw (pers.west) -- ++(-1.6, 0) -- ++(0, 2.4) -- ([xshift=-\rx cm]cPat);
+				\draw (pers.east) -- ++(1.6, 0) -- ++(0, 2.4) -- ([xshift=\rx cm]cPat);
+				
+				% Cardinalità posizionate in modo indipendente
+				\node[font=\sffamily\bfseries\large] at (-2.6, 2.8) {(1,1)};
+				\node[font=\sffamily\bfseries\large] at (2.6, 2.8) {(0,N)};
+				
+				% Attributi dell'entità Persona
+				\draw ([xshift=-1.3cm]pers.south) -- ++(0, -0.8) coordinate (aCogn);
+				\filldraw[fill=darkred] (aCogn) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\normalsize] {Cogn};
+				
+				\draw (pers.south) -- ++(0, -0.8) coordinate (aNome);
+				\filldraw[fill=darkred] (aNome) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\normalsize] {Nome};
+				
+				\draw ([xshift=1.1cm]pers.south) -- ++(0, -0.8) coordinate (aCF);
+				\filldraw[fill=black] (aCF) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\normalsize] {CF};
+			\end{tikzpicture}%
+		}
+		\caption{Associazione uno-a-molti ricorsiva.}
+	\end{figure}
+	Nel caso di questa associazione, si vogliono spendere due parole su entrambe le traduzioni in quanto potrebbero presentare delle criticità:
+	\begin{enumerate}
+		\item \textbf{Creazione di una tabella per la relazione}, e dunque si avrà lo schema
+		\begin{center}
+			Persona(\textbf{CF}, Nome, Cogn)\\
+			Paternita(\textbf{Figlio}, \textit{Padre})
+		\end{center}
+		Si presti particolare attenzione alla scelta della chiave primaria nella tabella \texttt{Paternita}:
+		\begin{itemize}
+			\item Se avessimo scelto solo \textbf{Padre} ci saremmo trovati nella situazione in cui un padre può avere al più un figlio, chiaramente errata per lo schema rappresentato.
+			
+			\item Se avessimo scelto come chiave la coppia \textbf{Figlio, Padre} ci saremmo potuti trovare nella situazione in cui un figlio è associato a più di un padre (in quanto, fissando il figlio e modificando il padre si possono generare tuple differenti).
+		\end{itemize}
+		
+		\item \textbf{Unificazione in una sola tabella}. In questo caso lo schema sarebbe stato semplicemente Persona(\textbf{CF}, Nome, Cogn, \textit{Padre}), dove \textit{Padre} rappresenta una chiave esterna.
+		
+		Si noti una criticità di questa implementazione: per come definito prima, il vincolo di integrità referenziale impone che i valori associati alla chiave esterna siano valori \textbf{esistenti} nella tabella di partenza. Siccome in questo caso l'associazione è ricorsiva, la tabella di partenza è la stessa di quella di arrivo. Dunque questo ci mette nella condizione in cui ci è sostanzialmente \textbf{impossibile} (almeno all'inizio) inserire delle persone all'interno della tabella, in quanto non potremmo associarle un padre.\\
+		Ci sono due possibili soluzioni:
+		\begin{enumerate}
+			\item Disabilitare temporaneamente i controlli di integrità del DBMS, per permettere di inserire delle persone e successivamente riabilitarli per creare la corrispondenza effettiva.
+			
+			\item Impostare il valore della chiave esterna come nono obbligatorio (\textbf{RISCHIOSO!!!}) e inserire il valore della chiave esterna solo \textit{dopo aver effettuato sufficienti inserimenti}.
+		\end{enumerate}
+	\end{enumerate}
+	
+	\newpage
+	Vediamo di seguito un esempio anche con le associazioni n-arie molti-a-molti.
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.60\linewidth}{!}{%
+			\begin{tikzpicture}[thick]
+				\definecolor{softpink}{RGB}{245, 206, 214}
+				\definecolor{darkred}{RGB}{140, 35, 55}
+				
+				\def\rx{2.0}
+				\def\ry{0.8}
+				
+				% Coordinate centrali
+				\coordinate (cTesi) at (4.8, 0);
+				
+				% Entità: Studente, Relatore, Dipartimento
+				\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (stud) at (0, 0) {Studente};
+				\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (rel)  at (9.6, 0) {Relatore};
+				\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.4cm, font=\sffamily\bfseries\large] (dip)  at (4.8, -2.8) {Dipartimento};
+				
+				% Relazione ternaria: Tesi
+				\draw[fill=softpink] (cTesi) ++(0, \ry) -- ++(\rx, -\ry) -- ++(-\rx, -\ry) -- ++(-\rx, \ry) -- cycle;
+				\node[font=\sffamily\bfseries\large] at (cTesi) {Tesi};
+				
+				% Linee di collegamento tra entità e relazione
+				\draw (stud.east) -- ([xshift=-\rx cm]cTesi);
+				\draw ([xshift=\rx cm]cTesi) -- (rel.west);
+				\draw ([yshift=-\ry cm]cTesi) -- (dip.north);
+				
+				% Cardinalità distanziate
+				\node[font=\sffamily\bfseries\large] at (3.0, 0.75) {(1,1)};
+				\node[font=\sffamily\bfseries\large] at (6.6, 0.75) {(1,N)};
+				\node[font=\sffamily\bfseries\large, anchor=west] at (4.95, -1.9) {(1,N)};
+				
+				% Attributi dell'entità Studente
+				\draw ([xshift=-1.0cm]stud.north) -- ++(0, 0.75) coordinate (aCognS);
+				\filldraw[fill=darkred] (aCognS) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Cogn};
+				
+				\draw ([xshift=1.0cm]stud.north) -- ++(0, 0.75) coordinate (aMatr);
+				\filldraw[fill=black] (aMatr) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Matricola};
+				
+				% Attributi dell'entità Relatore
+				\draw ([xshift=-1.0cm]rel.north) -- ++(0, 0.75) coordinate (aCognR);
+				\filldraw[fill=darkred] (aCognR) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Cognome};
+				
+				\draw ([xshift=1.0cm]rel.north) -- ++(0, 0.75) coordinate (aCodR);
+				\filldraw[fill=black] (aCodR) circle (3.5pt) node[above=4pt, font=\sffamily\bfseries\large] {Codice};
+				
+				% Attributi dell'entità Dipartimento
+				\draw ([xshift=-0.9cm]dip.south) -- ++(0, -0.75) coordinate (aNomeD);
+				\filldraw[fill=black] (aNomeD) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\large] {Nome};
+				
+				\draw ([xshift=0.9cm]dip.south) -- ++(0, -0.75) coordinate (aTelD);
+				\filldraw[fill=darkred] (aTelD) circle (3.5pt) node[below=4pt, font=\sffamily\bfseries\large] {Telefono};
+			\end{tikzpicture}%
+		}
+		\caption{Associazione ternaria molti-a-molti.}
+	\end{figure}
+	
+	Il trucco per le associazioni n-arie è \textit{leggerle a due a due}, dunque prendendo una coppia di entità e leggere l'associazione tra queste. Fare poi questo lavoro per tutte le entità coinvolte.
+	Anche in questo caso la traduzione può avvenire in due modi:
+	\begin{enumerate}
+		\item \textbf{Creando la tabella per l'associazione}, ottenendo il seguente schema della base di dati:
+		\begin{center}
+			Studente(\textbf{Matricola}, Cogn)\\
+			Relatore(\textbf{Codice}, Cogn)\\
+			Dipartimento(\textbf{Nome}, Telefono)\\
+			Tesi(\textbf{Studente}, \textit{Relatore}, \textit{Dipartimento})
+		\end{center}
+		Ci accorgiamo però che le tabelle \texttt{Studente} e \texttt{Tesi} hanno la stessa chiave primaria, e dunque conviene unificarle.
+		
+		\item \textbf{Unificare tutto in un'unica tabella}, ottenendo lo schema:
+		\begin{center}
+			Relatore(\textbf{Codice}, Cogn)\\
+			Dipartimento(\textbf{Nome}, Telefono)\\
+			Studente(\textbf{Matricola}, Cogn, \textit{Relatore}, \textit{Dipartimento})
+		\end{center}
+	\end{enumerate}
+	
 \end{document}
