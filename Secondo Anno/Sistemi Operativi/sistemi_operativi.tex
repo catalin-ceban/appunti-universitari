@@ -360,14 +360,6 @@
 	\newpage
 	La memoria principale è strutturata come una griglia monodimensionale di indirizzi di byte (\textit{byte addresses}). Ogni cella possiede un indirizzo univoco a cui corrisponde un determinato contenuto memorizzato.
 	
-	\begin{tabella}{|c|c|}
-		\textbf{Indirizzo fisico} & \textbf{Contenuto} \\
-		\texttt{0x00000000} & \texttt{01101010} \\
-		\texttt{0x00000001} & \texttt{11001100} \\
-		\dots & \dots \\
-		\texttt{0xFFFFFFFF} & \texttt{00000000} \\
-	\end{tabella}
-	
 	\subsection{Il principio di località}
 	
 	L'efficacia della gerarchia di memoria (\textit{memory hierarchy}) si basa sul "principio di località", che definisce una serie di principi secondo i quali lavora la CPU per ottimizzare l'accesso alle informazioni. I programmi in esecuzione non accedono infatti alla memoria in modo casuale, ma presentano due forme fondamentali di località:
@@ -451,17 +443,16 @@
 		Prevede l'utilizzo di \textbf{istruzioni CPU dedicate} (come ad esempio le istruzioni \texttt{IN} e \texttt{OUT} nelle architetture x86). Questo approccio nasce dal fatto che, a livello di \textit{control bus}, le consuete operazioni di \texttt{LOAD} e \texttt{STORE} possono essere utilizzate solo se l'indirizzo di destinazione fa riferimento a una locazione di memoria principale. Si rende quindi necessaria la definizione di uno spazio di indirizzamento separato e di istruzioni specifiche riservate alla comunicazione con i dispositivi di I/O.
 		
 		\item \textbf{Memory-Mapped I/O (MMIO)}:
-		Rappresenta la soluzione standard e moderna, che consiste nella predisposizione di uno spazio di memoria e dei registri interamente dedicati a questi dispositivi.
+		Rappresenta la soluzione standard e moderna, che consiste nella predisposizione di uno spazio di memoria e dei registri interamente dedicati a questi dispositivi.\\
+		Un controller espone tipicamente tre classi fondamentali di registri:
+		\begin{itemize}
+			\item \textbf{Status register}: registro di sola lettura, riporta lo stato corrente del dispositivo (BUSY, READY, ...).
+			
+			\item \textbf{Command register}: sola scrittura, indica al dispositivo \textit{cosa} fare.
+			
+			\item \textbf{Data register}: lettura e scrittura, contiene i dati inviati/ricevuti al/dal dispositivo.
+		\end{itemize}
 	\end{enumerate}
-	
-	Un controller espone tipicamente tre classi fondamentali di registri:
-	\begin{description}
-		\item [Status register:] registro di sola lettura, riporta lo stato corrente del dispositivo (BUSY, READY, ...).
-		
-		\item [Command register:] sola scrittura, indica al dispositivo \textit{cosa} fare.
-		
-		\item [Data register:] lettura e scrittura, contiene i dati inviati/ricevuti al/dal dispositivo.
-	\end{description}
 	
 	\subsection{Protocolli di trasferimento I/O}
 	
@@ -504,7 +495,7 @@
 	\section{Processi e Thread}
 	Nella scorsa sezione abbiamo spesso citato i processi, senza mai darne una specifica definizione. La lasciamo di seguito.
 	\begin{definizione}{Processo}{}
-		Un \textbf{processo} è un'istanza di un programma in esecuzione.
+		Un \textbf{processo} è un'\textbf{istanza di un programma in esecuzione}.
 		Quando noi scriviamo un codice python, stiamo scrivendo un \textit{programma}, qualcosa che può essere eseguito (ma possiamo pensare analogamente con tutti i software che installiamo da internet).\\
 		Una volta che manderemo in esecuzione tale codice o tale programma, per la CPU quello diventerà un processo.
 	\end{definizione}
@@ -516,9 +507,9 @@
 	\end{definizione}
 	Da questa definizione si evincono due importanti caratteristiche dei thread:
 	\begin{itemize}
-		\item Possono essere creati più thread diversi relativi allo stesso processo.
+		\item Possono essere creati \textbf{più thread diversi} relativi allo stesso processo.
 		
-		\item Più thread dello stesso processo condividono lo stesso spazio di memorie per codice e variabili.
+		\item Più thread dello stesso processo condividono lo \textbf{stesso spazio di memorie per codice e variabili}.
 		
 		\item Dato che ogni thread esegue una \textit{porzione diversa} dello stesso processo, ovviamente non possono essere condivisi registri come il Program Counter e i registri di calcolo.
 	\end{itemize}
@@ -913,11 +904,12 @@
 	
 	Come si potrebbe intuire, un eccessivo numero di chiamate di funzione può portare al \textbf{riempimento eccessivo dello stack}. In quel caso si parla di \textbf{Stack Overflow}, e può accadere ad esempio quando si hanno troppe chiamate ricorsive ad una funzione.
 	
-	\subsection{Lo Heap}
-	Lo \textbf{Heap} è una regione di memoria dedicata all'allocazione dinamica e \textbf{manuale} delle variabili da parte dell'utente. A differenza dello Stack, la dimensione dello Heap non è conosciuta a compilazione, ma rappresenta comunque un'area di memoria molto vasta.
 	\begin{osservazione}{Il compilatore e lo Stack}{}
-		Come si è potuto intuire dalla precedente frase, quando un programma viene compilato, il compilatore analizza ogni singola funzione, con i suoi parametri, variabili locali e tipi di ritorno e conosce già la dimensione dello stack frame associato a quella funzione.
+		Quando un programma viene compilato, il compilatore analizza ogni singola funzione, con i suoi parametri, variabili locali e tipi di ritorno e conosce già la dimensione dello stack frame associato a quella funzione.
 	\end{osservazione}
+	
+	\subsection{Lo Heap}
+	Lo \textbf{Heap} è una regione di memoria dedicata all'allocazione dinamica e \textbf{manuale} delle variabili da parte dell'utente. A differenza dello Stack, la dimensione dello Heap non è conosciuta a compilazione, ma rappresenta comunque un'area di memoria molto vasta.\\
 	Le variabili in C possono essere manualmente allocate tramite appositi comandi, che permetteranno alle variabili di essere memorizzate nell'Heap e non in altre aree di memoria.\\
 	I comandi predisposti sono i seguenti:
 	\begin{description}
@@ -1092,5 +1084,752 @@
 		
 		\item[Libreria dinamica:] si tratta di un file con estensione \texttt{.so} pensato per essere condiviso tra più file diversi. Si tratta di un'ottima scelta quando non si vuole far crescere la dimensione dell'eseguibile. Il grande vantaggio sta nel fatto che la copia delle funzioni utili non avviene a compilazione, bensì quando una funzione viene chiamata (il linker si occupa solo di inserire dei riferimenti per ogni funzione e il file in cui questa è definita).
 	\end{description}
+	
+	\chapter{Processi e API di sistema}
+	Abbiamo già definito il concetto di \textit{processo} nei capitoli precedenti, ma in questo capitolo ne vedremo meglio la natura, come creare processi, come eseguirli, ecc...
+	
+	\section{L'astrazione dei processi}
+	Un processo è un'istanza di un programma in esecuzione, che comprende i seguenti parametri:
+	\begin{itemize}
+		\item Il \textbf{codice} che deve essere eseguito.
+		
+		\item Il valore corrente del \textbf{Program Counter}.
+		
+		\item I contenuti dei \textbf{registri della CPU}.
+		
+		\item Uno \textbf{spazio di memoria virtuale} a cui accedere (ovverosia il suo stack, il suo heap, ...)
+		
+		\item Gli identificativi ai file su cui il processo deve lavorare.
+		
+		\item Un \textbf{identificativo univoco di processo}, chiamato \textbf{ProcessID (PID)}.
+	\end{itemize}
+	
+	In base alla filosofia secondo cui viene progettato il sistema operativo, questo può decidere di procedere secondo due strategie per allocare il processo in RAM:
+	\begin{itemize}
+		\item \textbf{Caricamento immediato}: appena il processo entra in esecuzione, tutti i suoi dati vengono caricati in memoria RAM. Si tratta di una soluzione facile ma poco efficiente, in quanto potrebbero venir caricate in memoria anche porzioni di codice mai utilizzate.
+		
+		\item \textbf{Caricamento pigro}: una sezione del processo viene caricata solo quando deve essere effettivamente utilizzata. Entreremo più nel tecnico di questa modalità quando parleremo di paging e memoria.
+	\end{itemize}
+	
+	\section{Gli stati di un processo}
+	Affinché lo scheduler del sistema operativo possa decidere quando mandare un processo in esecuzione, quando fermarlo e quando farne partire un altro, si attribuisce ad ogni processo uno \textbf{stato}.
+	
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.70\linewidth}{!}{%
+			\begin{tikzpicture}[thick, >=latex]
+				% Stile comune per gli stati del processo
+				\tikzset{
+					state/.style={
+						draw,
+						fill=white,
+						minimum width=3.8cm,
+						minimum height=1.6cm,
+						align=center,
+						font=\sffamily\normalsize
+					}
+				}
+				
+				% Stati principali
+				\node[state] (ready) at (0, 3) {\textbf{READY}\\(waiting for CPU)};
+				\node[state] (running) at (6.5, 3) {\textbf{RUNNING}\\(on the CPU now)};
+				\node[state] (blocked) at (6.5, -0.8) {\textbf{BLOCKED}\\(waiting for I/O\\or event to occur)};
+				
+				% Freccia di ingresso verso READY
+				\draw[->] (ready.north) ++(0, 0.7) -- (ready.north);
+				
+				% Transizioni tra READY e RUNNING
+				\draw[->] ([yshift=0.35cm]ready.east) -- ([yshift=0.35cm]running.west)
+				node[midway, above=2pt, font=\sffamily\small] {Scheduled};
+				
+				\draw[->] ([yshift=-0.35cm]running.west) -- ([yshift=-0.35cm]ready.east)
+				node[midway, below=2pt, font=\sffamily\small] {Descheduled};
+				
+				% Transizione di uscita da RUNNING
+				\draw[->] (running.east) -- ++(1.4, 0)
+				node[right=2pt, font=\sffamily\normalsize] {\texttt{exit()}};
+				
+				% Transizione da RUNNING a BLOCKED
+				\draw[->] (running.south) -- (blocked.north)
+				node[midway, right=4pt, font=\sffamily\small, align=left] {I/O or\\event wait};
+				
+				% Transizione da BLOCKED a READY (percorso a L)
+				\draw[->] (blocked.west) -| (ready.south)
+				node[pos=0.25, above=2pt, font=\sffamily\small] {I/O Done};
+			\end{tikzpicture}%
+		}
+		\caption{Diagramma a tre stati del ciclo di vita di un processo}
+		\label{fig:stati_processo}
+	\end{figure}
+	
+	Come si vede nella Figura \ref{fig:stati_processo} vi sono 3 possibili stati in cui un processo:
+	\begin{description}
+		\item [READY:] i processi in questo stato sono pronti per essere eseguiti, e attendono solo che lo scheduler li mandi in esecuzione. Dire che un proceso è "pronto" per essere eseguito vuol dire che \textbf{possiede tutte le risorse necessarie per eseguire la prossima istruzione}.
+		
+		\item[RUNNING:] è lo stato in cui si trova un \textbf{processo in esecuzione}. NOTA BENE: Ci può essere \textbf{solo un} processo in esecuzione alla volta su una singola CPU, in quanto è impossibile eseguire due processi simultaneamente.
+		Se avessimo una CPU con $n$ core, si potrebbero eseguire simultaneamente $n$ processi, in quanto ogni core opererebbe come una CPU distinta con i suoi registri e i suoi stati.
+		
+		\item[BLOCKED:] i processi in questo stato sono quelli che \textbf{attendono una risorsa da un dispositivo di I/O}, senza la quale non potrebbero continuare l'esecuzione del programma (es: un input da tastiera). Viene definita una categoria a parte per quando si richiedono risorse esterne in quanto abbiamo visto come l'interfacciamento con dispositivi esterni sia un'operazione molto lenta (soprattutto rispetto ai cicli di clock della CPU). 
+	\end{description}
+	
+	\begin{osservazione}{Transizione RUNNING $\rightarrow$ READY}{}
+		Affinché un processo passi da READY a RUNNING è sufficiente che lo scheduler decida che "è arrivato il suo momento di eseguire".
+		\smallbreak
+		Ma per il contrario? Se l'esecuzione di un processo fila liscia, senza neanche richiesta di interfacciarsi con dispositivi esterni, entra il gioco quello che nei capitoli precedenti avevamo chiamato \textit{Timer Interrupt}, ovvero un timer di sistema che assegna ad ogni processo un certo intervallo di tempo per eseguire le sue istruzioni, dopodiché lo fa terminare per lasciare spazio ad altri processi.
+	\end{osservazione}
+	
+	\section{Il Process Control Block (PCB)}
+	Affinché il sistema operativo possa tenere traccia di tutti i dati relativi ad un processo, per ognuno di questi viene associata una particolare struttura dati chiamata \textbf{Process Control Block (PCB)}.\\
+	Questa struttura contiene informazioni fondamentali riguardo al processo, come ad esempio:
+	\begin{itemize}
+		\item Il suo \textbf{PID}.
+		
+		\item Il suo \textbf{stato corrente}, secondo la logica vista poco fa.
+		
+		\item Il \textbf{puntatore alla pagina di memoria riservata al process} (\textbf{pagetable}).
+		
+		\item Lo \textbf{stato e il contenuto dei registri della CPU} (\textbf{trapframe}).\\
+		Siccome abbiamo una sola CPU che può eseguire un processo alla volta, quando un processo passa dalla fase di esecuzione ad una qualsiasi altra fase, dovrà memorizzare i valori dei registri nel momento in cui l'esecuzione è stata interrotta, in modo che quando venga ripresa questa non riparta dall'inizio ma dall'ultimo "checkpoint".
+	\end{itemize}
+	
+	Tutti i PCB dei processi inizializzati vengono memorizzati all'interno di una struttura dati chiamata \textbf{Process Table} che \textbf{risiede in memoria kernel} (in quanto deve essere lo scheduler del sistema operativo a decidere chi eseguire). Lo scheduler andrà poi a scansionare questa tabella in ricerca di processi con stato READY da mandare in esecuzione.
+	
+	\section{La gerarchia dei processi}
+	Nei sistemi UNIX, i processi formano un albero in cui la radice è il processo \textbf{systemd} con PID = 1. Questo processo non può essere killato neanche volendo, in quanto è strettamente legato al funzionamento del kernel e del sistema operativo.\\
+	La gerarchia dei processi è organizzata ad albero in quanto ogni processo può creare altri processi figli (con il comando \texttt{fork()}) e dunque ogni processo ha anche un padre (il cui valore si chiama \textbf{Parent ProcessID (PPID)}).
+	
+	\newpage
+	\section{La funzione fork()}
+	La funzione \texttt{fork()} è forse una delle funzioni più utili quando si va a lavorare con i processi, in quanto permette di \textbf{creare un nuovo processo}.\\
+	Più precisamente, ci permette di \textbf{duplicare il PCB del processo padre}, ovvero il PCB del processo chiamante. Quest'operazione ci permetterà di allocare un PCB (dunque senza bisogno di conoscere la natura della struttura dati, astrazione!) e poi di modificarlo quasi a piacimento.
+	\smallbreak
+	Vediamo un esempio di utilizzo di \texttt{fork()} all'interno di un codice e commentiamolo:
+	\begin{lstlisting}[language=C]
+		int main() {
+			int pid = fork();
+			
+			if (pid < 0) {
+				perror("fork failed");
+			} else if (pid == 0) {
+				printf("Processo figlio con PID: %d", getpid());
+			} else {
+				printf("Processo padre con PID: %d", getpid());
+			}
+		}
+	\end{lstlisting}
+	Analizziamo ogni singola istruzione di questo codice che, seppur breve, ci dovrebbe aiutare a capire il funzionamento di \texttt{fork()}.
+	\begin{enumerate}
+		\item \textbf{Chiamata alla funzione fork()}: come abbiamo già detto, avendo mandato il programma in esecuzione, quello sarà un processo, supponiamo con PID = 1234. Chiamando \texttt{fork()} all'interno di questo processo, stiamo dicendo al sistema di creare un nuovo processo (dunque un nuovo PCB) che sia sostanzialmente una \textbf{copia} del PCB del processo chiamante (che sarà il padre di questo nuovo processo).
+		
+		\item \textbf{Cosa viene copiato nel PCB}: il PCB padre e PCB figlio avranno in comune l'area di memoria in cui è presente il codice binario da eseguire, ossia entrambi punteranno \textbf{allo stesso indirizzo di memoria}.\\
+		Oltre a questo, non hanno altro in comune: avranno sì gli stessi valori delle variabili, ma solo perché i valori dei registri saranno stati copiati e incollati anche nel PCB figlio. Il processo figlio avrà le proprie aree di memoria stack e heap, dunque se provassero a modificare la stessa variabile non riuscirebbero ad agire sullo stesso valore in quanto sarebbero logicamente indipendenti. E' molto importante sapere che al processo figlio, ovviamente, viene assegnato un nuovo PID. Supponiamo 1235 per il nostro esempio.
+		
+		\item A questo punto, avviene una sezione critica: avendo copiato nel processo figlio lo stato di \textbf{tutti} i registri, sarà stato copiato anche il valore del Program Counter, e dunque processo padre e figlio riprenderanno \textbf{dallo stesso identico punto}.
+		
+		\item Discutiamo ora il valore di ritorno della funzione \texttt{fork()}: prima di restituire un valore, viene eseguita la funzione e dunque creato il processo figlio. A questo punto, come abbiamo detto, i due processi condivideranno la stessa area di memoria per il codice ma non la stessa per le variabili. Qui il sistema fa una cosa interessante:
+		\begin{itemize}
+			\item All'interno del processo figlio, il valore di ritorno della funzione sarà \textbf{categoricamente 0}. Si tratta di una convenzione stabilita per indicare che il processo corrente è figlio di uno già esistente.
+			\item All'interno del processo padre, la funzione \texttt{fork()} restituirà il PID del processo appena creato.
+		\end{itemize}
+		Ma come è possibile che una singola funzione restituisca un valore diverso a due processi diversi?\\
+		Questo avviene in quanto, dopo aver creato le aree di memoria dedicate al processo figlio, il valore di ritorno della funzione verrà messo per ogni processo all'interno di uno speciale registro della CPU. Avendo due registri diversi, uno per il padre e uno per il figlio, è possibile creare questa "voluta discrepanza" tra i valori di ritorno.
+		
+		\item Una volta che la chiamata a \texttt{fork()} (supponiamo) è andata a buon fine, quindi, i possibili valori assumibili dalla nostra variabile intera sono \textbf{0 per il processo figlio} e $\mathbf{>0}$ \textbf{per il processo padre.}\\
+		Questa è la ragione per cui inseriamo quei controlli all'interno del codice: \textbf{non avendo garanzia di chi partirà per primo con l'esecuzione}, e magari volendo separare tra le operazioni che può compiere il figlio e quelle del padre, l'unico modo è necessariamente controllare il valore restituito da \texttt{fork()}.
+	\end{enumerate}
+	
+	Come ci si può aspettare, la funzione di libreria C \texttt{fork()} nasconde sottobanco una chiamata di sistema alla funzione \texttt{sys\_fork()}. Viene effettuata una chiamata di sistema in quanto abbiamo già detto che la Process Table in cui sono memorizati i PCB dei vari processi risiede in memoria kernel, e dunque è strettamente vietato far accedere quell'area di memoria da parte di un'istruzione utente.
+	\smallbreak
+	Inoltre, come è stato già detto nella descrizione del flusso di esecuzione del processo \texttt{fork()}, è impossibile predirre chi, tra il padre o il figlio, verrà eseguito prima come processo. Tutto dipende dallo scheduler e dalla priorità attribuita ad ogni processo. E' dunque sconsigliato scrivere porzioni di codice \textit{assumendo che un processo venga eseguito prima dell'altro}.
+	
+	Un modo per forzare l'esecuzione del processo figlio prima del processo padre è quello di mettere "a dormire" il processo padre, usando la funzione di libreria \texttt{sleep()}.
+	\begin{lstlisting}[language=C]
+		int main() {
+			int pid = fork();
+			
+			if (pid < 0) {
+				perror("errore nella fork");
+			} else if (pid == 0) {
+				// ESEGUO OPERAZIONI FIGLIO
+			} else  {
+				sleep(1);
+				// ESEGUO OPERAZIONI PADRE
+			}
+		}
+	\end{lstlisting}
+	In questo modo stiamo forzatamente interrompendo per 1 secondo l'esecuzione del processo padre, tempo che per la CPU è enorme dato che esegue gli switch tra un processo e l'altro nell'ordine di nanosecondi. Questo modo è chiaramente molto grossolano, ed è una \textbf{bad practice} in quanto mette a dormire il padre anche se il processo figlio è stato eseguito per primo.
+	\smallbreak
+	
+	Prima di concludere il discorso sul comando \texttt{fork()}, vediamo come si comportano multiple chiamate della funzione all'interno di un programma.\\
+	Supponiamo di avere questo codice:
+	\begin{lstlisting}[language=C]
+		fork(); (1)
+		fork(); (2)
+		fork(); (3)
+		printf("Hello, World!");
+	\end{lstlisting}
+	Ragioniamo: ad ogni chiamata di fork, il numero di processi viene duplicato, in quanto un padre crea un processo figlio.\\
+	Alla chiamata (1), diventano 2 processi. Siccome l'esecuzione del codice per tutti i processi riparte dallo stesso punto grazie al valore del Program Counter, ciascuno dei due processi eseguirà anche la \texttt{fork()} del punto (2). Dato che avremo 2 processi ad eseguire una \texttt{fork()} e ognuno di questi genera 2 processi figli, alla fine di (2) avremo un totale di 4 processi. Come si può immaginare, ognuno dei 4 processi eseguirà un \texttt{fork()} duplicando il numero di processi, arrivando così ad 8 processi.	Vediamo dunque come il numero di processi finali è dato da $2^n$ dove $n$ è il numero di \texttt{fork()} eseguite.
+	
+	Dunque se volessimo mandare in crash il sistema operativo, ora sapremmo come fare:
+	\begin{lstlisting}[language=C, caption={Codice per implementare la cosiddetta "fork bomb".}]
+		while (1) {
+			fork();
+		}
+	\end{lstlisting}
+	Questo ciclo continua a creare processi finché non viene raggiunto il limite di processi memorizzabili all'interno della Process Table, e dunque il sistema operativo va in crash.\\
+	Una possibile soluzione a questo problema sarebbe definire un limite massimo di processi generabili da un singolo utente.
+	
+	\subsection{La filosofia Copy-on-Write}
+	In modo molto ingenuo, il comando \texttt{fork()} copierebbe l'intero spazio di memoria di un processo (che potenzialmente potrebbero essere anche diversi GB di memoria) in una nuova area riservata al processo figlio.\\
+	I sistemi operativi moderni evitano questa pratica (proprio per evitare sprechi di memoria) implementando la cosiddetta filosofia \textbf{Copy-on-Write}:
+	\begin{itemize}
+		\item Alla creazione del nuovo processo, l'area di memoria a lui attribuita non è una copia di quella del processo padre, bensì gli viene attribuito lo \textbf{stesso indirizzo di memoria} della memory page del padre. Possiamo quindi dire che fino ad un certo momento condivideranno letteralmente la stessa risorsa, dato che viene passato l'indirizzo di questa.
+		
+		\item Quando uno dei due processi prova a modificare la suddetta area condivisa, viene sollevata una \textbf{Page Fault} dalla Memory Management Unit. Solo a questo punto viene creata la copia in memoria della pagina, che includerà le modifiche apportare dal processo che le ha richieste.\\
+		A questo punto avremmo dunque due pagine di memoria separate:
+		\begin{itemize}
+			\item La pagina di memoria "originale", alla quale punta il processo che \textbf{non} ha provato a modificarla.
+			
+			\item La pagina di memoria \textit{copiata e modificata} dal processo che \textbf{ha} provato a modificarla.
+		\end{itemize}
+	\end{itemize}
+	
+	\section{La sincronizzazione dei processi con wait()}
+	Come abbiamo detto e come si vuole ripetere, è impossibile determinare chi, tra il processo padre e quello figlio, riprenda l'esecuzione in seguito ad una \texttt{fork()}.\\
+	Supponendo che il processo figlio termini prima di quello del padre, la memoria dedicata al processo figlio \textbf{non verrà eliminata}, bensì verrà mantenuta fino alla fine del processo padre. Il processo figlio verrà poi messo in uno stato detto \textbf{ZOMBIE}.\\
+	Per fare in modo che questo problema non si presenti, il sistema operaivo mette a disposizione la funzione \texttt{wait()} che ci permette di fermare l'esecuzione del processo padre in attesa che i processi figli siano terminati.
+	\smallbreak
+	
+	Vediamo di seguito la firma del metodo \texttt{wait()}, commentiamola, e poi vediamo un esempio di utilizzo nel codice.
+	\begin{center}
+		\texttt{int wait(int *wstatus);}
+	\end{center}
+	\begin{itemize}
+		\item La funzione restituisce un valore intero che, se l'esecuzione di \texttt{wait()} è andata a buon fine, rappresenta il PID del processo figlio che è terminato.
+		
+		\item Il parametro \texttt{int *wstatus} è un modo intelligente per far restituire alla funzione un altro valore.\\
+		Siccome non siamo su Python e non possiamo restituire tuple di valori, il segreto sta nel passare il puntatore ad una variabile non inizializzata e poi ci penserà la funzione \texttt{wait()} al suo interno a modificarla, memorizzandoci lo stato con cui si è conclusa l'esecuzione del processo figlio.
+	\end{itemize}
+	
+	Vediamo ora un esempio concreto in un pezzo di codice.
+	\begin{lstlisting}[language=C]
+		int main() {
+			int pid = fork();
+			if (pid == 0) {
+				printf("Sta eseguendo il figlio...");
+				exit(42); // Un generico codice di uscita
+			}
+			
+			// Adesso siamo nel parent e dobbiamo attendere che finisca il child
+			int stato;
+			int finito = wait(&stato);
+			
+			if (child_pid == -1) {
+				perror("wait");
+			} else {
+				printf("Arrivo qui solo dopo che ho finito.")
+			}
+		}
+	\end{lstlisting}
+	Come vediamo, il valore assunto dalla variabile \texttt{finito} rappresenta il valore del processo figlio terminato. Nell'ottica di voler far eseguire prima il figlio del padre, questo è l'approccio che si deve attuare.\\
+	Esiste anche la funzione \texttt{waitpid(int child\_pid)} che consente al processo padre di attendere la terminazione dell'esecuzione \textbf{solo del processo figlio che ha PID uguale a quello passato come parametro della funzione}.
+	
+	\section{La funzione exec()}
+	La funzione \texttt{exec()} è una procedura fondamentale in quanto ci permette di sostituire il codice eseguito da un processo con un altro file binario contenente altro codice.\\
+	Si tratta di una funzionalità molto utile, in quanto non risulta avere particolarmente senso far eseguire sia un processo che i suoi figli lo stesso file binario.
+	\begin{osservazione}{Successo di exec()}{}
+		Se la funzione \texttt{exec()} viene portata a termine con successo, il processo figlio non tornerà mai ad eseguire il processo padre in quanto avrà cambiato totalmente file binario.
+	\end{osservazione}
+	
+	Una variante di \texttt{exec()} è la funzione \texttt{execvp(const char* file, char* const argv[])}, che prende come input il file binario di cui eseguire il codice ed eventuali argomenti che servono a tale programma per completare la sua esecuzione.\\
+	Prendiamo ad esempio il seguente codice:
+	\begin{lstlisting}[language=C, caption={Il comando ls serve a listare il contenuto della directory "$\backslash$tmp", e i vari argomenti che iniziano con '-' sono dei flag che compiono operazioni aggiuntive.}]
+		char* args[] = {"ls", "-l" "-a", "\tmp", NULL};
+		execvp("ls", args);
+	\end{lstlisting}
+	Il processo corrente inizierà ad eseguire il comando \texttt{ls}	(preso in questo caso dalle variabili di ambiente, ma solo perché è uno dei comandi di default di Linux) con i vari argomenti dell'array \texttt{args}. Il valore di terminazione per smettere di leggere argomenti è il valore speciale \texttt{NULL} all'interno dell'Array degli argomenti.
+	\smallbreak
+	
+	Avendo visto il funzionamento sia per \texttt{fork()} che \texttt{exec()}, vediamo un esempio di programma che li combina.
+	\begin{lstlisting}[language=C, caption={Esempio di uso combinato di fork() e execvp(). Si ignorano possibili errori per brevità.}]
+		int main() {
+			int pid = fork();
+			if (pid == 0) {
+				execvp("ls", {"\tmp", NULL})
+			} else {
+				printf("Processo padre.")
+			}
+		}
+	\end{lstlisting}
+	
+	Avendo visto e compreso il funzionamento di questi due comandi, possiamo avere anche una visione più chiara di come funzioni un'istanza di terminale (shell), in quanto si basa su un loop di istruzioni molto preciso:
+	\begin{enumerate}
+		\item Far scrivere all'utente un comando. 
+		
+		\item Leggere il comando e dividerlo in token.
+		
+		\item Creare un processo figlio che si occupi di eseguire il comando (\texttt{fork()}).
+		
+		\item Far eseguire il comando al processo figlio (\texttt{execvp()}).
+		
+		\item Attendere che il processo figlio termini l'esecuzione del comando (\texttt{wait()}).
+		
+		\item Restituire il controllo al processo padre e ritornare all'inizio del loop.
+	\end{enumerate}
+	\begin{osservazione}{Reale funzionamento di una shell}{}
+		Una vera shell in realtà consente anche all'utente di eseguire nuovi comandi mentre altri stanno continuando in background. Questo può avvenire inserendo il carattere \texttt{\&} alla fine di un comando, il che indicherà al sistema operativo di restituire il controllo all'utente subito dopo aver mandato in esecuzione il comando precedente.
+	\end{osservazione}
+	
+	\section{Altre API di sistema}
+	Di seguito un veloce elenco di altre API di sistema importanti ma non fondamentali come quelle descritte precedentemente.
+	
+	\begin{description}
+		\item [exit():] si occupa di terminare un processo. E' presente in due varianti:
+		\begin{itemize}
+			\item \texttt{exit()}, che termina il processo in modo "lento" ma pulendo tutti i buffer e pulendo tutti gli stream.
+			
+			\item \texttt{\_exit()}, che termina il processo in modo veloce ma senza pulire buffer e stream.
+		\end{itemize}
+		
+		\item[kill():] per inviare un segnale al processo figlio e "ucciderlo".
+		
+		\item[nice():] per aggiornare il livello di priorità di un processo. Tale livello è un numero intero che va da \textbf{-20} (\textbf{priorità massima}, solo il kernel) a \textbf{+19} (\textbf{priorità minima}, programmi utente).
+		
+		\item[pipe():] crea un canale di comunicazione tra due o più processi per permettere di condividere l'output di un processo con l'input di un altro. 
+	\end{description}
+	
+	\chapter{Scheduling della CPU}
+	Nei capitoli precedenti abbiamo accennato a come i sistemi moderni creino l'illusione di eseguire simultaneamente più processi "semplicemente" effettuando dei rapidissimi scambi di stato tra i processi in esecuzione.\\
+	In questo capitolo vedremo più nel dettaglio il ruolo dello \textbf{scheduler}, ovverosia quel modulo del kernel che si occupa di decidere, mediante un accorto \textbf{algoritmo di scheduling}, l'ordine dei processi da mandare in esecuzione.
+	\smallbreak
+	
+	L'obiettivo non sarà tuttavia fornire direttamente la soluzione adottata oggi dai sistemi moderni, bensì di guidare l'apprendimento imponendo dei vincoli e man mano rimuovendoli, per trovare standard sempre più efficaci.
+	
+	\section{Assunzioni sul carico di lavoro e metriche}
+	Affinché lo scheduler possa organizzare i processi, bisogna definire il carico di lavoro e delle metriche secondo le quale stabilire questi confronti.
+	
+	\begin{definizione}{Carico di lavoro}{workload}
+		Il carico di lavoro descrive:
+		\begin{itemize}
+			\item Quanti processi stanno attualmente venendo eseguiti dal sistema.
+			
+			\item L'istante di tempo in cui viene creato un nuovo PCB.
+			
+			\item \textbf{Quanto tempo} è richiesto per ogni processo.
+			
+			\item \textbf{Quando} il processo dovrà fare operazioni di I/O.
+		\end{itemize}
+	\end{definizione}
+	
+	\begin{osservazione}{Natura asincrona dei processi}{}
+		E' doveroso fare un appunto sulla definizione soprastante.\\
+		Per lo scheduler è \textbf{impossibile} predirre gli ultimi due punti, in quanto i processi sono di per sè un'unità asincrona in cui alcune cose non sono deterimistiche.
+	\end{osservazione}
+	
+	\newpage
+	Al fine di costruire il nostro percorso in maniera graduale verso un algoritmo di scheduling efficiente che funzioni per ogni sistema, dobbiamo partire letteralmente \textit{dalle basi}, facendo delle assunzioni \textbf{molto comode} sulla natura del workload:
+	\begin{enumerate}
+		\item Ogni processo richiede la \textbf{stessa quantità di tempo} per essere eseguito.
+		
+		\item Tutti i processi \textbf{arrivano allo stesso momento} ($t = 0$).
+		
+		\item Prima di cambiare processo deve essere \textbf{completamente terminato il corrente} (nessuna interruzione del processo).
+		
+		\item \textbf{Nessun} processo ha necessità di eseguire operazioni di \textbf{I/O}.
+		
+		\item Il \textbf{tempo di esecuzione} di ogni processo è \textbf{noto a priori}.
+	\end{enumerate}
+	Come vediamo sono delle assunzioni molto comode, che però piano piano andremo a calare per migliorare progressivamente l'algoritmo di scheduling che vogliamo progettare.
+	\smallbreak
+	
+	Oltre a queste assunzioni, che si permetteranno di definire l'algoritmo, dobbiamo anche avere dei criteri per permetterci di stabilire se un algoritmo performa meglio di un altro.\\
+	Abbiamo principalmente due metriche:
+	\begin{description}
+		\item [Tempo di completamento (Turnaround Time):] indica il tempo totale trascorso da quando il processo arriva al sistema a quando viene finito di eseguire.\\
+		La formula per il calcolo di questo parametro è la seguente:
+		\[
+			T_\text{turnaround} = T_\text{fine\_processo} - T_\text{arrivo}
+		\]
+		Prendendo la media del tempo di completamento di tutti i processi schedulati, otteniamo l'importantissimo parametro di \textbf{Tempo di completamento medio}.
+		
+		\item[Tempo di risposta (Response Time):] rappresenta il tempo da quando un processo arriva al sistema a quando arriva ad essere eseguito per la prima volta. Sostanzialmente indica quanto tempo un processo rimane in coda prima di essere considerato.\\
+		La formula per questo parametro è la seguente:
+		\[
+			T_\text{response} = T_\text{prima\_esecuzione} - T_\text{arrivo}
+		\]
+	\end{description}
+	
+	Questi appena descritti sono i parametri fondamentali nel calcolo dell'\textbf{equità} e delle \textbf{performance} di un algoritmo di scheduling.\\
+	In particolare:
+	\begin{description}
+		\item [Equità (Fairness):] rappresenta in che misura il \textbf{tempo della CPU viene distribuito tra tutti i processi}. Un algoritmo è "\textbf{fair}" se garantisce a ogni processo di fare progressi regolari, evitando che qualche task rimanga bloccato ad aspettare per un tempo indefinito (starvation).
+		
+		\item[Prestazioni (Performance):] rappresenta la \textbf{capacità di minimizzazione del turnaround time o del response time}.
+	\end{description}
+	Si può facilmente intuire come queste due filosofie siano contrapposte, pertanto si deve scegliere cosa si deve prediligere maggiormente in un algoritmo, oppure trovare l'equilibrio più vantaggioso tra le due.
+	
+	\section{I primi passi: FIFO e SJF}
+	Avendo messo le basi per la nostra analisi degli algoritmi di scheduling, partiamo dalle basi, con due delle strategie più semplici.
+	
+	\subsection{FIFO - First In, First Out}
+	E' forse la schedule più semplice a cui si potrebbe pensare: \textbf{i primi processi ad entrare sono anche i primi a venir eseguiti}.\\
+	Anche la sua implementazione risulta particolarmente semplice, in quanto consiste semplicemente nella gestione di una struttura dati \textit{coda}. Vediamo un semplice esempio di questo algoritmo usando anche le nostre 5 assunzioni precedenti.
+	\smallbreak
+
+	Supponiamo di avere tre job: \textbf{A}, \textbf{B} e \textbf{C} e che:
+	\begin{itemize}
+		\item Tutti arrivino allo stesso istante di tempo $t=0$.
+		
+		\item Tutti abbiano la stessa durata di $10s$.
+	\end{itemize}
+	
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.50\linewidth}{!}{%
+			\begin{tikzpicture}
+				% Tacche temporali
+				\node[font=\sffamily\footnotesize] at (0, 0.22) {0};
+				\node[font=\sffamily\footnotesize] at (1.8, 0.22) {10};
+				\node[font=\sffamily\footnotesize] at (3.6, 0.22) {20};
+				\node[font=\sffamily\footnotesize] at (5.4, 0.22) {30};
+				
+				% Blocchi dei Job (sottili, compatti e senza testo in grassetto)
+				\draw[fill=white] (0, -0.5) rectangle (1.8, 0) node[midway, font=\sffamily\small] {A};
+				\draw[fill=white] (1.8, -0.5) rectangle (3.6, 0) node[midway, font=\sffamily\small] {B};
+				\draw[fill=white] (3.6, -0.5) rectangle (5.4, 0) node[midway, font=\sffamily\small] {C};
+			\end{tikzpicture}%
+		}
+		\label{fig:linea_temporale_job}
+	\end{figure}
+	
+	Andiamo adesso a calcolare il tempo di completamento per ogni processo e di conseguenza il tempo medio:
+	\begin{itemize}
+		\item A termina a $t=10$. Tempo di completamento = $10-0=10s$
+		\item B termina a $t=20$. Tempo di completamento = $20-0=20s$
+		\item C termina a $t=30$. Tempo di completamento = $30-0=30s$
+	\end{itemize}
+	Tempo di completamento medio: $\frac{10+20+30}{3} = 20s$.\\
+	Non è un brutto tempo, solo che stiamo lavorando con delle ipotesi molto comode.
+	\smallbreak
+	
+	Adesso, andiamo a rilassare l'Assunzione 1, quella sull'equa durata di tutti i processi.\\
+	Proviamo a ridisegnare lo schema precedente supponendo ora che $A = 100s, B=C=10s$.
+	
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.65\linewidth}{!}{%
+			\begin{tikzpicture}
+				% Tacche temporali ben spaziate e leggibili
+				\node[font=\sffamily\small] at (0, 0.28) {0};
+				\node[font=\sffamily\small] at (6.6, 0.28) {100};
+				\node[font=\sffamily\small] at (7.8, 0.28) {110};
+				\node[font=\sffamily\small] at (9.0, 0.28) {120};
+				
+				% Blocchi dei Job con altezza e larghezza calibrate per non schiacciare le etichette B e C
+				\draw[fill=white] (0, -0.65) rectangle (6.6, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (6.6, -0.65) rectangle (7.8, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (7.8, -0.65) rectangle (9.0, 0) node[midway, font=\sffamily\normalsize] {C};
+			\end{tikzpicture}%
+		}
+	\end{figure}
+	Se andassimo ora a calcolare il tempo di esecuzione minimo per ogni processo, il risultato sarebbe ben diverso:
+	\begin{itemize}
+		\item A termina a $t=100$. Tempo di completamento = $100-0=100s$
+		\item B termina a $t=110$. Tempo di completamento = $110-0=110s$
+		\item C termina a $t=120$. Tempo di completamento = $120-0=120s$
+	\end{itemize}
+	Tempo di completamento medio: $\frac{100+110+120}{3} = 110s$.\\
+	Vediamo che la situazione è cambiata, e questo dato che i processi corti $B$ e $C$ sono bloccati dietro il processo lungo $A$ e devono attenderne la fine. Nello studio degli algoritmi di scheduling, questo è detto \textbf{effetto convoglio}.
+	
+	\subsection{SJF - Shortest Job First}
+	Per aggiustare questo effetto convoglio, evitando dunque che i procssi corti siano messi dopo uno più lungo di loro e rimangano bloccati, si attua la tecnica Shortest Job First (SJF) che, come suggerisce il nome, prevede di \textbf{eseguire per primo il processo più corto di tutti}.\\
+	Tenendo conto di questa nuova strategia, se andiamo a ridisegnare il diagramma precedente con $A=100, B=C=10$, vediamo come le cose cambino anche solo eseguendo per primi i processi corti.
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.65\linewidth}{!}{%
+			\begin{tikzpicture}
+				% Tacche temporali ben spaziate e leggibili
+				\node[font=\sffamily\small] at (0, 0.28) {0};
+				\node[font=\sffamily\small] at (1.2, 0.28) {10};
+				\node[font=\sffamily\small] at (2.4, 0.28) {20};
+				\node[font=\sffamily\small] at (9.0, 0.28) {120};
+				
+				% Blocchi dei Job (SJF: B e C precedono A)
+				\draw[fill=white] (0, -0.65) rectangle (1.2, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (1.2, -0.65) rectangle (2.4, 0) node[midway, font=\sffamily\normalsize] {C};
+				\draw[fill=white] (2.4, -0.65) rectangle (9.0, 0) node[midway, font=\sffamily\normalsize] {A};
+			\end{tikzpicture}%
+		}
+	\end{figure}
+	\begin{itemize}
+		\item B termina a $t=10$. Tempo di completamento = $10-0=10s$
+		\item C termina a $t=20$. Tempo di completamento = $20-0=20s$
+		\item A termina a $t=120$. Tempo di completamento = $120-0=120s$
+	\end{itemize}
+	Facendo la media, otteniamo $\frac{10+20+120}{3} = 50s$ il che è un tempo inferiore per più della metà rispetto a prima!\\
+	\begin{osservazione}{Utilità del SJF}{}
+		L'algoritmo SJF è \textbf{ottimale} per \textbf{minimizzare il tempo di completamento medio per processi che arrivano tutti allo stesso momento}.
+	\end{osservazione}
+	\smallbreak
+	
+	Avendo lavorato sulla prima assunzione, riguardante la durata dei processi e avendo trovato un algoritmo che ci permette di rendere efficiente lo scheduling con quell'ipotesi rilassata, andiamo a rilassare anche a rimuovere la seconda assunzione, riguardante il fatto che \textbf{tutti i processi arrivano allo stesso tempo}.\\
+	Modifichiamo leggermente le variabili del nostro diagramma: $A=100, t=0; B=C=10, t=10$.
+	
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.65\linewidth}{!}{%
+			\begin{tikzpicture}
+				% Tacche temporali e arrivo dei job
+				\node[font=\sffamily\small] at (0, 0.28) {0};
+				\node[font=\sffamily\small, anchor=west] at (0.9, 0.28) {10 (Arrivano B e C)};
+				\node[font=\sffamily\small] at (6.6, 0.28) {100};
+				\node[font=\sffamily\small] at (7.8, 0.28) {110};
+				\node[font=\sffamily\small] at (9.0, 0.28) {120};
+				
+				% Blocchi di esecuzione dei Job
+				\draw[fill=white] (0, -0.65) rectangle (6.6, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (6.6, -0.65) rectangle (7.8, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (7.8, -0.65) rectangle (9.0, 0) node[midway, font=\sffamily\normalsize] {C};
+			\end{tikzpicture}%
+		}
+	\end{figure}
+	Analizzando ciò che accade:
+	\begin{enumerate}
+		\item Al tempo $t=0$, l'unico processo presente è $A$ e dunque lo scheduler deve necessariamente scegliere quello.
+		
+		\item Al tempo $t=10$ arrivano B e C, ma siccome il SJF non offre nessun meccanismo per gestire l'interruzione di un processo, questi dovranno attendere che $A$ sia terminato prima di venir eseguiti.
+	\end{enumerate}
+	Vediamo dunque che in questa casistica, avendo semplicemente rilassato la seconda ipotesi, \textbf{l'effetto convoglio è tornato}.
+	\begin{itemize}
+		\item A termina a $t=100$. Tempo di completamento = $100-0=100s$
+		\item B termina a $t=110$. Tempo di completamento = $110-10=100s$
+		\item C termina a $t=120$. Tempo di completamento = $120-10=110s$
+	\end{itemize}
+	Il tempo di completamento medio risulta essere $\frac{100+100+120}{3} = 103.3s$. Non ottimale.
+	
+	\section{Interruzione dei processi e STCF}
+	Per costruire un algoritmo di scheduling efficiente, dobbiamo rilassare la terza assunzione (i processi vanno avanti finché non vengono terminati).\\
+	Rilassare questa assunzione significa anche introdurre un meccanismo per memorizzare il \textit{contesto} di un processo (ovvero i valori di tutti i registri utilizzati) per permettergli di ricominciare da dove si era interrotto.
+	Come abbiamo già detto, però, questa abilità di interrompere è possibile grazie al Timer Interrupt, che è un dispositivo hardware.
+	\smallbreak
+	
+	Introduciamo così l'algoritmo \textbf{STCF - Shortest Time to Complete First} che opera nel seguente modo:
+	\begin{itemize}
+		\item Quando un processo entra nella coda dei processi, lo scheduler compara il tempo di esecuzione rimanente del processo corrente con quello totale del nuovo processo.
+		
+		\item Se il nuovo job ha un tempo di esecuzione inferiore rispetto al corrente, viene effettuato un cambio di contesto ed eseguito il nuovo processo fino a terminazione (o finché non ne arriva uno più corto).
+	\end{itemize}
+	Con questa nuova strategia, vediamo come si comporta la nostra schedule precedente:
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.65\linewidth}{!}{%
+			\begin{tikzpicture}
+				% Tacche temporali
+				\node[font=\sffamily\small] at (0, 0.28) {0};
+				\node[font=\sffamily\small] at (1.4, 0.28) {10};
+				\node[font=\sffamily\small] at (2.8, 0.28) {20};
+				\node[font=\sffamily\small] at (4.2, 0.28) {30};
+				\node[font=\sffamily\small] at (9.0, 0.28) {120};
+				
+				% Blocchi di esecuzione dei Job con prelazione (A interrotto da B e C)
+				\draw[fill=white] (0, -0.65) rectangle (1.4, 0) node[midway, font=\sffamily\normalsize] {A (10)};
+				\draw[fill=white] (1.4, -0.65) rectangle (2.8, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (2.8, -0.65) rectangle (4.2, 0) node[midway, font=\sffamily\normalsize] {C};
+				\draw[fill=white] (4.2, -0.65) rectangle (9.0, 0) node[midway, font=\sffamily\normalsize] {A (90)};
+			\end{tikzpicture}%
+		}
+	\end{figure}
+	Andiamo ad illustrare nel dettaglio cosa accade:
+	\begin{enumerate}
+		\item Al tempo $t=0$ è presente solo il processo $A$, dunque viene eseguito lui.
+		
+		\item Al tempo $t=10$ arrivano i processi $B$ e $C$, entrambi della durata di $10s$.
+		\begin{itemize}
+			\item Essendo arrivato un nuovo processo, viene comparato il tempo di esecuzione rimanente di $A (100-10 = 90s)$ con la durata del processo entrante $10s$.
+			
+			\item Siccome il processo entrante è più corto, viene subito mandato in esecuzione.
+		\end{itemize}
+	\end{enumerate}
+	Andiamo allora a vedere se è effettivamente migliorato qualcosa, a livello di tempi di completamento:
+	\begin{itemize}
+		\item $A$ arriva a $t=0$ e finisce a $t = 120$. Tempo di completamento = $120-0=120s$.
+		
+		\item $B$ arriva a $t=10$ e finisce a $t = 20$. Tempo di completamento = $20-10=10s$.
+		
+		\item $C$ arriva a $t=10$ e finisce a $t = 30$. Tempo di completamento = $30-10=20s$.
+	\end{itemize}
+	La media tra queste grandezze è $\frac{120+10+20}{3} = 50s$. Decisamente un miglioramento pensando ai $103.3s$ precedenti.
+	
+	\begin{osservazione}{Utilità del STFC}{}
+		L'algoritmo STCF è \textbf{ottimale} quando si devono \textbf{eseguire processi di cui si conosce la lunghezza} ma che \textbf{possono arrivare in momenti diversi}.
+	\end{osservazione}
+	
+	Tuttavia, anche questo algoritmo non è sicuramente esente da difetti. Immaginiamo una situazione in cui il processo $A$ di durata $100s$ inizia ad essere eseguito a tempo $t=0$. Supponiamo che poi ogni 10 secondi arrivi un processo di durata inferiore ad $A$: verrebbe data priorità a lui, in quanto più corto. A lungo andare verrebbero eseguiti sempre processi di breve durata, ma quello più lungo rimarrebbe in coda ad attendere. Tale situazione è detta \textbf{Starvation}, che è un problema di \textbf{equità}.
+	
+	\section{Round Robin (RR)}
+	Supponiamo di star eseguendo un processo su un sistema multiutente. L'utente A sta modificando un file di testo e l'utente B sta compilando un programma.\\
+	Supponendo che la compilazione richieda $10s$, gli algoritmi SJB e STCF darebbero la precedenza a questo processo. Ciò vuol dire però che all'utente A in quei $10s$ verranno ignorate le pressioni di tasti. Ci rendiamo conto di come, in una situazione reale, tali algoritmi non siano molto efficienti.
+	\smallbreak
+	Ecco perché introduciamo l'algoritmo \textbf{Round Robin (RR)}, che si occupa di schedulare i processi seguendo un loop circolare:
+	\begin{itemize}
+		\item Anziché eseguire un processo fino alla fine, lo esegue per un breve lasso di tempo.
+		
+		\item Alla fine di questo lasso di tempo, il processo viene spostato alla fine della coda.
+		
+		\item Viene eseguito il processo attualmente in testa, e così via finché i processi non sono esauriti...
+	\end{itemize}
+	Il lasso di tempo entro il cui un processo viene eseguito è detto \textbf{Time Slice} o \textbf{Scheduling Quantum}, il quale deve rispettare le seguenti caratteristiche:
+	\begin{itemize}
+		\item Deve essere abbastanza lungo da ammortizzare i costi del context switch.
+		
+		\item Deve essere abbastanza corto da creare l'illusione dell'esecuzione simultanea.
+	\end{itemize}
+	
+	\newpage
+	Vediamo un esempio pratico, come fatto prima per i precedenti algoritmi: supponiamo di avere i processi $A, B, C$, tutti che arrivano a $t=0$ e dalla durata di $10s$ ciascuno; il time-slice è impostato a $2s$.
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.70\linewidth}{!}{%
+			\begin{tikzpicture}
+				% Tacche temporali
+				\node[font=\sffamily\small] at (0, 0.28) {0};
+				\node[font=\sffamily\small] at (0.8, 0.28) {2};
+				\node[font=\sffamily\small] at (1.6, 0.28) {4};
+				\node[font=\sffamily\small] at (2.4, 0.28) {6};
+				\node[font=\sffamily\small] at (3.2, 0.28) {8};
+				\node[font=\sffamily\small] at (4.0, 0.28) {10};
+				\node[font=\sffamily\small] at (4.8, 0.28) {12};
+				\node[font=\sffamily\small] at (5.6, 0.28) {14};
+				\node[font=\sffamily\small] at (6.4, 0.28) {16};
+				\node[font=\sffamily\small] at (7.2, 0.28) {18};
+				\node[font=\sffamily\small] at (8.0, 0.28) {20};
+				\node[font=\sffamily\small] at (8.7, 0.28) {\dots};
+				\node[font=\sffamily\small] at (10.0, 0.28) {30};
+				
+				% Blocchi di esecuzione dei Job (Round Robin con quanto = 2)
+				\draw[fill=white] (0, -0.65) rectangle (0.8, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (0.8, -0.65) rectangle (1.6, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (1.6, -0.65) rectangle (2.4, 0) node[midway, font=\sffamily\normalsize] {C};
+				\draw[fill=white] (2.4, -0.65) rectangle (3.2, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (3.2, -0.65) rectangle (4.0, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (4.0, -0.65) rectangle (4.8, 0) node[midway, font=\sffamily\normalsize] {C};
+				\draw[fill=white] (4.8, -0.65) rectangle (5.6, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (5.6, -0.65) rectangle (6.4, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (6.4, -0.65) rectangle (7.2, 0) node[midway, font=\sffamily\normalsize] {C};
+				\draw[fill=white] (7.2, -0.65) rectangle (8.0, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (8.0, -0.65) rectangle (10.0, 0) node[midway, font=\sffamily\normalsize] {\dots};
+			\end{tikzpicture}%
+		}
+	\end{figure}
+	Stavolta andiamo a calcolare i \textbf{tempi di risposta} (che ricordiamo essere la differenza tra quando un processo arriva in coda e quando viene eseguito per la prima volta).
+	\begin{itemize}
+		\item $A$ arriva a $t = 0$ e viene eseguito per la prima volta a $t = 0$. Tempo di risposta $0-0=0s$.
+		
+		\item $B$ arriva a $t = 0$ e viene eseguito per la prima volta a $t = 2$. Tempo di risposta $2-0=2s$.
+		
+		\item $C$ arriva a $t = 0$ e viene eseguito per la prima volta a $t = 4$. Tempo di risposta $4-0=4s$.
+	\end{itemize}
+	Otteniamo come il tempo medio di risposta sia $\frac{0+2+4}{3} = 2s$, il che è un tempo di attesa \textbf{significativamente basso}. Il lettore può provare da solo a calcolare tale grandezza in riferimento ad un algoritmo come SJF.
+	
+	\begin{osservazione}{Utilità del Round Robin}{}
+		Come abbiamo visto, l'algoritmo Round Robin è \textbf{ottimale} per \textbf{minimizzare i tempi di risposta} (cioè per garantire che i processi vengano tutti "serviti" in un tempo ragionevole), tuttavia risulta terribile per quanto riguarda il tempo di completamento.
+		\smallbreak
+		Considerando sempre l'esempio precedente, abbiamo che $A$ termina a $t=26$, $B$ termina a $t=28$, $C$ termina a $t=30$. Vediamo come il tempo di completamento minimo sia di $\frac{26+28+30}{3} = 28s$, il che è un tempo anche peggiore degli algoritmi SFJ e STCF.
+	\end{osservazione}
+	
+	Possiamo dunque fare una considerazione generale per quanto riguarda i tempi di risposta e di completamento.
+	\begin{osservazione}{Trade-off tra risposta e completamento}{}
+		\begin{itemize}
+			\item Ogni politica che \textbf{ottimizza il tempo di risposta avrà un downgrade sul tempo di completamento}.
+			
+			\item Ogni politica che \textbf{ottimizza il tempo di completamento avrà un downgrade sul tempo di risposta}.
+		\end{itemize}
+	\end{osservazione}
+	
+	\section{Incorporazione dell'I/O}
+	Purtroppo, è arrivato anche il momento di rilassare la quarta assunzione, riguardante l'assenza di operazioni di I/O da completare, anche perché queste sono molto più frequenti di quanto ci si possa immaginare.\\
+	Come sappiamo avendo studiato gli stati di un processo, quando il job deve svolgere un'operazione di I/O si deve:
+	\begin{enumerate}
+		\item Mettere il processo in stato \texttt{BLOCKED}.
+		
+		\item Attendere che l'operazione sia completata, e intanto eseguire altri processi.
+		
+		\item Una volta completata l'operazione, il processo viene rimesso nella coda dei processi \texttt{READY}.
+	\end{enumerate}
+	Il punto di un buono scheduler è proprio garantire che venga eseguito un altro processo nel frattempo che il corrente è impegnato in un'operazione di I/O.\\
+	La sezione di tempo in cui un processo viene eseguito è detta \textbf{CPU Burst}, mentre quella in cui il processo attende l'I/O si chiama \textbf{I/O Wait}.
+	\smallbreak
+	
+	Tutto bello ma...come lo implementiamo nei nostri algoritmi di scheduling?\\
+	Il trucco è trattare ogni CPU Burst come un sotto-processo indipendente, che viene eseguito e schedulato per conto suo.
+	\begin{itemize}
+		\item Se il processo A ha bisogno di un totale di 50ms di CPU, dividiamo questo tempo in 5 CPU Burst ognuno da 10ms, separati ognuno da operazioni di I/O.
+		
+		\item Ogni CPU Burst da 10ms viene schedulato come se fosse un processo indipendente.
+	\end{itemize}
+	
+	Vediamo un esempio di questa implementazione con l'algoritmo STCF, con il seguente esempio:
+	\begin{itemize}
+		\item Il processo A ha 10ms di CPU Burst e 10ms di I/O wait (il tutto ripetuto per 5 volte).
+		
+		\item Il processo B ha 50ms di solo CPU Burst.
+	\end{itemize}
+	
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.70\linewidth}{!}{%
+			\begin{tikzpicture}
+				% Tacche temporali
+				\node[font=\sffamily\small] at (0, 0.28) {0};
+				\node[font=\sffamily\small] at (0.9, 0.28) {10};
+				\node[font=\sffamily\small] at (1.8, 0.28) {20};
+				\node[font=\sffamily\small] at (2.7, 0.28) {30};
+				\node[font=\sffamily\small] at (3.6, 0.28) {40};
+				\node[font=\sffamily\small] at (4.5, 0.28) {50};
+				\node[font=\sffamily\small] at (5.4, 0.28) {60};
+				\node[font=\sffamily\small] at (6.3, 0.28) {70};
+				\node[font=\sffamily\small] at (7.2, 0.28) {80};
+				\node[font=\sffamily\small] at (8.1, 0.28) {90};
+				\node[font=\sffamily\small] at (9.0, 0.28) {100ms};
+				
+				% Blocchi di esecuzione dei Job A e B
+				\draw[fill=white] (0, -0.65) rectangle (0.9, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (0.9, -0.65) rectangle (1.8, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (1.8, -0.65) rectangle (2.7, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (2.7, -0.65) rectangle (3.6, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (3.6, -0.65) rectangle (4.5, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (4.5, -0.65) rectangle (5.4, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (5.4, -0.65) rectangle (6.3, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (6.3, -0.65) rectangle (7.2, 0) node[midway, font=\sffamily\normalsize] {B};
+				\draw[fill=white] (7.2, -0.65) rectangle (8.1, 0) node[midway, font=\sffamily\normalsize] {A};
+				\draw[fill=white] (8.1, -0.65) rectangle (9.0, 0) node[midway, font=\sffamily\normalsize] {B};
+				
+				% Frecce e indicazioni di I/O per il job A
+				\node[font=\sffamily\small] at (0.9, -1.0) {$\blacktriangle$};
+				\node[font=\sffamily\small] at (0.9, -1.35) {A I/O};
+				
+				\node[font=\sffamily\small] at (2.7, -1.0) {$\blacktriangle$};
+				\node[font=\sffamily\small] at (2.7, -1.35) {A I/O};
+				
+				\node[font=\sffamily\small] at (4.5, -1.0) {$\blacktriangle$};
+				\node[font=\sffamily\small] at (4.5, -1.35) {A I/O};
+				
+				\node[font=\sffamily\small] at (6.3, -1.0) {$\blacktriangle$};
+				\node[font=\sffamily\small] at (6.3, -1.35) {A I/O};
+				
+				\node[font=\sffamily\small] at (8.1, -1.0) {$\blacktriangle$};
+				\node[font=\sffamily\small] at (8.1, -1.35) {A I/O};
+			\end{tikzpicture}%
+		}
+	\end{figure}
+	Ricordiamo che l'algoritmo di scheduling è il STCF, dunque il workflow è il seguente:
+	\begin{enumerate}
+		\item Il processo A viene schedulato per primo perché la sua durata (10ms, ricordiamo che A è stato suddiviso in sotto-processi indipendenti) è inferiore a quella del processo B (50ms).
+		
+		\item Dopo 10ms, il processo A entra in I/O Wait per 10ms, tempo durante il quale verrà eseguito il processo B.
+		
+		\item Avanti così finché uno dei due processi non termina...
+	\end{enumerate}
 	
 \end{document}

@@ -1166,76 +1166,34 @@
 	
 	Come si nota dall'analisi della complessità, si tratta di un metodo \textbf{molto costoso} dal punto di vista computazionale, oltre al fatto che modifica in modo distruttivo la struttura del grafo originale.
 	
-	Per risolvere questo problema, possiamo utilizzare un algoritmo già noto: la \textbf{visita in profondità (DFS)}. Per la natura stessa della DFS, l'algoritmo scende lungo un cammino fino alla massima profondità possibile prima di effettuare il \textit{backtracking}.
-	
-	L'idea fondamentale per ottimizzare il calcolo dell'ordine topologico è dunque la seguente:
-	\begin{enumerate}
-		\item Si avanza nella visita fino a raggiungere l'ultimo nodo di un cammino (ossia un nodo da cui non partono archi uscenti) e lo si aggiunge alla lista.
-		
-		\item Risalendo poi nella ricorsione durante la fase di \textit{backtracking}, si aggiungono man mano i nodi da cui si è arrivati.
-	\end{enumerate}
-	
-	Di seguito viene presentata una possibile implementazione in pseudo-codice di una visita in profondità (DFS) che restituisce la lista dei nodi visitati. L'approccio si divide in una funzione ausiliaria che inizializza le strutture dati e una funzione ricorsiva che effettua la visita effettiva del grafo.
-	
-	\begin{lstlisting}[language=Python]
-		def dfs(G, x):
-			vis = [0] * n
-			L = []
-			dfs_ric(G, x, vis, L)
-			return L
-			
-		def dfs_ric(G, x, vis, L):
-			vis[x] = 1
-			for v in x.neighbr:
-				if vis[v] == 0:
-					dfs_ric(G, v, vis, L)
-			L.append(x)
-	\end{lstlisting}
-	
-	Il costo computazionale di questa implementazione è proprio quello di una classica DFS, dunque pari a $\mathcal{O}(n + m)$.
-	
-	\begin{algoritmo}{Ordine topologico (efficiente)}{}
-		\begin{enumerate}
-			\item La funzione \texttt{dfs} si occupa di inizializzare il vettore dei visitati \texttt{vis} di dimensione $n$ (posto interamente a $0$) e la lista vuota \texttt{L} che conterrà l'ordine dei nodi. Viene quindi invocata la funzione ricorsiva \texttt{dfs\_ric}.
-			
-			\item All'interno di \texttt{dfs\_ric}, il nodo corrente $x$ viene marcato come visitato ponendo \texttt{vis[x] = 1}. Successivamente si esplorano tutti i vicini $v$ del nodo $x$ tramite la lista delle adiacenze (\texttt{x.neigh}). Se un vicino $v$ non è stato ancora visitato (\texttt{vis[v] == 0}), la funzione viene richiamata ricorsivamente su di esso.
-			
-			\item Infine, l'istruzione \texttt{L.append(x)} inserisce il nodo nella lista al termine dell'esplorazione dei suoi rami discendenti, realizzando di fatto un ordinamento topologico inverso (post-order).
-		\end{enumerate}
-	\end{algoritmo}
-	
-	
-	
-	\begin{esercizio}{Ricerca di un ciclo diretto}{}
-		Progettare un algoritmo che, dato un grafo diretto in cui ogni vertice ha grado uscente $\ge 1$, individui e restituisca un ciclo diretto.
+	\begin{esercizio}{Trovare un ciclo in un grafo diretto}{}
+		Dato un grafo diretto G, trovare un ciclo al suo interno.
 	\end{esercizio}
-	
-	L'algoritmo è molto simile a quello visto per trovare un ciclo in un grafo generico (non orientato).
 	
 	\begin{lstlisting}[style=stile-listings, language=Python, caption={Algoritmo per la ricerca di un ciclo diretto}]
 		def trovaCicloDiretto(G):
-		L = []  # Per memorizzare i nodi del ciclo
-		x = vertice qualsiasi
-		L.append(x)
-		
-		vis = [0] * n
-		vis[x] = 1  # Segniamo il nodo come visitato
-		
-		current = x
-		next = x.neighbr[0]
-		
-		# Iteriamo finche non troviamo un nodo gia visitato
-		while vis[next] == 0:
-		vis[next] = 1
-		L.append(next)
-		
-		current = next
-		next = current.neighbr[0]  # (1)
-		
-		while L[0] != next:
-		L.remove()
-		
-		return L
+			L = []  # Per memorizzare i nodi del ciclo
+			x = vertice qualsiasi
+			L.append(x)
+			
+			vis = [0] * n
+			vis[x] = 1  # Segniamo il nodo come visitato
+			
+			current = x
+			next = x.neighbr[0]
+			
+			# Iteriamo finche non troviamo un nodo gia visitato
+			while vis[next] == 0:
+				vis[next] = 1
+				L.append(next)
+				
+				current = next
+				next = current.neighbr[0]  # (1)
+				
+			while L[0] != next:
+				L.remove()
+			
+			return L
 	\end{lstlisting}
 	
 	\begin{algoritmo}{Ricerca di un ciclo diretto}{}	
@@ -1285,5 +1243,472 @@
 	\begin{osservazione}{}{}
 		Essendo \texttt{L1} ed \texttt{L2} liste puntate, gli elementi vengono aggiunti in testa durante la risalita verso la radice. Di conseguenza, alla fine dell'inserimento, il primo elemento della lista corrisponde proprio alla radice dell'albero, mentre gli ultimi elementi rappresentano i nodi di partenza $x$ ed $y$.
 	\end{osservazione}
+	
+	Tornando agli ordini topologici...
+	In precedenza era stata presentata una versione inefficiente con complessità temporale pari a $O(n(n+m))$. È possibile progettare una versione decisamente più efficiente sfruttando una visita in profondità (\textbf{DFS}). 
+	
+	Prima di definire formalmente l'algoritmo, introduciamo alcune nozioni teoriche fondamentali relative alla gestione del tempo durante la visita.
+	
+	\begin{definizione}{Tempi di scoperta e fine visita in DFS}{}
+		Dato un grafo $G$ e una visita DFS su di esso, introduciamo un \textbf{contatore globale che viene incrementato ad ogni nuovo nodo visitato}. Ad ogni nodo $v$ viene associata una coppia di valori temporali:
+		\begin{itemize}
+			\item \textbf{Tempo di scoperta} $t(v)$: indica il valore del contatore nel momento in cui il nodo $v$ viene inserito nello stack della DFS. Sostanzialmente, rappresenta l'istante in cui il vertice viene visitato per la prima volta.
+			\item \textbf{Tempo di fine visita} $T(v)$: indica il valore del contatore nel momento in cui il nodo $v$ viene rimosso dallo stack della DFS. Sostanzialmente, indica quanti nodi sono stati esplorati complessivamente prima di eliminare $v$ dallo stack (ovvero quando l'esplorazione di $v$ e di tutti i suoi discendenti è terminata).
+		\end{itemize}
+	\end{definizione}
+	
+	\begin{center}
+		\begin{tikzpicture}[
+			scale=1.2,
+			nodo/.style={circle, draw=black, thick, minimum size=6mm, inner sep=0pt, font=\bfseries},
+			arco/.style={->, >=stealth, thick},
+			intervallo/.style={text=DarkGoldenrod3, font=\small\bfseries}
+			]
+			% Definizione dei vertici
+			\node[nodo] (1) at (0, 1.5) {1};
+			\node[nodo] (4) at (2, 3) {4};
+			\node[nodo] (3) at (5, 3) {3};
+			\node[nodo] (2) at (3.5, 1.5) {2};
+			\node[nodo] (5) at (5, -0.5) {5};
+			
+			% Intervalli associati ai nodi
+			\node[intervallo, below left=2pt and 0pt of 1] {$[1, 5]$};
+			\node[intervallo, above left=2pt and 0pt of 4] {$[2, 3]$};
+			\node[intervallo, above right=2pt and 0pt of 3] {$[3, 3]$};
+			\node[intervallo, right=1.2cm of 2] (lbl2) {$[4, 5]$};
+			\draw[->, DarkGoldenrod3, thick] (lbl2) -- (2);
+			\node[intervallo, right=4pt of 5] (lbl5) {$[5, 5]$};
+			
+			% Nota per il nodo 5
+			\node[DarkOrchid3, font=\footnotesize, align=left, above right=0.3cm and 0.5cm of 5] (nota5) {perché non ha archi\\uscenti su nodi ``nuovi''};
+			\draw[->, DarkOrchid3, thick] (nota5) to[out=190, in=120] (lbl5);
+			
+			% Archi orientati
+			\draw[arco] (1) -- (4);
+			\draw[arco] (1) -- (2);
+			\draw[arco] (1) -- (5);
+			\draw[arco] (4) -- (3);
+			\draw[arco] (2) -- (4);
+			\draw[arco] (2) -- (3);
+			\draw[arco] (2) -- (5);
+			\draw[arco] (5) -- (3);
+		\end{tikzpicture}
+	\end{center}
+	
+	Consideriamo il grafo sopra rappresentato ed analizziamo l'evoluzione della visita in profondità (DFS):
+	\begin{enumerate}
+		\item \textbf{Partenza dal nodo radice}: supponiamo di partire dal nodo $1$. Poniamo $t(1) = 1$, in quanto è il primo vertice visitato.
+		\item \textbf{Attraversamento di un arco uscente}: scegliamo un arco uscente arbitrario, ad esempio verso il nodo $4$. Poniamo $t(4) = 2$, essendo il secondo vertice visitato.
+		\item \textbf{Avanzamento}: ci muoviamo verso l'unico nodo adiacente disponibile, il nodo $3$, e poniamo $t(3) = 3$.
+		\item \textbf{Backtracking da nodo senza uscite non visitate}: poiché il nodo $3$ non possiede archi uscenti verso nodi ancora da scoprire, lo rimuoviamo dallo stack per effettuare il backtracking. Poniamo quindi $T(3) = 3$. Si noti che si tratta dello stesso contatore, ma in questo passaggio non viene incrementato.
+		\item \textbf{Ritorno al predecessore}: torniamo al nodo $4$; dato che non ha altri archi uscenti verso nodi non ancora visitati, lo eliminiamo dallo stack e assegniamo $T(4) = 3$.
+		\item \textbf{Prosecuzione}: si procede in modo analogo per i restanti vertici del grafo.
+	\end{enumerate}
+	
+	Da questo meccanismo possiamo ricavare due proprietà fondamentali sui tempi di scoperta e di fine visita:
+	
+	\begin{osservazione}{Tempi della radice}{}
+		Se il grafo è connesso e $v$ è la radice dell'albero di visita, si ha necessariamente:
+		\[
+		t(v) = 1, \qquad T(v) = n
+		\]
+		Ciò è dovuto al fatto che la radice è il primo nodo ad essere scoperto ed è l'ultimo ad essere rimosso dallo stack.
+	\end{osservazione}
+	
+	\begin{osservazione}{Relazione tra tempo di inizio e fine visita}{}
+		Per ogni vertice $v \in V$ vale la disuguaglianza:
+		\[
+		t(v) \le T(v)
+		\]
+		in quanto un nodo deve essere necessariamente scoperto prima di poter terminare la sua elaborazione ed essere rimosso.
+	\end{osservazione}
+	
+	Dunque, ad ogni vertice $v$ risulta associato un intervallo temporale ben definito:
+	\[
+		[t(v), T(v)]
+	\]
+	
+	\begin{proposizione}{Classificazione degli archi in una DFS}{classificazione_archi}
+		Per ogni coppia di vertici $u, v$, con $u$ la coda dell'arco e $v$ la testa, vale solo una di queste relazioni:
+		\begin{itemize}
+			\item[\textbf{i)}] $[t(u), T(u)] \subseteq [t(v), T(v)]$ : \textbf{ARCO ALL'INDIETRO}
+			\item[\textbf{ii)}] $[t(v), T(v)] \subseteq [t(u), T(u)]$ : \textbf{ARCO IN AVANTI}
+			\item[\textbf{iii)}] $[t(u), T(u)] \cap [t(v), T(v)] = \emptyset$ : \textbf{ARCO DI ATTRAVERSAMENTO}
+		\end{itemize}
+	\end{proposizione}
+	
+	\begin{minipage}[c]{0.55\textwidth}
+		\centering
+		\begin{tikzpicture}[
+			scale=1.3,
+			vertex/.style={circle, draw, minimum size=18pt, thick, fill=white},
+			edge/.style={->, >=stealth, thick}
+			]
+			% Nodi
+			\node[vertex] (v1) at (0,1) {1};
+			\node[vertex] (v4) at (1.5,2.2) {4};
+			\node[vertex] (v3) at (3.5,2.2) {3};
+			\node[vertex] (v2) at (2,0.8) {2};
+			\node[vertex] (v5) at (3.5,-1) {5};
+			
+			% Etichette intervalli (arancione)
+			\node[orange, left=0.15cm of v1] {\textbf{[1, 5]}};
+			\node[orange, above left=0.05cm of v4] {\textbf{[2, 3]}};
+			\node[orange, above right=0.05cm of v3] {\textbf{[3, 3]}};
+			\node[orange, right=0.8cm of v2] (lbl2) {\textbf{[4, 5]}};
+			\draw[orange, ->, thick] (lbl2) -- (v2);
+			\node[orange, right=0.15cm of v5] {\textbf{[5, 5]}};
+			
+			% Archi
+			\draw[edge] (v1) -- (v4);
+			\draw[edge] (v4) -- (v3);
+			\draw[edge] (v1) -- (v2);
+			\draw[edge] (v2) -- (v3);
+			\draw[edge] (v2) -- (v5);
+			\draw[edge] (v5) -- (v3);
+			\draw[edge] (v5) -- (v1);
+			\draw[edge] (v2) -- (v4);
+		\end{tikzpicture}
+	\end{minipage}
+	\begin{minipage}[c]{0.4\textwidth}
+		\textbf{In questo esempio abbiamo:}
+		\begin{itemize}
+			\item $(1, 4) = $ \textbf{\color{MediumOrchid3}AVANTI}
+			\item $(4, 3) = $ \textbf{\color{MediumOrchid3}AVANTI}
+			\item $(1, 2) = $ \textbf{\color{MediumOrchid3}AVANTI}
+			\item $(2, 3) = $ \textbf{\color{Coral3}ATTRAVERSAMENTO}
+			\item $(2, 5) = $ \textbf{\color{MediumOrchid3}AVANTI}
+			\item $(5, 3) = $ \textbf{\color{Coral3}ATTRAVERSAMENTO}
+			\item $(5, 1) = $ \textbf{\color{DarkGoldenrod2}INDIETRO}
+			\item $(2, 4) = $ \textbf{\color{Coral3}ATTRAVERSAMENTO}
+		\end{itemize}
+	\end{minipage}
+	
+	\vspace{2em}
+	
+	Ragionando tenendo conto dell'arborescenza, cioè dell'albero delle visite che si crea dalla successione dei nodi che appaiono in una DFS su un grafo diretto, vediamo come:
+	
+	\begin{itemize}
+		\item \textbf{ARCHI IN AVANTI:} archi che vanno da un nodo ad un suo \textbf{discendente}.
+		\item \textbf{ARCHI ALL'INDIETRO:} archi che vanno da un nodo ad un suo \textbf{antenato}.
+		\item \textbf{ARCHI DI ATTRAVERSAMENTO:} archi che vanno da un nodo ad un suo \textbf{"cugino"}.
+	\end{itemize}
+	
+	\begin{dimostrazione}{}{}
+		Per dimostrare che vale almeno una di queste proprietà, è necessario dimostrare che \textbf{non esiste} alcun caso in cui i due intervalli si sovrappongono parzialmente.
+		
+		\begin{center}
+			\begin{tikzpicture}[scale=1.2, every node/.style={font=\small}]
+				% Primo intervallo (u)
+				\draw[thick, |-|] (0, 0.6) -- (3, 0.6);
+				\node[above] at (0, 0.6) {$t(u)$};
+				\node[above] at (3, 0.6) {$T(u)$};
+				
+				% Secondo intervallo (v)
+				\draw[thick, |-|] (1.5, 0) -- (4.5, 0);
+				\node[below] at (1.5, 0) {$t(v)$};
+				\node[below] at (4.5, 0) {$T(v)$};
+			\end{tikzpicture}
+		\end{center}
+		
+		Cioè, una situazione in cui $t(u) < t(v) \le T(u) < T(v)$ è \textbf{impossibile}.
+		
+		Supponiamo che $u$ sia il nodo inserito per primo nello stack. Di conseguenza, deve valere necessariamente $t(u) < t(v)$, dato che $v$ viene visitato successivamente.
+		
+		Per la natura LIFO (Last In, First Out) dello stack, il nodo $v$ deve essere rimosso prima di $u$, poiché l'ultimo elemento a essere visitato deve essere anche il primo a essere rimosso. Siccome $v$ viene sicuramente rimosso prima di $u$, è \textbf{impossibile} che si verifichi $T(v) > T(u)$.
+	\end{dimostrazione}
+	
+	\section{Comportamento nei grafi non diretti}
+	
+	Come si comporta questa implementazione nei \textbf{grafi non diretti}?
+	
+	Siccome il grafo non è orientato, si possono verificare solo due possibili casi per gli intervalli di visita di qualsiasi coppia di nodi $u, v$:
+	\begin{itemize}
+		\item[\textbf{i/ii)}] $I_u \subseteq I_v$ oppure $I_v \subseteq I_u$
+		\item[\textbf{iii)}] $I_u \cap I_v = \emptyset$
+	\end{itemize}
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=1.5, every node/.style={circle, draw, minimum size=6mm, inner sep=1pt, thick}]
+			% Nodi con etichette nere e intervalli arancioni
+			\node (n1) at (0, 1.5) [label=above left:{\color{orange}\textbf{[1, 5]}}, label=left:1] {1};
+			\node (n4) at (1.5, 2.5) [label=above:{\color{orange}\textbf{[4, 4]}}, label=left:4] {4};
+			\node (n3) at (3.5, 2.5) [label=right:{\color{orange}\textbf{[3, 5]}}, label=above:3] {3};
+			\node (n2) at (2.5, 1.2) [label=right:{\color{orange}\textbf{[2, 5]}}, label=above:2] {2};
+			\node (n5) at (3.5, -1) [label=right:{\color{orange}\textbf{[5, 5]}}, label=below:5] {5};
+			
+			% Archi
+			\draw[thick] (n1) -- (n4);
+			\draw[thick] (n1) -- (n2);
+			\draw[thick] (n1) -- (n5);
+			\draw[thick] (n4) -- (n3);
+			\draw[thick] (n4) -- (n2);
+			\draw[thick] (n3) -- (n2);
+			\draw[thick] (n3) -- (n5);
+			\draw[thick] (n2) -- (n5);
+		\end{tikzpicture}
+		\par\vspace{0.5em}
+		\textit{\color{purple}Nota: possiamo scegliere noi un ordine di visita dei nodi, di conseguenza l'intervallo segnato nel grafo è riportato solo a scopo esemplificativo.}
+	\end{center}
+	
+	\begin{proposizione}{}{}
+		Dato un DFS su un grafo \textbf{non diretto}, se un arco $(u, v)$ non fa parte dell'\textbf{albero di visita} (ovvero è un arco all'indietro/back edge), allora è impossibile che si verifichi il caso \textbf{iii)} degli intervalli disgiunti.
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		Supponiamo per assurdo che gli intervalli siano disgiunti, ovvero che esista un arco $(u, v)$ tale che:
+		\[
+		I_u \cap I_v = \emptyset
+		\]
+		Sicuramente uno dei due nodi verrà visitato prima dell'altro; senza perdita di generalità, assumiamo che questo sia $u$, ovvero che $t(u) < t(v)$.
+		
+		Data questa assunzione e data la natura LIFO dello stack, è impossibile che $u$ venga rimosso dallo stack prima che inizi la visita di $v$, poiché l'esistenza dell'arco $(u, v)$ impone che $v$ venga scoperto prima della chiusura di $u$. Di conseguenza, deve valere:
+		\[
+		t(v) \le T(u)
+		\]
+		Il che dimostra che gli intervalli non sono disgiunti, giungendo a una contraddizione.
+	\end{dimostrazione}
+	
+	\begin{osservazione}{Archi fuori dall'albero in grafi non orientati}{}
+		Tutti gli archi $(u, v)$ che non fanno parte dell'albero di visita di una DFS su un grafo non orientato sono necessariamente \textbf{archi all'indietro} (o in avanti; non essendoci un orientamento nel grafo, la distinzione non è rilevante).
+	\end{osservazione}
+	
+	\begin{proposizione}{Caratterizzazione dei cicli in grafi non orientati}{}
+		Sia $G$ un grafo non orientato connesso.
+		\[
+		G \text{ ha un ciclo} \iff \text{ogni DFS ha almeno un arco all'indietro}
+		\]
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		Analizziamo le due direzioni della doppia implicazione:
+		\begin{itemize}
+			\item \textbf{Direzione} ``$\implies$'':\\
+			Abbiamo osservato in precedenza che tutti gli archi che non appartengono all'albero di visita DFS sono archi all'indietro. Dato un ciclo $C$ nel grafo, ed essendo l'albero di visita un grafo aciclico connesso per definizione, deve necessariamente esistere almeno un arco di $C$ che non appartiene all'albero. Tale arco sarà quindi un arco all'indietro.
+			
+			\item \textbf{Direzione} ``$\impliedby$'':\\
+			Sia $(u, v)$ un arco all'indietro, con $u$ discendente di $v$ nell'albero DFS. Per definizione di discendenza, nell'albero di visita esiste un cammino $P$ da $v$ a $u$. Di conseguenza, l'unione del cammino $P$ con l'arco all'indietro $(u, v)$ forma un ciclo nel grafo.
+		\end{itemize}
+	\end{dimostrazione}
+	
+	\begin{proposizione}{Caratterizzazione dei cicli in grafi orientati}{}
+		Dato un grafo orientato $G$:
+		\[
+		\exists \text{ un ciclo in } G \iff \exists \text{ un arco all'indietro per qualsiasi DFS nel grafo}
+		\]
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		Analizziamo le due direzioni della doppia implicazione:
+		\begin{itemize}
+			\item \textbf{Direzione} ``$\impliedby$'':\\
+			Supponiamo che esista un arco all'indietro $(u, v)$, il che implica che $u$ è un discendente di $v$ nell'albero DFS. Nell'albero delle visite esiste quindi un cammino diretto $v \to u$. L'unione di tale cammino con l'arco diretto $(u, v)$ costituisce un ciclo diretto nel grafo.
+			
+			\item \textbf{Direzione} ``$\implies$'':\\
+			Sia $C$ un ciclo nel grafo $G$ e sia $v$ il primo vertice di $C$ ad essere visitato dalla DFS. Di conseguenza, tutti gli altri vertici del ciclo $C$ verranno scoperti mentre $v$ è ancora attivo, diventando quindi discendenti di $v$ nell'albero DFS.
+			
+			Il vertice $v_k$ che completa il ciclo e si ricongiunge con $v$ darà origine a un arco $(v_k, v)$ che si configura come un arco all'indietro.
+			
+			Questo comportamento è garantito per tutti i nodi $u$ del ciclo visitati dopo $v$, in quanto, trovandosi all'interno del ciclo ed essendo stati scoperti dopo $v$, verranno terminati (e quindi rimossi dallo stack di ricorsione) prima di $v$. In termini di tempi di scoperta $t$ e fine visita $T$:
+			\[
+			t(v) < t(u) \land T(v) > T(u) \quad \forall u \in C \setminus \{v\}
+			\]
+		\end{itemize}
+	\end{dimostrazione}
+	
+	Torniamo molto a monte: vogliamo usare tutte queste supposizioni per dare un codice per trovare l'ordine topologico in un tempo $O(n+m)$ usando la DFS.
+	
+	Programmiamo ora una DFS ricorsiva che ci permette di ottenere $t[x]$ e $T[x]$ per ogni vertice.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python]
+		def DFS_ric(G, x, t, T, c):
+			for y in x.neighbor:
+				if t[y] == -1:
+					c += 1
+					t[y] = c
+					DFS_ric(G, y, t, T, c)
+			T[x] = c
+		
+		def DFS(G, x):
+			t = [-1] * n
+			T = [-1] * n
+			c = 1
+			t[x] = c
+			DFS_ric(G, x, t, T, c)
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Ricerca in profondità (DFS) con tempi di visita}{}
+		La seguente procedura implementa la visita DFS tenendo traccia dei tempi di scoperta $t[x]$ e di fine visita $T[x]$ per ciascun vertice $x$.
+		
+		\paragraph{Spiegazione dettagliata delle istruzioni:}
+		\begin{itemize}
+			\item \textbf{Controllo della visita (\texttt{t[y] == -1}):} Usiamo l'array $t$ per controllare se abbiamo già visitato il vertice $y$. Poiché $t[y]$ indica il tempo in cui abbiamo scoperto $y$, un valore pari a $-1$ indica che il nodo non è ancora stato visitato.
+			
+			\item \textbf{Fine visita del sottoalbero (\texttt{T[x] = c}):} Una volta che abbiamo visitato tutto il sottoalbero di $x$, dobbiamo rimuoverlo dallo stack e andare avanti, dunque valorizziamo il tempo di fine visita $T[x]$ con il valore corrente del contatore $c$ (questo avviene in quanto non stiamo usando uno stack esplicito, bensì lo stack della ricorsione delle chiamate di funzione: la risalita dello stack della ricorsione corrisponde alla rimozione graduale dei nodi dallo stack).
+			
+			\item \textbf{Inizializzazione:} Nella funzione principale \texttt{DFS(G, x)} inizializziamo i due array $t$ e $T$ di dimensione $n$ con il valore $-1$, impostiamo il contatore iniziale $c = 1$, marchiamo il nodo di partenza $x$ e infine avviamo la procedura ricorsiva.
+		\end{itemize}
+	\end{algoritmo}
+	
+	Per l'ordine topologico sappiamo che non ci sono archi all'indietro, essendo il grafo aciclico (DAG).
+	
+	Di conseguenza, per qualsiasi arco $(u, v)$, vale esclusivamente una delle seguenti relazioni tra gli intervalli temporali di visita:
+	\begin{itemize}
+		\item \textbf{Disgiunzione:}
+		\[
+		[t[v], T[v]] \cap [t[u], T[u]] = \emptyset
+		\]
+		\item \textbf{Inclusione:}
+		\[
+		[t[v], T[v]] \subseteq [t[u], T[u]]
+		\]
+		In questo caso, l'arco $(u, v)$ rappresenta un arco in avanti oppure un arco di \textbf{arborescenza}.
+	\end{itemize}
+	
+	Dunque, per ogni arco $(u, v)$ del grafo, vale sempre la relazione:
+	\[
+	T[v] \le T[u]
+	\]
+	% --- NEW PAGE (26) ---
+	
+	Per ricostruire un ordinamento topologico, dobbiamo considerare l'array dei tempi di fine visita $T$ in ordine decrescente: infatti, l'ultimo vertice ad essere completato nella visita è il primo nell'ordine topologico.
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=1.2]
+			\draw[thick] (0, 0) -- (4, 0);
+			\fill[blue] (1, 0) circle (2pt) node[below=2pt] {$x$};
+			\fill[blue] (3, 0) circle (2pt) node[below=2pt] {$y$};
+			\draw[->, thick, blue] (1.1, -0.2) to[out=-30, in=-150] (2.9, -0.2);
+		\end{tikzpicture}
+		\par\vspace{0.3em}
+		{\small Con un arco che collega $x$ e $y$, si ha $T[y] \le T[x]$ e quindi l'arco è orientato come $x \to y$.}
+	\end{center}
+	
+	Se invece consideriamo i tempi di fine visita $T$ in ordine crescente, il primo vertice ad essere rimosso risulterà essere l'ultimo nell'ordinamento topologico.
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=1.2]
+			\draw[thick] (0, 0) -- (4, 0);
+			\fill[blue] (1, 0) circle (2pt) node[below=2pt] {$x$};
+			\fill[blue] (3, 0) circle (2pt) node[below=2pt] {$y$};
+			\draw[->, thick, blue] (2.9, -0.2) to[out=-150, in=-30] (1.1, -0.2);
+		\end{tikzpicture}
+		\par\vspace{0.3em}
+		{\small Con un arco che collega $x$ e $y$, si ha $T[y] \ge T[x]$ e quindi l'arco è orientato come $y \to x$.}
+	\end{center}
+	
+	Abbiamo dunque tutti gli elementi teorici necessari per definire l'algoritmo di ordinamento topologico basato su DFS.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python]
+		def OrdTop(G):
+			L = []
+			vis = [0] * n
+			for v in G:
+				if vis[v] == 0:
+					OrdTopRic(G, v, vis, L)
+			return L
+		
+		def OrdTopRic(G, v, vis, L):
+			vis[v] = 1
+			for u in v.neighbors:
+				if vis[u] == 0:
+					OrdTopRic(G, u, vis, L)
+			L.append(v)
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Ordinamento Topologico}{ord_top}
+		\begin{itemize}
+			\item \textbf{Inizializzazione (\texttt{OrdTop}):} viene predisposta una lista $L$ inizialmente vuota per raccogliere i nodi ordinati e un vettore booleano \texttt{vis} di dimensione $n$ inizializzato a $0$, impiegato per tracciare lo stato di visita di ciascun vertice.
+			
+			\item \textbf{Ciclo principale:} per ogni vertice $v \in G$, se $v$ non è ancora stato visitato (\texttt{vis[v] == 0}), si avvia la procedura ricorsiva \texttt{OrdTopRic(G, v, vis, L)}. Al termine delle chiamate per tutte le componenti connesse, viene restituita la lista $L$.
+			
+			\item \textbf{Procedura ricorsiva (\texttt{OrdTopRic}):}
+			\begin{enumerate}
+				\item Il vertice corrente $v$ viene marcato come visitato impostando \texttt{vis[v] = 1}.
+				
+				\item Si esaminano tutti i vertici $u$ uscenti da $v$ (\texttt{v.neighbors}): se un vicino $u$ non è ancora stato visitato (\texttt{vis[u] == 0}), la funzione richiama ricorsivamente se stessa su $u$.
+				
+				\item Non appena tutti i discendenti di $v$ sono stati esplorati (visita in post-ordine), il nodo $v$ viene inserito in $L$ tramite l'operazione \texttt{L.append(v)}. L'inserimento del vertice $v$ come ultimo elemento della lista è un modo molto furbo di utilizzare la risalita dello stack della ricorsione per inserire per ultimo letteralmente \textit{l'ultimo vertice a cui siamo arrivati}, ovvero quello con la priorità minore (l'ultimo dell'ordine topologico).
+			\end{enumerate}
+		\end{itemize}
+	\end{algoritmo}
+	
+	La procedura richiama perfettamente una classica operazione di DFS, dunque il costo computazionale sarà $\mathbf{O(n + m)}$.
+	
+	\begin{definizione}{Pozzo universale}{}
+		In un grafo diretto $G$, un \textbf{pozzo universale} è un vertice $x \in V(G)$ tale che:
+		\[
+		\forall y \in V(G) \setminus \{x\}, \quad (y, x) \in E(G) \land (x, y) \notin E(G)
+		\]
+		In termini intuitivi, si tratta di un nodo a cui arrivano archi da tutti gli altri vertici del grafo, ma dal quale non parte alcun arco verso l'esterno.
+	\end{definizione}
+	
+	\begin{esercizio}{Ricerca del pozzo universale in tempo}{}
+		Dato un grafo $G$ con $n$ vertici memorizzato tramite una matrice di adiacenza, l'obiettivo è stabilire se esiste un pozzo universale in tempo lineare $O(n)$.
+		
+		\paragraph{Idea intuitiva}
+		La matrice di adiacenza ci permette di verificare la presenza di un arco tra due nodi $i$ e $j$ in tempo costante $O(1)$. Da un singolo controllo sulla cella $G[i][j]$ possiamo ricavare due informazioni cruciali che ci consentono di escludere uno dei due nodi come potenziale pozzo:
+		\begin{itemize}
+			\item \textbf{Se $G[i][j] == 0$}: significa che non esiste un arco orientato da $i$ a $j$. Di conseguenza, $j$ \textbf{non può} essere un pozzo universale, poiché un pozzo universale deve essere raggiunto da tutti gli altri nodi del grafo (incluso $i$).
+			
+			\item \textbf{Se $G[i][j] == 1$}: significa che esiste un arco orientato da $i$ a $j$. Di conseguenza, $i$ \textbf{non può} essere un pozzo universale, poiché da un pozzo universale non deve partire alcun arco verso l'esterno.
+		\end{itemize}
+		Grazie a questa proprietà, con un singolo confronto siamo in grado di scartare un candidato, riducendo progressivamente lo spazio di ricerca.\\
+		Inoltre, per la definizione di pozzo universale, possiamo ricavare un'altra informazione dalla matrice di adiacenza.
+		\begin{itemize}
+			\item La riga di indice \texttt{candidato\_pozzo} deve essere interamente composta da 0, in quanto dal pozzo non devono partire archi.
+			
+			\item La colonna di indice \texttt{candidato\_pozzo} deve essere interamente composta da 1 (fatta eccezione per l'elemento \texttt{G[candidato][candidato]}, in quanto elemento della diagonale e dato che non stiamo ammettendo archi riflessivi).
+		\end{itemize}
+	\end{esercizio}
+	
+	\begin{lstlisting}[style=stile-listings, language=Python]
+		def trovaPozzo(G):
+			i, j = 1, 2
+			candidato = 1
+			n = len(G)
+			
+			while i <= n and j <= n:
+				if G[i][j] == 0:
+					j += 1
+					candidato = i
+				else:
+					i += 1
+					candidato = j
+			
+			for k in range(1, n + 1):
+				if candidato == k:
+					continue
+				if G[k][candidato] != 1:
+					return null
+				if G[candidato][k] != 0:
+					return null
+			
+			return candidato
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Ricerca di un pozzo in tempo $O(n)$}{}
+		\begin{enumerate}
+			\item \textbf{Fase di eliminazione (righe 2-13)}:
+			\begin{itemize}
+				\item Vengono inizializzati due indici $i = 1$ e $j = 2$ per scorrere la matrice di adiacenza, e una variabile \texttt{candidato = 1} per memorizzare il nodo che attualmente potrebbe essere il pozzo.
+				\item Nel ciclo \texttt{while}, finché entrambi gli indici sono entro i limiti della matrice ($i \le n$ e $j \le n$), si effettua il controllo sulla cella $G[i][j]$.
+				\item Se $G[i][j] == 0$, escludiamo $j$ incrementando il suo indice ($j\texttt{++}$) e impostiamo il nuovo \texttt{candidato} a $i$.
+				\item Se $G[i][j] == 1$, escludiamo $i$ incrementando il suo indice ($i\texttt{++}$) e impostiamo il nuovo \texttt{candidato} a $j$.
+				\item Al termine del ciclo, la variabile \texttt{candidato} conterrà l'unico nodo superstite che può effettivamente essere un pozzo universale.
+			\end{itemize}
+			
+			\item \textbf{Fase di verifica (righe 15-21)}:
+			\begin{itemize}
+				\item Poiché la prima fase garantisce solo che \texttt{candidato} sia l'unico possibile pozzo (ma non che lo sia effettivamente), è necessario effettuare una verifica finale in tempo $O(n)$.
+				\item Si scorre ogni nodo $k$ del grafo (escludendo il candidato stesso):
+				\begin{itemize}
+					\item Si controlla che esista l'arco da $k$ al candidato ($G[k][\text{\texttt{candidato}}] == 1$). Se manca anche solo un arco entrante, l'algoritmo fallisce ritornando \texttt{null}.
+					\item Si controlla che non esista alcun arco dal candidato a $k$ ($G[\text{\texttt{candidato}}][k] == 0$). Se viene trovato un arco uscente, l'algoritmo fallisce ritornando \texttt{null}.
+				\end{itemize}
+				\item Se tutti i controlli hanno esito positivo, il \texttt{candidato} è confermato come pozzo universale e viene restituito (riga 23).
+			\end{itemize}
+		\end{enumerate}	
+	\end{algoritmo}
 	
 \end{document}

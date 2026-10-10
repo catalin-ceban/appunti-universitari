@@ -1994,4 +1994,76 @@
 		\end{center}
 	\end{enumerate}
 	
+	\newpage
+	\subsection{I valori NULL}
+	I valori NULLI rappresentano mancanza di informazione oppure che un'informazione non è applicabile a quella n-upla. Vediamo un esempio con un'informazione che usiamo tutti i giorni: il numero di telefono.\\
+	In una base di dati, il numero di telefono di una persona potrebbe assumere un valore nullo in diverse circostanze:
+	\begin{itemize}
+		\item La persona effettivamente non possiede un telefono cellulare e dunque neanche un numero.
+		
+		\item Non sappiamo se la persona abbia un numero di telefono.
+		
+		\item La persona ha un numero di telefono ma non lo conosciamo.
+	\end{itemize}
+	Nell'ottica della progettazione logica, dobbiamo stabilire questo vincolo (indicando che l'attributo può assumere valori NULL), ma in generale si tende a non utilizzare questa pratica, in quanto per la definizione di tupla questa deve possedere un valore per ogni attributo nello schema. Infatti, una possibile tecnica potrebbe essere quella di attribuire un valore di \textbf{default}.\\
+	Ci rendiamo anche conto di come molti campi debbano categoricamente essere \textbf{obbligatori}. Si tratta solitamente dei campi che contengono informazioni fondamentali per l'identificazione della tupla (come ad esempio la matricola di uno studente, che ci permette di identificarlo univocamente) oppure il voto di uno studente ad un appello di esame (non usiamo questa informazione per identificare lo studente, ma si tratta di un'informazione fondamentale in una base di dati universitaria).
+	\smallbreak
+	
+	Entrando più nello specifico del valore NULL, possiamo dire che:
+	\begin{itemize}
+		\item Si tratta di un valore \textbf{polimorfo}, cioè che non appartiene nello specifico a nessun dominio, ma può sostituire valori in qualsiasi dominio (ad esempio, se abbiamo degli attributi di tipo intero e stringhe, possiamo comunque inserire NULL come valore in quanto sarà compatibile con entrambi).
+		
+		\item Due valori NULL, anche se sullo stesso dominio, sono considerati \textbf{diversi}.
+		
+		\item \textbf{IMPORTANTE}! NULL $\neq$ 0.
+	\end{itemize}
+	
+	\section{Vincoli di integrità}
+	\begin{definizione}{Vincolo di integrità}{}
+		Un \textbf{vincolo di integrità} è una proprietà che deve essere categoricamente rispettata da \textbf{ogni istanza} della base di dati, in quanto è strettamente legata allo schema di una relazione.
+		\smallbreak
+		
+		Un'istanza della base di dati si dice \textbf{corretta} se soddisfa tutti i vincoli di integrità associati al suo schema.
+	\end{definizione}
+	
+	I vincoli di integrità si possono suddividere in due tipologie:
+	\begin{description}
+		\item [Vincoli di integrità intra-relazionali:] sono \textbf{vincoli che si stabiliscono sugli attributi o sulle tuple di una singola relazione}. Alcuni esempi di questi sono:
+		\begin{itemize}
+			\item Vincolo di chiave primaria: attributo obbligatorio e mai nullo. Identifica univocamente una tupla all'interno della relazione.
+			
+			\item Vincolo di dominio: quando si restringe il dominio di un particolare attributo.
+			
+			\item Vincolo di unicità: stabilisce che il valore di un attributo in una tupla t deve essere univoco e non preso da nessun'altra tupla.
+			
+			\item Vincolo di obbligatorietà: stabilisce che un attributo deve necessariamente avere un valore.
+		\end{itemize}
+		
+		\item[Vincoli di integrità inter-relazionali:] sono \textbf{vincoli che si stabiliscono tra relazioni diverse}, "collegando" ad esempio attributi con lo stesso dominio e creando un legame in base al valore assunto dai due attributi. Un esempio è il vincolo di chiave esterna che abbiamo citato qualche sezione fa.
+	\end{description}
+	
+	Facciamo alcuni esempi concreti di violazione di vincoli, oppure di casi in cui si potrebbero imporre dei vincoli.
+	\begin{tabella}{|c|c|c|c|c|}
+		CodiceImp & Cognome & Ruolo & Assunzione & Dip\\\hline
+		COD1 & Rossi & Analista & 1795 & 01\\\hline
+		COD2 & Bianchi & Analista & 1990 & 05\\\hline
+		COD2 & Neri & Amministratore & 1985 & 01\\
+	\end{tabella}
+	
+	\begin{tabella}{|c|c|}
+		CodiceDip & Nome\\\hline
+		01 & Progettazione\\\hline
+		02 & Amministrazione\\
+	\end{tabella}
+	
+	Considerando quest'esempio di base di dati, ci sono molti problemi: vediamo dove risiedono.
+	\begin{enumerate}
+		\item L'impiegato \texttt{COD1} risulta avere anno di assunzione 1795. Ciò è chiaramente impossibile, e una possibile soluzione potrebbe essere stabilire un anno di assunzione minimo (\textit{vincolo di dominio}).
+		
+		\item L'impiegato "Bianchi" risulta appartenere al dipartimento di codice "05", che è tuttavia inesistente, in quanto non presente in alcuna tupla della tabella \texttt{Dipartimenti}. Questo si potrebbe risolvere stabilendo un \textit{vincolo di chiave esterna} tra l'attributo \texttt{Dip} di \texttt{Impiegato} e l'attributo \texttt{CodiceDip} di \texttt{Dipartimenti}.
+		
+		\item Vi è una duplicazione del codice identificativo per gli impiegati "Bianchi" e "Neri". Ciò si potrebbe risolvere imponendo un \textit{vincolo di unicità} sui valori della colonna \texttt{CodiceImp}.
+	\end{enumerate}
+	Ovviamente esistono tanti altri tipi di vincoli, e altrettanti modi per definirli nello schema della base di dati, ma li vedremo più nel dettaglio durante la creazione effettiva delle relazioni.
+	
 \end{document}
