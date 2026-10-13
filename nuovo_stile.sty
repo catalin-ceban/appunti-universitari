@@ -1,0 +1,324 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{nuovo\_stile}[2026/10/13 Stile appunti (basato su Tarc)]
+
+\RequirePackage{silence}
+\WarningFilter{latex}{You have requested package}
+\WarningFilter{hyphenat}{*******************************}
+
+% Carichiamo il pacchetto dei colori per averli disponibili da subito
+\RequirePackage[dvipsnames, table, x11names, svgnames]{xcolor}
+
+\RequirePackage[T1]{fontenc}    % Codifica font, caratteri accentati
+\RequirePackage{newunicodechar} % Caratteri unicode custom
+\RequirePackage[italian]{babel} % Sillabazione e traduzioni
+\RequirePackage{csquotes}       % Virgolette tipografiche contestuali
+\RequirePackage{etoolbox}       % Per le condizioni del frontespizio
+
+% Modifica alla geometria della pagina
+\RequirePackage[
+    a4paper,
+    left=2.5cm,
+    right=2.5cm,
+    top=3cm,
+    bottom=3.5cm,
+    footskip=1.5cm,
+    headsep=1.2cm,
+    headheight=18pt
+]{geometry}
+
+
+% Pacchetti matematici
+\RequirePackage{mathtools}
+\RequirePackage{amssymb}
+\RequirePackage{cancel}
+\RequirePackage{esvect}
+\RequirePackage{stmaryrd}
+\RequirePackage{braket}
+\RequirePackage{centernot}
+\RequirePackage{empheq}
+\RequirePackage{extarrows}
+
+% Alcuni font non banali che potrebbero essere utilizzati
+\RequirePackage{lmodern}
+\RequirePackage{bm}
+\RequirePackage{enumitem}
+\RequirePackage{anyfontsize}
+
+
+% Impostazioni di grafica generale (la maggior parte sono pacchetti che stavano prima nel file di stile)
+\RequirePackage{graphicx}
+\RequirePackage{float}
+\RequirePackage[export]{adjustbox}
+\RequirePackage{tikz}
+\usetikzlibrary{positioning}
+\RequirePackage{forest}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+\RequirePackage{tikz-cd}
+\RequirePackage{nicematrix}
+\RequirePackage{booktabs}
+\RequirePackage{array}
+\RequirePackage{diagbox}
+\RequirePackage{ragged2e}
+\RequirePackage{ltablex}
+\RequirePackage{tabularx}
+\RequirePackage{environ}
+
+
+% Pacchetti per i codici
+\RequirePackage{listings}
+\RequirePackage[ruled, vlined, linesnumbered, italiano]{algorithm2e}
+\RequirePackage{siunitx}
+
+
+% Altri pacchetti per i box colorati
+\RequirePackage{tcolorbox}
+\tcbuselibrary{theorems, listings, breakable, skins}
+\RequirePackage{titlesec}
+\RequirePackage{fancyhdr}
+\RequirePackage{microtype}
+\RequirePackage[htt]{hyphenat}
+\RequirePackage{soul}
+\RequirePackage[hidelinks]{hyperref}
+\RequirePackage[italian]{cleveref}
+
+
+% Definizione dei colori essenziali
+\definecolor{rossoSapienza}{HTML}{A6192E}
+\definecolor{grigio_chiaro}{RGB}{200,200,200}
+\definecolor{arancio}{RGB}{255,172,102}
+\definecolor{verde}{RGB}{168,189,166}
+\definecolor{blu}{RGB}{145,172,191}
+\definecolor{corallo}{RGB}{255,153,153}
+\definecolor{oro}{RGB}{240,196,92}
+\definecolor{rosaAntico}{RGB}{214,153,166}
+\definecolor{sabbia}{RGB}{214,190,155}
+
+\colorlet{boxTeorema}{oro}
+\colorlet{boxDefinizione}{arancio}
+\colorlet{boxProposizione}{corallo}
+\colorlet{boxCorollario}{rosaAntico}
+\colorlet{boxOsservazione}{sabbia}
+\colorlet{boxDimostrazione}{sabbia}
+\colorlet{boxAlgoritmo}{corallo}
+\colorlet{boxEsercizio}{oro}
+
+% Colori dei miei teoremi originali
+\colorlet{coloreTeoremi}{DarkGoldenrod2}
+\colorlet{coloreDefinizioni}{Coral3}
+\colorlet{coloreProposizioni}{LightSalmon3}
+\colorlet{coloreCorollari}{MediumOrchid3}
+\colorlet{coloreOsservazioni}{Burlywood4}
+\colorlet{coloreSfondoBox}{gray!5}
+
+% Colore del numero del capitolo. Originale gray!60 (per ricordarmi)
+\colorlet{coloreNumeroCapitolo}{rossoSapienza}
+\colorlet{coloreTitoloCapitolo}{black}
+
+
+% Stile generico della pagina
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex}
+
+\linespread{1.2}
+\microtypesetup{protrusion=true, expansion=false}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% Nuovo titol del capitolo
+\newcommand{\etichettaCapitolo}{%
+  \color{coloreNumeroCapitolo}\fontsize{100}{100}\selectfont\thechapter}
+
+\titleformat{\chapter}[display]
+  {\normalfont\raggedleft}
+  {\etichettaCapitolo}
+  {5pt}
+  {\Huge\bfseries\color{coloreTitoloCapitolo}}
+
+% Spaziature per i vari ambienti
+\titlespacing*{\chapter}{0pt}{-40pt}{20pt}
+\titlespacing*{\section}{0pt}{5pt}{3pt}
+\titlespacing*{\subsection}{0pt}{5pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{5pt}{3pt}
+
+
+% Aggiunta: header e footer (solo spaziatura)
+\renewcommand{\chaptermark}[1]{\markboth{\@chapapp\ \thechapter\ --\ #1}{}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\rmfamily\footnotesize\leftmark}
+\fancyhead[R]{\rmfamily\bfseries\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyhead[L]{\rmfamily\footnotesize\leftmark}%
+  \fancyhead[R]{\rmfamily\bfseries\thepage}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+}
+
+
+% Come nello stile precedente, la generazione del frontespizio
+\newcommand{\generaFrontespizio}[4]{
+    \begin{titlepage}
+
+		\begin{center}
+
+			\hbox{}
+			\vfill
+
+			{
+				\color{rossoSapienza}
+				\bfseries
+				\fontsize{40pt}{40pt}\selectfont
+				#1
+				\par
+			}
+
+			\vspace{0.5cm}
+
+			\vfill
+			\hbox{}
+
+			\begin{minipage}{1\textwidth}
+				\fontsize{12pt}{14pt}\selectfont \textit{I seguenti appunti sono a cura di \textbf{Catalin Ceban} e si basano sul corso di "#1" erogato nell'A.A. #2 
+				\ifstrequal{#4}{m}{ dal professore}{\ifstrequal{#4}{p}{ dai professori}{ dalla professoressa}} #3 per il C.d.L Informatica (33503)}
+			\end{minipage}
+
+			\vspace{0.5cm}
+			{\large \today}
+
+		\end{center}
+
+	\end{titlepage}
+
+	\tableofcontents
+	\clearpage
+
+}
+
+
+% Definizione dei nuovi box colorati
+\tcbset{
+	stileBoxTarc/.style={
+		enhanced, breakable,
+		colback=white, colframe=#1,
+		fonttitle=\bfseries\rmfamily, coltitle=black,
+		attach boxed title to top left={xshift=3mm, yshift=-3mm},
+		boxed title style={colback=#1, colframe=#1, arc=1.5mm},
+		before skip=18pt, after skip=18pt,
+		top=4mm, pad after break=2mm
+	}
+}
+
+\newtcbtheorem[number within=section]{teorema}{Teorema}{stileBoxTarc=boxTeorema}{th}
+\newtcbtheorem[number within=section]{definizione}{Definizione}{stileBoxTarc=boxDefinizione}{def}
+\newtcbtheorem[number within=section]{proposizione}{Proposizione}{stileBoxTarc=boxProposizione}{prop}
+\newtcbtheorem[number within=section]{corollario}{Corollario}{stileBoxTarc=boxCorollario}{cor}
+\newtcbtheorem[number within=section]{osservazione}{Osservazione}{stileBoxTarc=boxOsservazione}{oss}
+\newtcbtheorem[number within=section]{dimostrazione}{Dimostrazione}{stileBoxTarc=boxDimostrazione}{oss}
+\newtcbtheorem[number within=section]{algoritmo}{Spiegazione algoritmo}{stileBoxTarc=boxAlgoritmo}{alg}
+\newtcbtheorem[number within=section]{esercizio}{Esercizio}{stileBoxTarc=boxEsercizio}{es}
+
+% I miei box originali
+%
+% \newlength{\boxDistanzaVerticale}
+% \setlength{\boxDistanzaVerticale}{7pt}
+% \newlength{\boxDistanzaOrizzontale}
+% \setlength{\boxDistanzaOrizzontale}{10pt}
+% \newlength{\boxSpessoreRiga}
+% \setlength{\boxSpessoreRiga}{3pt}
+%
+% \tcbset{
+% 	stileBox/.style={
+% 		blanker,
+% 		borderline west={\boxSpessoreRiga}{0pt}{#1},
+% 		left=\boxDistanzaOrizzontale,
+% 		toptitle=\boxDistanzaVerticale, 
+% 		bottom=\boxDistanzaVerticale,
+% 		right=\boxDistanzaOrizzontale,
+% 		pad after break=2mm,
+% 		colback=coloreSfondoBox,
+% 		colbacktitle=tcbcolback,
+% 		coltitle=#1,
+% 		fonttitle=\bfseries,
+% 		enhanced,
+% 		breakable
+% 	}
+% }
+%
+% \newtcbtheorem[number within=section]{teorema}{Teorema}{stileBox=coloreTeoremi}{th}
+% \newtcbtheorem[number within=section]{definizione}{Definizione}{stileBox=coloreDefinizioni}{def}
+% \newtcbtheorem[number within=section]{proposizione}{Proposizione}{stileBox=coloreProposizioni}{prop}
+% \newtcbtheorem[number within=section]{corollario}{Corollario}{stileBox=coloreCorollari}{cor}
+% \newtcbtheorem[number within=section]{osservazione}{Osservazione}{stileBox=coloreOsservazioni}{oss}
+% \newtcbtheorem[number within=section]{dimostrazione}{Dimostrazione}{stileBox=coloreOsservazioni}{oss}
+% \newtcbtheorem[number within=section]{algoritmo}{Spiegazione algoritmo}{stileBox=coloreProposizioni}{alg}
+% \newtcbtheorem[number within=section]{esercizio}{Esercizio}{stileBox=coloreTeoremi}{es}
+
+
+% Stile per codice e tabelle
+\lstdefinestyle{stile-listings}{
+	basicstyle=\ttfamily\small,
+	inputencoding=utf8,
+	extendedchars=true,
+	literate=
+	{à}{{\`a}}1
+	{è}{{\`e}}1
+	{é}{{\'e}}1
+	{ì}{{\`i}}1
+	{ò}{{\`o}}1
+	{ù}{{\`u}}1,
+	keywordstyle=\color{blue!55!black}\bfseries,
+	stringstyle=\color{Coral!55!black},
+	numbers=left,
+	numberstyle=\tiny\color{black!45},
+	numbersep=8pt,
+	backgroundcolor=\color{gray!15},
+	frame=single,
+	rulecolor=\color{gray!70!black},
+	framesep=6pt,
+	framextopmargin=4pt,
+	framexbottommargin=4pt,
+	xleftmargin=7pt,
+	xrightmargin=7pt,
+	breaklines=true,
+	breakatwhitespace=false,
+	showstringspaces=false,
+	tabsize=2,
+	captionpos=b,
+	aboveskip=15pt,
+	belowskip=8pt
+}
+
+\renewcommand{\tabularxcolumn}[1]{m{#1}}
+\newcolumntype{C}{>{\Centering\arraybackslash}X}
+\newcolumntype{L}{>{\RaggedRight\arraybackslash}X}
+
+\NewEnviron{tabella}[2][]{%
+	\par\vspace{0.5em}%
+	\begingroup
+	\centering
+	\renewcommand{\arraystretch}{1.5}%
+	\begin{tabularx}{\textwidth}{#2}
+		\hline
+		\rowcolor{BrickRed!60!white}
+		\BODY
+		\hline
+	\end{tabularx}%
+	\if\relax\detokenize{#1}\relax
+	% Nessuna caption fornita
+	\else
+	\vspace{0.5em}%
+	\captionof{table}{#1}%
+	\fi
+	\par
+	\endgroup
+	\vspace{0.5em}%
+}
+
+\endinput

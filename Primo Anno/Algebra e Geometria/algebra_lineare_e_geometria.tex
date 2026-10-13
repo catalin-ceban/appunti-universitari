@@ -1,15 +1,6 @@
 \documentclass[12pt]{report}
 
-\usepackage{amssymb}
-\usepackage{amsmath}
-\usepackage{amsthm}
-\usepackage[inline]{enumitem}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{subcaption}
-\usepackage{graphicx}
-\usepackage{anyfontsize}
-\usepackage{../../stile_appunti}
+\usepackage{../../nuovo_stile}
 
 \newcommand{\whitespace}{\text{ }}
 \newcommand{\taleche}{\text{ tale che }}
@@ -185,7 +176,6 @@
 	\end{center}
 	e dunque l'\textbf{inverso moltiplicativo} di $z$, che indichiamo come $z^{-1}$, è proprio uguale a $\frac{\bar{z}}{a^2 + b^2}$.
 	
-	\newpage
 	\subsection{Rappresentazione grafica dei numeri complessi} 
 	La rappresentazione dei numeri complessi sul piano cartesiano risulta molto semplice e diretta, in quanto la parte reale del numero $\mathbf{\operatorname{Re}(z)}$ rappresenterà l'ascissa del punto, mentre quella immaginaria $\mathbf{\operatorname{Im}(z)}$ sarà l'ordinata.
 	Inoltre, nell'ottica della rappresentazione di un numero complesso sul piano cartesiano, definiamo anche un ulteriore parametro, chiamato \textbf{argomento di $\mathbf{z}$}, che indichiamo come $\operatorname{Arg}(z)$ ed è definito come il minimo angolo formato tra l'asse delle ascisse e il punto individuato da $z$.
@@ -893,7 +883,6 @@
 		\item $A \cdot (B + C) = A \cdot B + A \cdot C$
 	\end{itemize}
 	
-	\newpage
 	\section{Matrici e applicazioni lineari}
 	Prima di stabilire l'importantissimo collegamento che intercorre tra matrici e applicazioni lineari, introduciamo una convenzione utilizzata.\\
 	Parlare dello spazio $\K^n$ è equivalente al parlare dello spazio $M_{n,1}(\K)$, in quanto:
@@ -1255,7 +1244,6 @@
 		Sia $A \in M_{m,n}(\K)$, allora $\rg(A) = \rg(A^T)$.
 	\end{proposizione}
 	
-	\newpage
 	\begin{definizione}{Matrice inversa}{matrice-inversa}
 		Sia $A = M_{n,n}(\K)$ una matrice quadrata. La matrice inversa si indica con $A^{-1}$ ed è quella matrice per cui vale $A \cdot A^{-1} = 1_n$. Si tratta di uno dei pochi casi in cui il prodotto matriciale commuta.
 		L'inversa di una matrice \textbf{non} è sempre ammessa, ma la matrice di partenza deve rispettare i seguenti requisiti:
@@ -1453,8 +1441,7 @@
 		\]
 	\end{teorema}
 	
-	\newpage
-	\chapter{Polinomio caratteristico}
+	\section{Polinomio caratteristico}
 	Vogliamo trovare un modo più semplice e algoritmico per stabilire se una data applicazione $f$ sia diagonalizzabile o meno.
 	Ricordando il discorso fatto nella sezione degli autovalori e autovettori, ricordiamo che la definizione di autovettore era quel vettore per cui vale $(\lambda \cdot \operatorname{Id}_\V- f)(v) = 0$.
 	L'autospazio veniva poi definito come il nucleo di questa applicazione lineare. Tuttavia noi sappiamo che se il nucleo di un'applicazione lineare \textbf{nono è banale}, allora il determinante di quell'applicazione è pari a $0$.

@@ -1,12 +1,7 @@
 \documentclass[12pt]{report}
 
-\usepackage{amssymb}
-\usepackage{tikz}
-\usepackage{float}
+\usepackage{../../nuovo_stile}
 \usepackage{blkarray}
-\usepackage{subcaption}
-\usepackage{graphicx}
-\usepackage{../../stile_appunti}
 
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\Z}{\mathbb{Z}}
@@ -1439,7 +1434,6 @@
 		La relazione $R'$ è definita dunque come $R \cup (X \times Y)$.
 	\end{dimostrazione}
 	
-	\newpage
 	In poche parole:
 	\begin{itemize}
 		\item $R' = R \cup \{(a, b)\}$, aggiungiamo la coppia $(a, b)$ che per definizione $\notin R$. Questo forza il fatto che $a$ e $b$ siano comparabili, ma potrebbe violare la transitività di $R'$ (ereditata da $R$).
@@ -2280,7 +2274,7 @@
 	
 	Soffermandoci sul punto 3 notiamo, grazie alle leggi di De Morgan, che la negazione di una disgiunzione equivale ad una congiunzione, mentre la negazione di una congiunzione equivale ad una disgiunzione.
 	
-	\chapter{Risoluzione}
+	\section{Risoluzione}
 	
 	Prima di affrontare il concetto di risoluzione, ci ricordiamo che ogni formula logica può essere scritta in CNF:
 	\[

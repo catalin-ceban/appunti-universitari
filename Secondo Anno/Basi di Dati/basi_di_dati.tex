@@ -1,14 +1,6 @@
 \documentclass[12pt]{report}
 
-\usepackage{listings}
-\usepackage{float}
-\usepackage{booktabs}
-\usepackage{amssymb}
-\usepackage{subcaption}
-\usepackage{tikz}
-\usetikzlibrary{positioning}
-
-\usepackage{../../stile_appunti}
+\usepackage{../../nuovo_stile}
 \lstset{style=stile-listings}
 
 \begin{document}
@@ -887,7 +879,6 @@
 	Gli attributi possono anche essere \textbf{composti}, cioè attributi che raggruppano più informazioni insieme. Un esempio di attributo composto potrebbe essere l'indirizzo di residenza di una persona, in quanto l'informazione indirizzo può essere ulteriormente scomposta in \textit{Via}, \textit{Numero civico} e \textit{CAP}, ad esempio.
 	In un'applicazione la scelta di mantenere un attributo composto anziché suddividerlo nelle sue componenti atomiche dipende dall'importanza che quell'attributo in seguito all'analisi del problema.
 	
-	\newpage
 	\subsection{Cardinalità di associazioni}
 	\begin{definizione}{Cardinalità di associazioni}{}
 		Si tratta di una coppia di valori che si attribuisce ad ogni entità coinvolta in un'associazione. Si tratta di una rappresentazione grafica dei concetti di \textbf{univoco} e \textbf{multivalore} visti precedentemente.
@@ -895,7 +886,33 @@
 		Specificano il numero minimo e massimo di occorrenze dell'associazione a cui un'istanza della prima entità può essere collegato rispetto ad istanze della seconda entità.
 	\end{definizione}
 	
-	\begin{figure}[htbp]
+	Vediamo adesso più nel dettaglio le varie tipologie di cardinalità:
+	\begin{itemize}
+		\item \textbf{Partecipazione minima}
+		\begin{itemize}
+			\item \textbf{0}: indica che la partecipazione di un'istanza dell'entità di partenza all'associazione è \textbf{opzionale}. Ciò vuol dire che potrebbe esserci anche una singola occorrenza dell'entità di partenza che non è associata a nessuna occorrenza dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{parziale} che avevamo già visto.
+			
+			\item \textbf{1}: indica che ogni istanza dell'entità di partenza è associata ad almeno un'occorrenza dell'altra entità. E' il corrispettivo dell'associazione \textbf{totale} che avevamo già visto.
+		\end{itemize}
+		
+		\item \textbf{Partecipazione massima}:
+		\begin{itemize}
+			\item \textbf{1}: indica che ogni occorrenza dell'entità di partenza è collegata al massimo ad un'occorrenza dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{univoca} che avevamo già visto.
+			
+			\item \textbf{N}: indica che ogni occorrenza dell'entitò di partenza può essere collegata a più occorrenze dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{multivalore} che avevamo già visto.
+		\end{itemize}
+	\end{itemize}
+	
+	Con riferimento alle cardinalità appena mostrate, possiamo distinguere varie tipologie di associazioni:
+	\begin{itemize}
+		\item \textbf{Uno ad uno}, si verifica quando la cardinalità dell'entità è del tipo (1, 1).
+		
+		\item \textbf{Uno a molti}, si verifica quando la cardinalità è del tipo (1, N).
+		
+		\item \textbf{Molti a molti}, si verifica quando entrambe le entità coinvolte hanno cardinalità (0, N) oppure (1, N).
+	\end{itemize}
+	
+	\begin{figure}[H]
 		\centering
 		\begin{tikzpicture}[thick]
 			\definecolor{softpink}{RGB}{245, 206, 214}
@@ -924,39 +941,13 @@
 		\label{fig:tutoraggio_studente_docente}
 	\end{figure}
 	
-	Vediamo adesso più nel dettaglio le varie tipologie di cardinalità:
-	\begin{itemize}
-		\item \textbf{Partecipazione minima}
-		\begin{itemize}
-			\item \textbf{0}: indica che la partecipazione di un'istanza dell'entità di partenza all'associazione è \textbf{opzionale}. Ciò vuol dire che potrebbe esserci anche una singola occorrenza dell'entità di partenza che non è associata a nessuna occorrenza dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{parziale} che avevamo già visto.
-			
-			\item \textbf{1}: indica che ogni istanza dell'entità di partenza è associata ad almeno un'occorrenza dell'altra entità. E' il corrispettivo dell'associazione \textbf{totale} che avevamo già visto.
-		\end{itemize}
-		
-		\item \textbf{Partecipazione massima}:
-		\begin{itemize}
-			\item \textbf{1}: indica che ogni occorrenza dell'entità di partenza è collegata al massimo ad un'occorrenza dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{univoca} che avevamo già visto.
-			
-			\item \textbf{N}: indica che ogni occorrenza dell'entitò di partenza può essere collegata a più occorrenze dell'entità di arrivo. E' il corrispettivo dell'associazione \textbf{multivalore} che avevamo già visto.
-		\end{itemize}
-	\end{itemize}
-	
-	Con riferimento alle cardinalità appena mostrate, possiamo distinguere varie tipologie di associazioni:
-	\begin{itemize}
-		\item \textbf{Uno ad uno}, si verifica quando la cardinalità dell'entità è del tipo (1, 1).
-		
-		\item \textbf{Uno a molti}, si verifica quando la cardinalità è del tipo (1, N).
-		
-		\item \textbf{Molti a molti}, si verifica quando entrambe le entità coinvolte hanno cardinalità (0, N) oppure (1, N).
-	\end{itemize}
-	
+	\newpage
 	E' possibile delineare la cardinalità anche per gli attributi: quando questa non viene indicata è implicitamente (1, 1).
-	\begin{figure}[htbp]
+	\begin{figure}[H]
 		\centering
 		\begin{tikzpicture}[thick]
 			\definecolor{softpink}{RGB}{245, 206, 214}
-			\definecolor{darkred}{RGB}{140, 35, 55}
-			
+			\definecolor{darkred}{RGB}{140, 35, 55}			
 			% Entità: Impiegato
 			\node[draw, fill=softpink, minimum width=3.4cm, minimum height=1.5cm, font=\sffamily\bfseries\large] (imp) at (0, 0) {Impiegato};
 			
@@ -984,7 +975,7 @@
 			\node[font=\sffamily\bfseries\large] at (1.9, 1.3) {(0,N)};
 			\node[font=\sffamily\bfseries\large] at (1.9, -1.4) {(0,1)};
 		\end{tikzpicture}
-		\caption{Esempio di cardinalità su attributi.}
+		\caption{Esempio di cardinalità su attributi. Come per le associazioni, scrivere 0 come cardinalità minima indica che l'attributo non è obbligatorio.}
 		\label{fig:impiegato_attributi_cardinalita}
 	\end{figure}
 	
@@ -1628,7 +1619,7 @@
 	Particolare attenzione deve essere posta sulle associazioni molti a molti ricorsive, in quanto in quel caso è di vitale importanza il nome delle chiavi esterne.
 	\begin{figure}[htbp]
 		\centering
-		\resizebox{0.70\linewidth}{!}{
+		\resizebox{0.50\linewidth}{!}{
 		\begin{tikzpicture}[thick]
 			\definecolor{softpink}{RGB}{245, 206, 214}
 			\definecolor{darkred}{RGB}{140, 35, 55}
@@ -1911,13 +1902,12 @@
 		\begin{enumerate}
 			\item Disabilitare temporaneamente i controlli di integrità del DBMS, per permettere di inserire delle persone e successivamente riabilitarli per creare la corrispondenza effettiva.
 			
-			\item Impostare il valore della chiave esterna come nono obbligatorio (\textbf{RISCHIOSO!!!}) e inserire il valore della chiave esterna solo \textit{dopo aver effettuato sufficienti inserimenti}.
+			\item Impostare il valore della chiave esterna come non obbligatorio (\textbf{RISCHIOSO!!!}) e inserire il valore della chiave esterna solo \textit{dopo aver effettuato sufficienti inserimenti}.
 		\end{enumerate}
 	\end{enumerate}
 	
-	\newpage
 	Vediamo di seguito un esempio anche con le associazioni n-arie molti-a-molti.
-	\begin{figure}[htbp]
+	\begin{figure}[H]
 		\centering
 		\resizebox{0.60\linewidth}{!}{%
 			\begin{tikzpicture}[thick]
@@ -1994,7 +1984,6 @@
 		\end{center}
 	\end{enumerate}
 	
-	\newpage
 	\subsection{I valori NULL}
 	I valori NULLI rappresentano mancanza di informazione oppure che un'informazione non è applicabile a quella n-upla. Vediamo un esempio con un'informazione che usiamo tutti i giorni: il numero di telefono.\\
 	In una base di dati, il numero di telefono di una persona potrebbe assumere un valore nullo in diverse circostanze:
@@ -2042,6 +2031,7 @@
 		\item[Vincoli di integrità inter-relazionali:] sono \textbf{vincoli che si stabiliscono tra relazioni diverse}, "collegando" ad esempio attributi con lo stesso dominio e creando un legame in base al valore assunto dai due attributi. Un esempio è il vincolo di chiave esterna che abbiamo citato qualche sezione fa.
 	\end{description}
 	
+	\newpage
 	Facciamo alcuni esempi concreti di violazione di vincoli, oppure di casi in cui si potrebbero imporre dei vincoli.
 	\begin{tabella}{|c|c|c|c|c|}
 		CodiceImp & Cognome & Ruolo & Assunzione & Dip\\\hline
@@ -2065,5 +2055,117 @@
 		\item Vi è una duplicazione del codice identificativo per gli impiegati "Bianchi" e "Neri". Ciò si potrebbe risolvere imponendo un \textit{vincolo di unicità} sui valori della colonna \texttt{CodiceImp}.
 	\end{enumerate}
 	Ovviamente esistono tanti altri tipi di vincoli, e altrettanti modi per definirli nello schema della base di dati, ma li vedremo più nel dettaglio durante la creazione effettiva delle relazioni.
+	
+	\chapter{Il linguaggio SQL}
+	Al fine di creare i database, le tabelle, stabilire i vincoli tra queste ed effettuare operazioni di interrogazione sui dati era necessario un apposito linguaggio con cui fare tutto questo.\\
+	Nasce così \textbf{SQL (Structured Query Language)}, il linguaggio diventato ormai di riferimento per tutti i DBMS moderni.
+	\begin{definizione}{Sottolinguaggi di SQL}{}
+		Il linguaggio SQL è un grande contenitore di moltissime istruzioni di vario genere. Nonostante la suddivisione logica di queste istruzioni non sia importante ai fini del calcolo, si tratta comunque di una nozione utile ai fini della progettazione o dell'uso di un DBMS.\\
+		Le varie istruzioni del linguaggio SQL si suddividono in 4 sottolinguaggi:
+		\begin{itemize}
+			\item \textbf{DDL (Data Definition Language)}: contiene tutte le istruzioni che permettono la creazione/modifica/eliminazione di database e tabelle (es: \texttt{CREATE TABLE (...), CREATE DATABASE ..., ...}).
+			
+			\item \textbf{DML (Data Manipulation Language)}: comprende le istruzioni utili alla manipolazione dei dati all'interno delle tabelle, permettendo ad esempio istruzioni di inserimento, modifica o cancellazione di un dato (es: \texttt{INSERT INTO ... VALUES (...)}).
+			
+			\item \textbf{DQL (Data Query Language)}: si tratta del linguaggio che comprende tutte le istruzioni utili all'interrogazione dei dati (es: \texttt{SELECT ... FROM ... WHERE ...}).
+			
+			\item \textbf{DCL (Data Control Language)}: gestisce i permessi utente e limita l'accesso ai dati (\texttt{GRANT, REVOKE, ...}).
+		\end{itemize}
+	\end{definizione}
+	
+	\section{Domini di dati}
+	Come abbiamo già discusso nella formalizzazione del modello relazionale per la memorizzazione dei dati, ad ogni attributo è associato un dominio di valori che possono essere assunti da esso.\\
+	Nel linguaggio SQL ci vengono forniti dei domini di dati predefiniti, ma ci è anche dato modo di crearne di nostri.\\
+	Di seguito una tabella in cui riassumiamo i domini principali forniti dal linguaggio SQL. Chiaramente ne esistono molto di più, ma questi sono gli essenziali nella progettazione di una base di dati standard.
+	\begin{tabella}{|C|C|}
+		Nome in SQL & Descrizione\\
+		\texttt{CHAR(size)} & Rappresenza una stringa di lunghezza fissa di \texttt{size} caratteri. Il massimo di caratteri rappresentabili è 255.\\\hline
+		
+		\texttt{VARCHAR(size)} & Rappresenta una stringa a lunghezza variabile il cui numero massimo di caratteri è 65535.\\\hline
+		
+		\texttt{INT} & Rappresentazione standard di un valore intero. Ci sono anche altri tipi di dato per cui varia il range di rappresentazione dei valori.\\\hline
+		
+		\texttt{FLOAT} & Memorizza valori decimali con una "bassa precisione".\\\hline
+		
+		\texttt{DOUBLE} & Il tipo di dato più preciso per memorizzare valori decimali.\\\hline
+		
+		\texttt{BLOB/CLOB} & Predisposti a contenere grandi immagini e testi, ma non possono essere oggetto di interrogazioni.\\
+		
+		\texttt{BOOLEAN/BOOL} & Modo standard per memorizzare valori come TRUE (tutti i numeri diversi da 0) o FALSE (unicamente 0).\\\hline
+		
+		\texttt{DATE} & Memorizza una data nel formato "YYYY-MM-DD".\\\hline
+		
+		\texttt{TIME} & Memorizza l'ora nel formato "hh:mm:ss".\\\hline
+		
+		\texttt{DATETIME} & Una combinazione di \texttt{DATE} e \texttt{TIME} che si presenta nel formato "YYYY-MM-DD hh:mm:ss".\\
+	\end{tabella}
+	
+	Per creare invece dei domini personalizzati, si usa l'istruzione \texttt{CREATE DOMAIN}. Per quanto la sintassi ora come ora possa non essere falmiliare, viene lasciato di seguito un esempio:
+	\begin{center}
+		\texttt{CREATE DOMAIN AnnoAssunzione AS INT DEFAULT NULL CHECK (value >= 1990)}
+	\end{center}
+	Provando a spiegare la precedente istruzioni, stiamo
+	\begin{enumerate}
+		\item Usando le istruzioni \texttt{CREATE DOMAIN} per "annunciare" di voler creare un dominio personalizzato.
+		
+		\item Definendo il nome del dominio (AnnoAssunzione).
+		
+		\item Keyword \texttt{AS} per indicare che tutto ciò che segue saranno le istruzioni per la definizione del dominio (tutto ciò che ci risparmieremo di scrivere ogni volta).
+		
+		\item Definiamo il tipo di dominio a cui applicare le restrizioni. In questo caso \texttt{INT}.
+		
+		\item Stabiliamo un valore di default, cioè in caso il dato non sia ancora stato inserito nella tabella. In questo caso abbiamo impostato \texttt{DEFAULT NULL}.
+		
+		\item Definiamo l'effettiva \textit{restrizione} da applicare al tipo di dato di partenza. La parola chiave \texttt{CHECK} serve per indicare che il DBMS deve \textbf{controllare} che la seguente condizione racchiusa tra () sia rispettata.
+		
+		\item \texttt{value} è un attributo specifico di ogni dominio di dato e rappresenta l'effettivo valore che si è provato ad inserire nella tabella. In questo caso vogliamo imporre che tutti i dati che apparterranno al dominio "AnnoAssunzione" debbano avere un valore $>=$ 1990.
+	\end{enumerate}
+	
+	\section{Definizione delle tabelle}
+	Di seguito vediamo come definire una tabella in SQL (mediante istruzioni del linguaggio DDL) e analizzeremo tutti i \textit{constraint} che possiamo imporre sullo schema di questa.\\
+	Innanzitutto, partiamo dalle basi: la creazione di una tabella avviene con l'istruzione \texttt{CREATE TABLE nomeTabella (...);}
+	Mostriamo di seguito un esempio di creazione di due tabelle e della creazione dei vincoli inter-relazionali e intra-relazionali.
+	\begin{lstlisting}[language=SQL]
+		CREATE TABLE Dipartimento(
+			Codice CHAR(15) PRIMARY KEY,
+			Nome CHAR(30) UNIQUE NOT NULL
+		);
+		
+		CREATE TABLE Impiegato(
+			Matricola CHAR(6) PRIMARY KEY,
+			CF CHAR(16) UNIQUE NOT NULL,
+			Cognome CHAR(30) NOT NULL,
+			Stipendio DOUBLE DEFAULT 0,
+			FK_Dipartimento CHAR(15) REFERENCES Dipartimento(Codice)
+		);
+	\end{lstlisting}
+	Analizziamo adesso ogni istruzione, spieghiamola e forniamo eventuali varianti di sintassi.
+	\begin{itemize}
+		\item In generale, la definizione di un attributo segue la sintassi \texttt{NOME\_ATTRIBUTO DOMINIO CONSTRAINT}.
+		
+		\item Se vogliamo indicare che un attributo è chiave primaria di una relazione (ossia l'attributo che identifica univocamente ogni tupla della relazione) possiamo procedere in due modi:
+		\begin{enumerate}
+			\item Come nell'esempio, scrivendo \texttt{PRIMARY KEY} come constraint dell'attributo.
+			
+			\item Prima della fine della definizione della tabella, possiamo scrivere \texttt{PRIMARY KEY (Attributo1, Attributo2, ...)} per definire una chiave primaria composta da uno o più attributi. Questa modalità è \textbf{obbligatoria} quando abbiamo relazioni in cui la chiave primaria è composta da più di un attributo, in quanto scrivere \texttt{PRIMARY KEY} come constraint su due attributi diversi risulterebbe in un errore.
+		\end{enumerate}
+		
+		\item Per definire un vincolo di chiave esterna tra due relazioni possiamo anche qui procedere in due modi:
+		\begin{enumerate}
+			\item Come nell'esempio, scrivendo \texttt{NOME\_ATTRIBUTO TIPO REFERENCES}\\
+			\texttt{TABELLA\_DI\_PROVENIENZA(NOME\_ATTRIBUTO\_DI\_PROVENIENZA)}
+			
+			\item Utilizzando una sintassi simile a quella per le chiavi primarie composte, ovvero \texttt{FOREIGN KEY(NOME\_ATTRIBUTO) REFERENCES}\\
+			\texttt{TABELLA\_DI\_PROVENIENZA(NOME\_ATTRIBUTO\_DI\_PROVENIENZA)}. Di nuovo, questa modalità è \textbf{obbligatoria} quando la chiave esterna ereditata dalla relazione sia una chiave primaria composta nella relazione di partenza.
+		\end{enumerate}
+	\end{itemize}
+	
+	\begin{osservazione}{Il constraint \textbf{PRIMARY KEY}}{}
+		Il constraint \texttt{PRIMARY KEY} include implicitamente anche i vincoli \texttt{UNIQUE} (cioè che ogni valore memorizzato per quell'attributo deve essere univoco e non devono apparire valori duplicati) e \texttt{NOT NULL} (ovvero che non sono ammessi valori nulli per quel campo), oltre all'indicizzazione da parte del DBMS (ma qui si scende al modello fisico).
+	\end{osservazione}
+	
+	\begin{osservazione}{Importanza dei domini nelle \texttt{FOREIGN KEY}}{}
+		Come visto nell'esempio, affinché la creazione di un vincolo di integrità inter-relazionale tra due tabelle vada a buon fine è importante che l'attributo/gli attributi che si vogliono mettere in relazione abbiano \textbf{lo stesso dominio}. E ciò non vuol dire semplicemente che siano entrambi due \texttt{CHAR}, ma vuol dire ad esempio che se è stata configurata una dimensione per la stringa dei caratteri, questa debba essere rispettata (es: se nella tabella di partenza avevo \texttt{CHAR(16)}, anche in quella di arrivo deve essere \texttt{CHAR(16)}).
+	\end{osservazione}
 	
 \end{document}

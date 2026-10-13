@@ -1,12 +1,6 @@
 \documentclass[12pt]{report}
 
-\usepackage{listings}
-\usepackage{float}
-\usepackage{booktabs}
-\usepackage{amssymb}
-\usepackage{subcaption}
-
-\usepackage{../../stile_appunti}
+\usepackage{../../nuovo_stile}
 \lstset{style=stile-listings}
 
 \begin{document}
@@ -208,7 +202,7 @@
     			
     \end{algoritmo}
     		
-    \begin{lstlisting}[caption={Versione ricorsiva della ricerca binaria}]
+    \begin{lstlisting}[caption={Versione ricorsiva della ricerca binaria}, language=Python]
     	def ricerca_binaria(A, target, inizio, fine):
     		if inizio > fine:
     			return -1
@@ -257,7 +251,6 @@
     			
     \end{itemize}
     
-    \newpage
     Visti i due principali algoritmi di ricerca, di seguito viene lasciata una tabella di confronto tra questi.
     
     \begin{tabella}{|c|c|c|}
@@ -273,12 +266,13 @@
     Un esempio di relazione d’ordine può essere quella di maggiore/minore tra due numeri. Chiaramente questa relazione d’ordine deve essere definita sull’insieme dei valori da ordinare: non possiamo ordinare delle persone con lo stesso criterio con cui ordiniamo dei numeri: per stabilire chi sia maggiore o minore tra due persone, ad esempio, dobbiamo decidere quale è il criterio per cui le confrontiamo (es: l’età, l’altezza, …) e solo allora potremmo effettivamente procedere con l’ordinamento.
     	
     Nel corso della storia degli algoritmi sono stati proposti vari algoritmi di ordinamento, partendo da quelli più “intuitivi” ma spesso meno efficienti, per arrivare poi ad alcuni meno “intuitivi” ma decisamente più efficienti.
-    	
-    \section{Insertion Sort}
+    
+    \section{Algoritmi di ordinamento naif}
+    \subsection{Insertion Sort}
     Questo algoritmo ordina gli elementi dell’insieme come ordineremmo le carte di un mazzo che sono nella nostra mano: prendiamo una carta e, se si trova nel posto sbagliato, cioè non rispetta l’ordinamento rispetto alle carte precedenti/successive, la mettiamo nel posto giusto. Intuitivamente questo accade “liberando uno spazio” dove dobbiamo posizionare la carta e poi facendo “scalare a destra” tutte quelle che sono rimaste.
     Proponiamo di seguito il codice dell’algoritmo:
     		
-    \begin{lstlisting}[caption={Insertion Sort}]
+    \begin{lstlisting}[caption={Insertion Sort}, language=Python]
     	def insertion_sort(A):
     		n = len(A)
     		for i in range(1, n):
@@ -335,11 +329,11 @@
     Punto forte di questo algoritmo, il che non è scontato è che \textbf{ordina in loco}, cioè ordina l’array su se stesso, senza utilizzare ulteriore memoria per array d’appoggio.
 	Inoltre, l’Insertion Sort è un algoritmo \textbf{stabile}, il che vuol dire che se vengono trovati due elementi la cui chiave di ordinamento è uguale, nella sequenza finale ordinata verranno mantenuti nell'ordine in cui apparivano nella sequenza disordinata.
     	
-    \section{Selection Sort}
+    \subsection{Selection Sort}
     Questo algoritmo è anche più intuitivo del precedente: ad ogni iterazione cerchiamo il minimo (o il massimo, dipende da se vogliamo operare in ordine crescente o decrescente) nella parte restante dell’array e lo scambiamo con l’elemento corrente che stiamo considerando. Molto semplice ed intuitivo. Questo algoritmo richiede però una funzione di supporto chiamata “trova\_minimo(A, indice\_inizio)” che, come suggerisce il nome, ci aiuta a trovare il minimo nella parte di array che ci manca.\\
     Vediamo ora il codice di questo algoritmo:
     		
-    \begin{lstlisting}[caption={Funzione ausiliaria "trova\_minimo"}]
+    \begin{lstlisting}[caption={Funzione ausiliaria "trova\_minimo"},language=Python]
     	def trova_minimo(A, indice_inizio):
     		n = len(A)
     		indice_min = A[indice_inizio]
@@ -349,7 +343,7 @@
     		return indice_min
     \end{lstlisting}
     
-    \begin{lstlisting}[caption={Selection Sort}]
+    \begin{lstlisting}[caption={Selection Sort}, language=Python]
     	def selection_sort(A):
     		n = len(A)
     		
@@ -381,11 +375,11 @@
     In questo caso il costo computazionale dell’algoritmo sarà \textbf{equivalente nel Caso migliore e nel Caso peggiore}, in quanto non sono presenti condizioni che impediscano ad alcuni blocchi di codice di essere eseguiti, bensì vengono eseguite n iterazioni del ciclo for esterno e per ogni iterazione si cerca il minimo negli n-i elementi rimanenti dell’array. Il costo computazionale sarà dunque $\mathbf{\Theta(n^2)}$ in entrambi i casi.
     A sua volta, il Selection Sort \textbf{NON è un algoritmo stabile}, in quanto se per esempio avessimo un array di tutti numeri uguali, l’ultimo numero verrebbe messo al primo posto (ad esempio alla prima iterazione), e in generale verrebbero tutti ugualmente scambiati.
     	
-	\section{Bubble Sort}
+	\subsection{Bubble Sort}
 	Anche questo risulta abbastanza intuitivo: il concetto di base è di confrontare ogni coppia di elementi, e se questa non rispetta la relazione di ordine scelta, scambiarli.
     Senza perderci in ulteriori chiacchere, procediamo con il codice dell’algoritmo:
     		
-    \begin{lstlisting}[caption={Bubble Sort}]
+    \begin{lstlisting}[caption={Bubble Sort}, language=Python]
     	def bubble_sort(A):
     		n = len(A)
     		
@@ -440,9 +434,10 @@
     	\item Bubble Sort: generalmente sconsigliato se implementato nella sua versione classica. Se viene invece implementato con un flag che tiene traccia degli scambi effettuati, il costo nel caso migliore può piombare ad un fantastico $\Theta(n)$.
     
     \end{itemize}
-    	
-    \newpage
-    \section{Complessità del problema dell'ordinamento}
+    
+    \section{Algoritmi di ordinamento efficienti}
+    
+    \subsection{Complessità del problema dell'ordinamento}
     Prima di passare ad algoritmi più efficienti rispetto a quelli appena visti, si fa una digressione riguardante la natura intrinseca del problema dell’ordinamento.
     Essendo un problema così comune, ed essendo costantemente alla ricerca di algoritmi più efficienti, ci si è chiesto: ma quanto possono essere efficienti questi algoritmi? C’è una specie di \textit{limite inferiore} sotto al quale gli algoritmi di ordinamento NON possono andare? Cioè che tutti gli algoritmi di ordinamento (ATTENZIONE: \textbf{quelli basati sui confronti}) hanno un costo minimo pari ad una certa funzione?
     
@@ -474,8 +469,7 @@
     
     Di conseguenza, per tutti gli algoritmi che vedremo di seguito, per il costo temporale ci basterà che questo sia un $\Theta(n\cdot \log(n))$ (perché sarebbe letteralmente il meglio a cui possiamo aspirare). Dovremo dunque stare particolarmente attenti al costo spaziale, dunque facendo in modo che l’algoritmo non usi spazio ulteriore in memoria, ma ordini in loco (quindi modifichi l’array stesso che passiamo come input).
     
-    \newpage
-    \section{Merge Sort}
+    \subsection{Merge Sort}
     L'algoritmo \textit{Merge Sort} è un algoritmo inerentemente ricorsivo che adotta l'importantissima tecnica del \textit{"divide et impera"} (\textit{"divide and conquer"} in inglese), che descrive perfettamente la natura di un problema ricorsivo. Si sviscera nei seguenti passaggi:
     
     \begin{description}
@@ -519,7 +513,7 @@
     			A[indiceInizio + k] = B[k]
     \end{lstlisting}
     
-    \begin{lstlisting}[caption={Merge Sort}]
+    \begin{lstlisting}[caption={Merge Sort}, language=Python]
     	def merge_sort(A, indice_inizio, indice_fine):
     		if indice_inizio < indice_fine:
     			mid = (indice_inizio + indice_fine) // 2
@@ -568,7 +562,7 @@
     
     Dunque, andiamo adesso a vedere un altro algoritmo di ordinamento, il cosiddetto \textit{Quick Sort}.
     
-    \section{Quick Sort}
+    \subsection{Quick Sort}
     L'algoritmo \textit{Quick Sort}, nonostante nel caso peggiore abbia un costo computazionale pari a $\mathcal{O}(n^2)$, è spesso una scelta preferibile rispetto al \textit{Merge Sort}, per due motivazioni principali:
     \begin{itemize}
     	\item Il costo computazionale nel caso peggiore non viene raggiunto quasi mai, infatti il suo costo medio è un $\Theta(n \\log n)$;
@@ -635,8 +629,7 @@
     
     Tuttavia non siamo ancora di fronte al miglior algoritmo di ordinamento progettabile. Infatti, per il prossimo algoritmo, dovremo fare una parentesi su una struttura dati che definiremo appositamente per questo algoritmo: stiamo parlando della \textbf{struttura dati Heap} e dell’\textbf{algoritmo HeapSort}.
     
-    \newpage
-    \section{La struttura dati Heap}
+    \subsection{HeapSort}
     Come tutte le strutture dati (ma lo vedremo meglio in seguito) anche l'Heap è stato pensato per eseguire in modo efficiente alcune poche ma importanti operazioni:
     \begin{itemize}
     	\item \textbf{Estrazione del massimo}: con estrazione non si intende semplicemente trovarlo e mandarlo a schermo, ma trovarlo e \textit{rimuoverlo} dalla struttura.
@@ -708,7 +701,7 @@
     \begin{description}
     	\item[Funzione \texttt{Heapify}:] si tratta di una funzione che si occupa di ``ricostruire'' l'Heap. Questa ricostruzione avviene sotto l'ipotesi che, sull'albero su cui viene eseguita la funzione, il sottoalbero sinistro e destro della radice siano degli Heap a loro volta. Dunque l'unico nodo che può violare la proprietà di Heap è proprio la radice, che può essere minore di uno dei due figli. A questo punto la funzione scambia la radice col maggiore dei suoi due figli, e poi applica ricorsivamente la funzione \texttt{Heapify} considerando come radice il nodo appena scambiato.
     	Il codice della funzione è il seguente:
-    	\begin{lstlisting}[caption={Funzione heapify}]
+    	\begin{lstlisting}[caption={Funzione heapify},language=Python]
     		def heapify(A, i, heap_size):
     			left = 2*i + 1
     			right = 2*i + 2
@@ -799,7 +792,6 @@
     		
     Avendo fatto questa GRANDE parentesi sulla struttura dati Heap, possiamo procedere con il motivo che ci ha spinto a definirla: l'algoritmo di ordinamento \textit{Heap Sort}.
     	
-    \section{Heap Sort}
     L'algoritmo \textit{Heap Sort} è concettualmente molto semplice, e ricorda per certi versi il \textit{Selection Sort}: cerchiamo il valore massimo dell'Heap e lo scambiamo con l'ultimo valore. Poi ricostruiamo l'Heap con \texttt{Heapify}, in modo che mantenga le proprietà di un Heap e l'algoritmo possa continuare a funzionare correttamente.	
     Anche stavolta il codice è molto semplice, e si sviscera in poche righe:
     	
@@ -1033,7 +1025,6 @@
     	
     \end{description}
     
-    \newpage
     \section{Lista concatenata semplice}
     Prima di parlare di lista concatenata semplice, facciamo una parentesi sul concetto di ``puntatore''.
     In molti linguaggi di programmazione più verso il basso livello esistono questi particolari tipi di dato (chiamati per l'appunto ``puntatori'') che hanno come scopo quello di memorizzare (oppure proprio ``puntare'', da qui il nome) l'indirizzo di memoria di un'altra variabile in utilizzo nel programma. Sostanzialmente sono tipi di dato che memorizzano indirizzi di memoria al loro interno, e grazie a loro possiamo raggiungere anche manualmente un dato memorizzato ad un dato indirizzo.
@@ -1186,6 +1177,7 @@
     
     Ragioniamo su come potrebbe essere un'implementazione delle code mediante Liste concatenate: sappiamo che su una lista concatenata, l'operazione di inserimento è molto semplice e costa tempo costante, mentre la rimozione di un elemento (che per la coda viene fatta alla fine della struttura) costerebbe $\Theta(n)$. Ricordiamoci dunque che una coda è definita però da due puntatori: \texttt{head} e \texttt{tail}. Sappiamo che l'operazione di \textit{Enqueue} avviene sulla coda e quella di \textit{Dequeue} sulla testa. 
     
+    \newpage
     \begin{lstlisting}[language=Python, caption={Operazione di Enqueue (Inserimento) in una coda}]
     	def enqueue(head, tail, e):
     		if tail == None:
@@ -1384,7 +1376,6 @@
     
     Per quanto alcune operazioni con questa rappresentazione risultino più rapide, lo svantaggio maggiore è dato da un \textbf{notevole spreco di memoria}: essendo l'array una struttura dati statica, bisogna allocare da principio un certo numero di elementi. Bisogna dunque conoscere a priori l'altezza dell'albero $h$, in modo da allocare $2^{h+1} - 1$ elementi. TUTTAVIA questo è il numero dei nodi che sono presenti in un albero binario \textit{completo}: se così non fosse, avremmo un numero di nodi esponenzialmente minore, con conseguente spazio allocato e lasciato vuoto.
     
-    \newpage
     \subsubsection*{3. Vettore dei padri}
     Per questa rappresentazione, facciamo uso di $2$ Array:
     \begin{itemize}
@@ -1450,6 +1441,7 @@
 		\caption{Esempio di visite su un albero binario.}
 	\end{figure}
 	
+	\newpage
 	Vediamo ora il codice relativo alla visita di un albero.
 	
 	\begin{lstlisting}[language=Python, caption={Algoritmo generico di visita di un albero}]
@@ -1517,7 +1509,6 @@
 	
 	Il costo computazionale di questo algoritmo è chiaramente un $\Theta(n)$, in quanto deve essere passato in rassegna ogni nodo dell'albero, e l'inserimento e rimozione dalla coda sono operazioni che vengono eseguite in tempo costante.
 	
-	\newpage
 	\section{Dizionario}
 	Come ultima struttura dati astratta andiamo a vedere una struttura già nota dal linguaggio Python: i dizionari.
 	
@@ -1676,7 +1667,6 @@
 		\item Se il nodo ha \textbf{entrambi i figli}, questo viene sostituito col suo predecessore/successore, che va quindi rimosso dalla sua posizione originale. Si noti inoltre che per trovare il predecessore/successore del nodo da eliminare si userà sicuramente il Caso 1 di quelli descritti precedentemente. L'eliminazione avverrà poi secondo il punto 1 o 2 qui sopra.
 	\end{enumerate}
 	
-	\newpage
 	\section{Alberi AVL}
 	Avendo definito così bene la struttura dati degli ABR, che esegue ogni operazione in tempo proporzionale all'altezza dell'albero ($\Theta(h)$), è davvero necessario definire una nuova struttura ad albero? È possibile fare di meglio?
 	

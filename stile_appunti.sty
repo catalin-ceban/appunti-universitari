@@ -161,7 +161,10 @@
 	belowskip=8pt
 }
 
+
+\renewcommand{\tabularxcolumn}[1]{m{#1}}
 \newcolumntype{C}{>{\Centering\arraybackslash}X}
+\newcolumntype{L}{>{\RaggedRight\arraybackslash}X}
 
 \NewEnviron{tabella}[2][]{%
 	\par\vspace{0.5em}%

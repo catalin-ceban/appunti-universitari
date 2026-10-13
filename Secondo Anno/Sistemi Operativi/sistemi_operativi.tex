@@ -1,14 +1,6 @@
 \documentclass[12pt]{report}
 
-\usepackage{listings}
-\usepackage{float}
-\usepackage{booktabs}
-\usepackage{amssymb}
-\usepackage{subcaption}
-\usepackage{tikz}
-\usetikzlibrary{positioning}
-
-\usepackage{../../stile_appunti}
+\usepackage{../../nuovo_stile}
 \lstset{style=stile-listings}
 
 \begin{document}
@@ -357,7 +349,6 @@
 		L6 & HDD (Magnetic Disk) & $1 - 10$ TiB & $5 - 10$ ms \\
 	\end{tabella}
 	
-	\newpage
 	La memoria principale è strutturata come una griglia monodimensionale di indirizzi di byte (\textit{byte addresses}). Ogni cella possiede un indirizzo univoco a cui corrisponde un determinato contenuto memorizzato.
 	
 	\subsection{Il principio di località}
@@ -1198,7 +1189,6 @@
 	Nei sistemi UNIX, i processi formano un albero in cui la radice è il processo \textbf{systemd} con PID = 1. Questo processo non può essere killato neanche volendo, in quanto è strettamente legato al funzionamento del kernel e del sistema operativo.\\
 	La gerarchia dei processi è organizzata ad albero in quanto ogni processo può creare altri processi figli (con il comando \texttt{fork()}) e dunque ogni processo ha anche un padre (il cui valore si chiama \textbf{Parent ProcessID (PPID)}).
 	
-	\newpage
 	\section{La funzione fork()}
 	La funzione \texttt{fork()} è forse una delle funzioni più utili quando si va a lavorare con i processi, in quanto permette di \textbf{creare un nuovo processo}.\\
 	Più precisamente, ci permette di \textbf{duplicare il PCB del processo padre}, ovvero il PCB del processo chiamante. Quest'operazione ci permetterà di allocare un PCB (dunque senza bisogno di conoscere la natura della struttura dati, astrazione!) e poi di modificarlo quasi a piacimento.
@@ -1427,7 +1417,6 @@
 		Per lo scheduler è \textbf{impossibile} predirre gli ultimi due punti, in quanto i processi sono di per sè un'unità asincrona in cui alcune cose non sono deterimistiche.
 	\end{osservazione}
 	
-	\newpage
 	Al fine di costruire il nostro percorso in maniera graduale verso un algoritmo di scheduling efficiente che funzioni per ogni sistema, dobbiamo partire letteralmente \textit{dalle basi}, facendo delle assunzioni \textbf{molto comode} sulla natura del workload:
 	\begin{enumerate}
 		\item Ogni processo richiede la \textbf{stessa quantità di tempo} per essere eseguito.

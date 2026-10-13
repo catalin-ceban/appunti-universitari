@@ -1,14 +1,7 @@
 \documentclass[12pt]{report}
 
-\usepackage{listings}
-\usepackage{float}
-\usepackage{booktabs}
-\usepackage{amssymb}
-\usepackage{subcaption}
-\usepackage{graphicx}
+\usepackage{../../nuovo_stile}
 \graphicspath{{images/}}
-
-\usepackage{../../stile_appunti}
 \lstset{style=stile-listings}
 
 \begin{document}
@@ -191,7 +184,6 @@
 		\end{enumerate}
 	\end{teorema}
 	
-	\newpage
 	\section{Rappresentazione fisica dei grafi}
 	
 	La rappresentazione informatica dei grafi in memoria è fondamentale per determinare l'efficienza degli algoritmi che operano su di essi. Esistono principalmente due modalità standard per rappresentare un grafo: le \textbf{matrici di adiacenza} e le \textbf{liste di adiacenza}.
@@ -250,9 +242,7 @@
 		\item \textbf{Verificare il grado di un dato vertice} $\mathbf{i}$: $\mathbf{\Theta(n)}$, in quanto occorre scorrere la riga $i$-esima della matrice e contare quanti $1$ ci sono.
 	\end{itemize}
 	
-	\newpage
 	\subsection{Liste di adiacenza}
-	
 	Una lista di adiacenza è composta da:
 	\begin{itemize}
 		\item Un array in cui ogni elemento è un nodo del grafo.
@@ -793,7 +783,7 @@
 	
 	Avendo discusso l'idea dell'algoritmo, possiamo fornirne un esempio di implementazione
 	\begin{lstlisting}[style=stile-listings, language=Python]
-		trova_comp(G):
+		def trova_comp(G):
 			comp = [0] * n
 			num_comp = 0
 			S = Stack()
@@ -814,7 +804,7 @@
 			return comp, num_comp
 	\end{lstlisting}
 	
-	\begin{algoritmo}{Algoritmo per la ricerca delle componenti connesse}{alg_trova_comp}		
+	\begin{algoritmo}{Ricerca delle componenti connesse}{alg_trova_comp}		
 		\begin{itemize}
 			\item \textbf{Inizializzazione}: Viene creato un vettore \texttt{comp} di dimensione $n$ inizializzato a $0$, che servirà anche a segnalare i nodi visitati, un contatore \texttt{num\_comp} impostato a $0$ e una struttura dati di tipo \texttt{Stack}.
 			
@@ -832,7 +822,6 @@
 	
 	Il costo computazionale dell'algoritmo è lo stesso di una normale DFS, dunque risulta essere $\mathcal{O}(n+m)$. Si potrebbe pensare che la DFS venga eseguita una volta per ogni nodo, ma per come abbiamo segnalato i nodi visitati, l'esplorazione viene eseguita \textbf{una sola volta per ogni componente connessa}.
 	
-	\newpage
 	\section{Generici problemi su grafi}
 	Prima di continuare il discorso sulle visite, vediamo alcuni esempi di operazioni sui grafi diretti (o orientati).
 	\begin{definizione}{Albero di ricerca}{def_albero_ricerca}
@@ -911,9 +900,9 @@
 	
 	Questo algoritmo potrà essere utilizzato in futuro nel corso.
 	
-	Avendo definito il vettore dei padri, possiamo implementare la visita in profondità (DFS) sfruttando tale struttura. In questa implementazione, il vettore dei padri $P$ viene inizializzato con valori \texttt{null} per indicare i vertici non ancora visitati.
+	Avendo definito il vettore dei padri, possiamo implementare la visita in profondità (DFS) sfruttando tale struttura.
 	
-	\begin{lstlisting}[style=stile-listings, caption={Algoritmo DFS con vettore dei padri}]
+	\begin{lstlisting}[style=stile-listings, caption={Algoritmo DFS con vettore dei padri}, language=Python]
 		def dfs_ric(G, x, P):
 			for v in x.neighbor:
 				if P[v] == null:
@@ -1218,7 +1207,7 @@
 	
 	Presentiamo una soluzione basata sull'utilizzo di liste puntate per risalire la gerarchia dei padri fino alla radice.
 	
-	\begin{lstlisting}[style=stile-listings]
+	\begin{lstlisting}[style=stile-listings, language=Python]
 		def sol1(P, x, y):
 			L1, L2 liste puntate
 			Do:
@@ -1518,6 +1507,7 @@
 	
 	Torniamo molto a monte: vogliamo usare tutte queste supposizioni per dare un codice per trovare l'ordine topologico in un tempo $O(n+m)$ usando la DFS.
 	
+	\newpage
 	Programmiamo ora una DFS ricorsiva che ci permette di ottenere $t[x]$ e $T[x]$ per ogni vertice.
 	
 	\begin{lstlisting}[style=stile-listings, language=Python]
@@ -1662,6 +1652,7 @@
 		\end{itemize}
 	\end{esercizio}
 	
+	\newpage
 	\begin{lstlisting}[style=stile-listings, language=Python]
 		def trovaPozzo(G):
 			i, j = 1, 2
