@@ -534,9 +534,9 @@
 	
 	Come viene implementata questa problematica? Definendo uno speciale bit, detto \textbf{Mode Bit}, memorizzate all'interno di uno speciale registro della CPU (tipicamente il PSR, Program Status Register).
 	\begin{itemize}
-		\item Se tale bit assume valore 0, la CPU eseguirà l'istruzione in \textbf{Kernel Mode} (tutti i privilegi).
+		\item Se tale bit assume valore 0, la CPU eseguirà l'istruzione in \textbf{Kernel Mode} (tutti i privilegi). Questa modalità in alcune notazioni viene anche detta \textbf{Ring 0}.
 		
-		\item Altrimenti, con bit valore 1, l'istruzione verrà eseguita in \textbf{User Mode}, dunque con privilegi limitati.
+		\item Altrimenti, con bit valore 1, l'istruzione verrà eseguita in \textbf{User Mode}, dunque con privilegi limitati. Questa modalità in alcune notazioni viene anche detta \textbf{Ring 3}.
 	\end{itemize}
 	
 	\begin{osservazione}{E' lo stesso dell'"Esegui come amministratore"?}{}
@@ -869,7 +869,15 @@
 		\end{tikzpicture}
 	\end{center}
 	
-	In questa sezione andremo a discutere, più o meno nel dettaglio, il funzionamento di queste componenti.
+	In questa sezione andremo a discutere, più o meno nel dettaglio, il funzionamento di queste componenti.\\
+	Forniamo una breve panoramica sulle sezioni "meno interessanti":
+	\begin{itemize}
+		\item Il segmento \textbf{text} (o \textbf{code}) mantiene al suo interno le istruzioni del programma codificate nel linguaggio macchina. Ovviamente quest'area di memoria deve essere di sola lettura, in quanto un processo non deve poter modificare il codice mentre lo sta eseguendo.
+		
+		\item I segmenti \textbf{data} e \textbf{bss} contengono rispettivamente variabili globali/statiche \textbf{inizializzate} e \textbf{non inizializzate}.
+		
+		\item Lo stack cresce verso il basso, mentre lo heap cresce verso l'alto. Se queste due aree di memoria dovessero incontrarsi, nascerebbe un errore del tipo \texttt{Stack overflow} \texttt{Heap exhaustion}.
+	\end{itemize}
 	
 	\subsection{Lo Stack}
 	Lo \textbf{Stack} è una regione di memoria utilizzato principalmente per la memorizzazione delle funzioni e delle variabili a loro associate (che siano essi parametri passati alle funzioni o variabili locali dichiarate al loro interno).
@@ -904,13 +912,15 @@
 	Le variabili in C possono essere manualmente allocate tramite appositi comandi, che permetteranno alle variabili di essere memorizzate nell'Heap e non in altre aree di memoria.\\
 	I comandi predisposti sono i seguenti:
 	\begin{description}
-		\item [\texttt{malloc(n)}:] serve ad allocare manualmente un blocco di \texttt{n} bytes in memoria. Ad esempio, se volessimo allocare dinamicamente un array di 5 elementi potremmo scrivere \texttt{int* arr = malloc(5 * sizeof(int))}.
+		\item [\texttt{malloc(n)}:] serve ad allocare manualmente un blocco di \texttt{n} bytes in memoria. Ad esempio, se volessimo allocare dinamicamente un array di 5 elementi potremmo scrivere \texttt{int* arr = malloc(5 * sizeof(int))}.\\
+		Un'importante osservazione riguarda il fatto che alla chiamata di \texttt{malloc(...)} noi non staremo allocando nulla di fatto: il processo si limita a chiedere al sistema operativo di tenere liberi nell'heap \texttt{size} byte di memoria. Questi verranno poi definitivamente allocati una volta che verrà richiesto l'accesso a quell'area (quando la andiamo ad utilizzare insomma).
 		
 		\item[\texttt{calloc(n, size)}:] serve ad allocare \texttt{n} byte, ognuno di dimensione \texttt{size} e di inizializzare tutti quei byte al valore di default per quel tipo di dato. Tenendoci sull'esempio dell'Array di prima, se facessimo \texttt{int* arr = calloc(5, sizeof(int))} e provassimo a mandare a schermo l'Array otterremmo \texttt{[0, 0, 0, 0, 0]}.
 		
 		\item[\texttt{realloc(ptr, new\_size)}:] serve per riallocare un blocco di memoria precedentemente allocato. Supponendo di aver definito con \texttt{malloc} prima un array \texttt{arr} di 5 elementi interi, ma ci siamo resi conto che ci serve spazio per almeno 8 elementi, possiamo semplicemente fare \texttt{int* tmp = realloc(arr, 8 * sizeof(int))}.
 		
-		\item[\texttt{free(ptr)}:] fondamentale, serve a liberare un puntatore di memoria precedentemente allocato manualmente. Importantissimo è anche impostare il puntatore a \texttt{NULL} dopo averlo liberato.
+		\item[\texttt{free(ptr)}:] fondamentale, serve a liberare un puntatore di memoria precedentemente allocato manualmente. Importantissimo è anche impostare il puntatore a \texttt{NULL} dopo averlo liberato.\\
+		In realtà, nel momento in cui chiamiamo il comando \texttt{free(ptr)} non stiamo liberando la memoria, bensì stiamo comunicando al sistema operativo di marcare quell'area di memoria come libera. Tuttavia l'effettiva deallocazione non avviene subito, in quanto potrebbe essere richiesta in breve tempo da un'altra \texttt{malloc}. La liberazione definitiva avviene solo al termine del processo.
 	\end{description}
 	
 	Allocando e deallocando frequentemente nella memoria Heap si potrebbe verificare la cosiddetta \textbf{frammentazione della memoria}, ossia avere complessivamente molta memoria libera, ma a blocchi separati da memoria utilizzata.
@@ -1820,5 +1830,510 @@
 		
 		\item Avanti così finché uno dei due processi non termina...
 	\end{enumerate}
+	
+	\section{Algoritmi di scheduling più realistici}
+	Finora, analizzando gli algoritmi di scheduling quali FIFO, SJF e STCF ci siamo sempre basati sulle famose 5 assunzioni e semplificazioni fatte all'inizio del capitolo. Abbiamo già sottolineato quanto queste fossero irrealistiche, dato che è impossibile per la CPU conoscere a priori per quanto tempo andrà in esecuzione un processo o quando arriverà.
+	Possiamo dividere i processi che possono arrivare ai sistemi operativi in due classi di processi:
+	\begin{description}
+		\item [Processi innterattivi:] caratterizzati da piccoli momenti di CPU Burst (quindi breve utilizzo della CPU) seguiti da richieste di I/O (es: pensiamo alla tastiera).
+		
+		\item[Processi batch:] richiedono solo ed esclusivamente l'uso della CPU, oppure qualche processo esterno ogni tanto.
+	\end{description}
+	Un buono scheduler deve essere in grado di gestire entrambe questa classi di processi.
+	
+	\subsection{Multi-Level Feedback Queue (MLFQ)}
+	Nasce così una nuova idea di organizzazione: l'algoritmo \textbf{Multi-Level Feedback Queue (MLFQ)}. Questo algoritmo lavora secondo questo ragionamento: se un processo sembra apparentemente comportarsi come un processo interattivo/batch, trattiamolo come tale.\\
+	Nel concreto, questo risultato si ottiene implementando non una sola coda bensì \textbf{varie code}, ognuna con una priorità diversa: la coda più in alto sarà anche quella con priorità maggiore.
+	
+	\newpage
+	La struttura di un generico algoritmo MLFQ è la seguente:
+	\begin{figure}[H]
+		\centering
+		\resizebox{0.70\linewidth}{!}{%
+			\begin{tikzpicture}
+				\draw[thick] (0,0) rectangle (9.2,3.6);
+				\draw[thick] (0,0.9) -- (9.2,0.9);
+				\draw[thick] (0,1.8) -- (9.2,1.8);
+				\draw[thick] (0,2.7) -- (9.2,2.7);
+				
+				\node[anchor=west, font=\sffamily\small] at (0.3, 3.15) {Q0 (Massima priorità) – RR breve};
+				\node[anchor=west, font=\sffamily\small] at (0.3, 2.25) {Q1 (Alta priorità) – RR breve};
+				\node[anchor=west, font=\sffamily\small] at (0.3, 1.35) {Q2 (Media priorità) – RR più lungo};
+				\node[anchor=west, font=\sffamily\small] at (0.3, 0.45) {Q3 (Minima priorità) – lungo/FIFO};
+			\end{tikzpicture}%
+		}
+		\caption{Esempio di organizzazione delle code di un algoritmo MLFQ.}
+	\end{figure}
+	
+	Bisogna dunque definire le regole per questa struttura:
+	\begin{enumerate}
+		\item Ogni processo entrante viene messo nella coda con più altra priorità (Q0).
+		
+		\item Ad ogni coda è assegnata una priorità, ma tutti i processi appartenenti ad una coda godono della stessa priorità. Dunque tutti i processi in $\text{priorità}_{Q0} > \text{priorità}_{Q1} > \text{priorità}_{Q2} > \text{priorità}_{Q3}$.\\
+		Fatta quest'opportuna osservazione, definiamo alcune regole per la scelta del processo da eseguire:
+		\begin{enumerate}
+			\item Viene sempre eseguito il processo con la priorità più alta, dunque se Q2 ha all'interno dei processi ma nel frattempo ce ne sono ancora in Q1, si dovrà attendere che terminino i processi dentro Q1 prima di iniziare ad eseguire quelli di Q2.
+			
+			\item Se due processi hanno la stessa priorità, significa che appartengono alla stessa coda e dunque vengono eseguiti secondo l'algoritmo Round Robin.
+		\end{enumerate}
+		
+		\item Per ogni coda sono definiti due parametri:
+		\begin{itemize}
+			\item Il quanto temporale (\textbf{time-slice}) per cui ogni processo può essere eseguito consecutivamente.
+			
+			\item Un tempo massimo di permanente di un processo all'interno della coda (\textbf{time allotment}). Una volta che un processo esaurisce questo tempo di permanenza, viene declassato nella coda sottostante. Questo tempo \textbf{deve} essere \textbf{cumulativo}, ovverosia bisogna tenere traccia per ogni processo di quanto tempo ha usato la CPU mentre si trovava in una determinata coda, in modo da poterlo eventualmente declassare.
+		\end{itemize}
+		
+		\item Dopo un certo intervallo di tempo $S$ tutti i processi vengono messi nella coda con più alta priorità, per impedire lo \textit{starvation}: dovendo eseguire sempre i processi nella coda con più alta priorità, c'è il rischio che se ad esempio Q1 non si svuotasse mai, i processi in Q2 e Q3 non verrebbero mai eseguiti. Come ogni grandezza che ci viene richiesto di scegliere, dobbiamo trovarne il giusto equilibrio tra né troppo lunga e né troppo corta.
+	\end{enumerate}
+	
+	\begin{osservazione}{Time-allotment e operazioni di I/O}{}
+		Il concetto del time-allotment è fondamentale, e previene che un processo ad alta priorità monopolizzi la coda in cui si trova.\\
+		In particolare, il conteggio del time-allotment fa riferimento al \textbf{tempo di utilizzo della CPU da parte del processo}. Dunque nel conteggio non viene (giustamente) contato eventuale tempo in cui il processo attendeva risposte da dispositivi di I/O.
+	\end{osservazione}
+	
+	\begin{osservazione}{Il boost di priorità funziona?}{}
+		Il concetto di boost di priorità $S$ è fondamentale per impedire la starvation.\\
+		Anche se può sembrare che facendo risalire i processi di coda non cambi nulla, questo non è vero: i processi scendono di priorità quando esauriscono il tempo disponibile in quella coda. Dunque affinché un processo che si trovava giù possa tornarci, dovrà usare almeno un po' la CPU, e dunque vi saranno degli effettivi progressi.
+	\end{osservazione}
+	
+	Vediamo degli esempi di come vengono gestiti i processi interattivi e quelli CPU bound.
+	\subsubsection*{Un solo processo interattivo}
+	Supponiamo di avere una struttura MLFQ a 3 code.\\
+	Diamo adesso i vari valori di time allotment e time slice:
+	\begin{itemize}
+		\item Q0: time-allotment = 1ms, time-slice = 1ms.
+		
+		\item Q1: time-allotment = 4ms, time-slice = 1ms.
+		
+		\item Q2: FIFO
+	\end{itemize}
+	E supponiamo anche di avere un processo A che ha 0.5ms di CPU Burst e poi attende 4.5ms per una risposta I/O.
+	
+	\begin{figure}[H]
+		\centering
+		\resizebox{0.70\linewidth}{!}{%
+			\begin{tikzpicture}
+				% Riga temporale (senza grassetto, tradotta)
+				\node[anchor=west, font=\sffamily\small] at (0, 1.8) {Tempo:};
+				\node[font=\sffamily\small] at (1.8, 1.8) {0};
+				\node[font=\sffamily\small] at (2.8, 1.8) {0.5};
+				\node[font=\sffamily\small] at (4.0, 1.8) {5};
+				\node[font=\sffamily\small] at (5.0, 1.8) {5.5};
+				\node[font=\sffamily\small] at (6.2, 1.8) {10};
+				\node[font=\sffamily\small] at (7.4, 1.8) {10.5};
+				\node[font=\sffamily\small] at (8.6, 1.8) {15};
+				\node[font=\sffamily\small] at (9.8, 1.8) {15.5};
+				\node[font=\sffamily\small] at (10.8, 1.8) {\dots};
+				
+				% Coda Q0
+				\node[anchor=west, font=\sffamily\small] at (0, 1.2) {Q0:};
+				\node[font=\sffamily\small] at (1.8, 1.2) {[A]};
+				\node[font=\sffamily\small] at (2.8, 1.2) {[I/O]};
+				\node[font=\sffamily\small] at (4.0, 1.2) {[A]};
+				
+				% Coda Q1
+				\node[anchor=west, font=\sffamily\small] at (0, 0.6) {Q1:};
+				\node[font=\sffamily\small] at (5.0, 0.6) {[I/O]};
+				\node[font=\sffamily\small] at (6.2, 0.6) {[A]};
+				\node[font=\sffamily\small] at (7.4, 0.6) {[I/O]};
+				\node[font=\sffamily\small] at (8.6, 0.6) {[A]};
+				\node[font=\sffamily\small] at (9.6, 0.6) {\dots};
+				
+				% Coda Q2
+				\node[anchor=west, font=\sffamily\small] at (0, 0.0) {Q2:};
+			\end{tikzpicture}%
+		}
+		\caption{Diagramma descrittivo dell'esempio fornito su un processo interattivo.}
+	\end{figure}
+	Come vediamo, inizialmente il processo A esegue 0.5ms nella coda Q0. Per la natura del processo (che abbiamo descritto solo per semplificare la comprensione dell'esempio) vi saranno in seguito 4.5ms di I/O. Terminati questi, saremo a t=5s e, dato che il processo A ha eseguito solo 0.5ms degli 1.0ms totali disponibili, può eseguire un'altro ciclo di CPU.\\
+	Adesso con questi ulteriori 0.5ms ha ufficialmente esaurito il tempo nella coda Q0 e viene dunque declassato nella coda Q1. Da qui il processo riprenderà, ma A potrà "rimanerci di più" grazie al maggiore time allotment.
+	
+	\subsubsection*{Un solo processo Batch}
+	Stesso setup dell'esempio precedente, solo che stavolta abbiamo un processo B che deve eseguire un totale di 20ms di lavoro CPU.
+	\begin{figure}[H]
+		\centering
+		\resizebox{0.70\linewidth}{!}{%
+			\begin{tikzpicture}
+				\node[anchor=west, font=\sffamily\small] at (0, 1.2) {$t = 0\text{--}1\text{ ms}$:};
+				\node[anchor=west, font=\sffamily\small] at (2.2, 1.2) {Q0: B viene eseguito per $1\text{ ms} \rightarrow$ quota esaurita $\rightarrow$ retrocesso a Q1};
+				
+				\node[anchor=west, font=\sffamily\small] at (0, 0.6) {$t = 1\text{--}5\text{ ms}$:};
+				\node[anchor=west, font=\sffamily\small] at (2.2, 0.6) {Q1: B viene eseguito per $4\text{ ms} \rightarrow$ quota esaurita $\rightarrow$ retrocesso a Q2};
+				
+				\node[anchor=west, font=\sffamily\small] at (0, 0.0) {$t = 5\text{--}20\text{ ms}$:};
+				\node[anchor=west, font=\sffamily\small] at (2.2, 0.0) {Q2: B viene eseguito per i rimanenti $15\text{ ms}$ fino al completamento};
+			\end{tikzpicture}%
+		}
+	\end{figure}
+	
+	Si omette l'esempio riguardante 2 o più processi in quanto risulterebbe confusionario. Tuttavia come ci si può immaginare, due processi nella stessa coda vengono eseguiti con l'algoritmo Round Robin, e dunque il flusso è facilmente analizzabile.
+	
+	\begin{osservazione}{Perché i processi interattivi in alto?}{}
+		Una domanda potrebbe sorgere spontanea: perché i processi interattivi, che richiedono di bloccare "spesso" la loro esecuzione mediante istruzioni di I/O vengono messi nella coda con più priorità?
+		\smallbreak
+		
+		Questo avviene proprio per la quantità di istruzioni I/O che possiedono: se avessimo messo nella coda Q0 un processo batch, quello avrebbe utilizzato in modo continuo tutto il suo tempo nella coda, per poi terminare o venir declassato. Se invece facciamo usare questo tempo ai processi interattivi, ci aspettiamo che questi interrompano l'esecuzione e dunque escano dalla coda più tardi. E questo è un \textit{bene}, dato che durante le operazioni di I/O la CPU non viene bloccata, bensì può eseguire altri processi.
+	\end{osservazione}
+	
+	\begin{esempio}{Come funzionava l'algoritmo Linux O(1)}{}
+		Nelle versioni successive alla 2.6, il kernel di Linux ha iniziato ad implementare una procedura di scheduling molto creativa, chiamata $\bm(O(1))$ in quanto era in grado di scegliere il prossimo processo da eseguire pressoché in tempo costante.
+		\smallbreak
+		
+		Il tutto è stato possibile grazie ad una rivisitazione dell'algoritmo MLFQ, utilizzando 140 code. Normalmente, per controllare da quale coda eseguire un processo si dovrebbe partire da quella di priorità più alta, controllare se è vuota e in tal caso scendere, ..., finché non se ne trova una non vuota di cui eseguire i processi.\\
+		Chiaramente si tratta di un'operazione lineare nel numero di processi in esecuzione. Per ottimizzare questa ricerca, Linux ha implementato il concetto di \textbf{bitmask}, ovvero una sequenza di 140 bit che fungevano da flag uno per ogni singola coda:
+		\begin{itemize}
+			\item Se il bit $i$-esimo == 0, allora la coda è vuota.
+			
+			\item Se il bit $i$-esimo == 1, allora la coda ha almeno un processo.
+		\end{itemize}
+		Dunque, per trovare una coda con almeno un processo era sufficiente scansionare questa sequenza di bit (un'operazione che richiede un tempo esiguo) e trovare il primo bit a valore 1: la coda associata a quel bit è la coda i cui processi verranno eseguiti.
+	\end{esempio}
+	
+	L'algoritmo MLFQ rappresenta finora la scelta più bilanciata tra gli algoritmi che abbiamo visto: capace di gestire più processi, assegnando varie priorità, senza conoscere nulla a priori riguardo un processo.\\
+	L'unico problema è l'\textbf{equità tra processi}, cioè \textbf{garantire che tutti i processi godano di almeno una frazione di CPU}. Insomma, vogliamo distribuire il lavoro all'interno della CPU in base a quanta importanza ha un processo (es: un server DBMS che gestisce il nostro database è sicuramente più importante del programma in C che calcola la somma di due numeri).\\
+	Si utilizzano dunque due approcci standard.
+	
+	\subsection{Lottery Scheuduling}
+	Come suggerisce il nome di questo algoritmo, il suo funzionamento è molto simile a quello di una lotteria: definiamo un numero totale di \textbf{biglietti} e li assegniamo in modo proporzionato ai processi.
+	\begin{osservazione}{Cosa vuol dire proporzionato?}{}
+		\textit{Distribuire i biglietti in modo proporzionato} vuol dire che la distribuzione dei biglietti \textbf{non avviene in modo casuale}, bensì assegniamo un numero maggiore di biglietti ai processi con più importanza, quelli che vogliamo abbiano più rilevanza per la CPU.
+	\end{osservazione}
+	
+	Adesso arriva la parte casuale: lo scheduler estrae un numero casuale, come nella lotteria. Il processo che avrà il biglietto corrispondente a quel numero verrà schedulato.
+	\begin{figure}[H]
+		\centering
+		\resizebox{0.60\linewidth}{!}{%
+			\begin{tikzpicture}
+				\node[anchor=west, font=\sffamily\small] at (0, 1.2) {Processo A:};
+				\node[anchor=west, font=\sffamily\small] at (2.4, 1.2) {75 biglietti};
+				\node[anchor=west, font=\sffamily\small] at (5.0, 1.2) {(75\% della CPU)};
+				
+				\node[anchor=west, font=\sffamily\small] at (0, 0.6) {Processo B:};
+				\node[anchor=west, font=\sffamily\small] at (2.4, 0.6) {25 biglietti};
+				\node[anchor=west, font=\sffamily\small] at (5.0, 0.6) {(25\% della CPU)};
+				
+				\node[anchor=west, font=\sffamily\small] at (0, 0.0) {Totale:};
+				\node[anchor=west, font=\sffamily\small] at (2.4, 0.0) {100 biglietti};
+			\end{tikzpicture}%
+		}
+		\caption{Esempio di distrbuzione dei biglietti tra processi.}
+	\end{figure}
+	
+	Dall'esempio in figura, possiamo assumere che il processo A debba eseguire un'operazione più importante e dunque gli attribuiamo più biglietti. NOTA: Attribuire più biglietti aumenta la probabilità che il ticket di A venga estratto, ma nulla vieta che potrebbe anche essere estratto quello di B, e dunque vada in esecuzione lui.
+	\smallbreak
+	
+	Senza entrare nello specifico del calcolo statistico e probabilistico, per la legge dei grandi numeri sappiamo che più è grande il numero delle estrazioni, più la probabilità dei processi viene distribuita equamente. Sempre per la legge dei grandi numeri, affinché ciò sia possibile serve che $n \longrightarrow \infty$ e dunque per una piccola quantità di processi da schedulare la disparità si fa sempre più ampia, non risolvendo di fatto il problema di equità presentato all'inizio.
+	
+	\subsection{Stride Scheduling}
+	Per garantire l'equità tra i processi, abbiamo bisogno di un approccio più deterministico, cioè che non si basi su supposizioni o estrazioni casuali, ma su calcoli effettivi: deve essere la macchina ad imparare, in qualche modo, quale processo è più importante e di conseguenza adattarsi.
+	\smallbreak
+	
+	Per fare tutto ciò non servono complesse tecniche di Machine Learning: basta usare un po' di matematica, mischiata ai concetti visti già in precedenza per il lottery.
+	
+	\newpage
+	Ad ogni processo $i$ assegniamo due valori:
+	\[
+		\text{stride}_i = \frac{W}{\text{tickets}_i}
+	\]
+	\[
+		\text{pass}_i = 0 (\text{inizialmente})
+	\]
+	dove W è una costante grande decisa arbitrariamente da noi.\\
+	
+	Facciamo delle importanti osservazioni:
+	\begin{enumerate}
+		\item Come vediamo, il concetto di \textit{ticket} del lottery non è stato abbandonato, in quanto la distribuzione dei biglietti era l'unico aspetto deterministico di quell'algoritmo. Sostanzialmente ci permette ancora di attribuire una specie di "importanza" ad ogni processo.
+		
+		\item Maggiore è il numero di biglietti di un processo, maggiore sarà la sua importanza e dunque minore sarà lo stride. Questo è molto importante per una formula che vedremo a breve.
+		
+		\item Il \textit{pass} rappresenta una specie di \textbf{priorità}.
+	\end{enumerate}
+	
+	Le regole fondamentali di questo algoritmo di scheduling sono:
+	\begin{enumerate}
+		\item Eseguire sempre il processo con il \textbf{minimo valore di pass}.
+		
+		\item Dopo aver terminato l'esecuzione, aggiorniamo il valore di pass come $\text{pass}_i = \text{pass}_i + \text{stride}_i$.
+	\end{enumerate}
+	
+	\begin{osservazione}{L'importanza dei ticket}{}
+		Come vediamo, nonostante l'algoritmo di Stride scheduling non si basi esclusivamente sui ticket e non includa alcun tipo di estrazione, avere tanti ticket è importante per un processo: avendo tanti ticket, il valore di $\text{stride}_i$ sarà un valore piccolo e dunque ad ogni esecuzione il valore di $\text{pass}$ si aggiornerà di molto poco, permettendo al processo di essere eseguito più spesso.
+		\smallbreak
+		
+		Maggiore importanza -> maggiore uso della CPU, come avevamo richiesto.
+	\end{osservazione}
+	
+	\begin{esempio}{Utlizzo concreto dell'algoritmo di Stride Scheduling}{}
+		Supponiamo di aver scelto W = 10,000 e di avere 3 processi con le seguenti caratteristiche:
+		\begin{itemize}
+			\item A: 100 ticket, $\text{stride}_A = 100$. Utilizzo atteso della CPU = 25\%.
+			
+			\item B: 50 ticket, $\text{stride}_B = 200$. Utilizzo atteso della CPU = 12.5\%.
+			
+			\item A: 250 ticket, $\text{stride}_A = 40$. Utilizzo atteso della CPU = 62.5\%.
+		\end{itemize}
+		
+		\begin{tabella}{|c|c|c|c|c|}
+			Tick CPU & Vincitore & $\text{pass}_A$ & $\text{pass}_B$ & $\text{pass}_C$\\
+			\hline
+			-- & (inizio) & 0 & 0 & 0 \\
+			\hline
+			1 & A (parità; A scelto per primo) & \textbf{100} & 0 & 0 \\
+			\hline
+			2 & B (parità B/C; B scelto) & 100 & \textbf{200} & 0 \\
+			\hline
+			3 & C & 100 & 200 & \textbf{40} \\
+			\hline
+			4 & C & 100 & 200 & \textbf{80} \\
+			\hline
+			5 & C & 100 & 200 & \textbf{120} \\
+			\hline
+			6 & A & 200 & 200 & 120 \\
+			\hline
+			7 & C & 200 & 200 & \textbf{160} \\
+			\hline
+			8 & C & 200 & 200 & \textbf{200} \\
+			\hline
+			9 & A (parità a tre) & \textbf{300} & 200 & 200 \\
+			\hline
+			10 & B & 300 & \textbf{400} & 200 \\
+		\end{tabella}
+		
+		Dalla tabella vediamo che, anche su un piccolo numero di esecuzioni (10 in totale) la probabilità associata ad ogni processo è pressocché rimasta (basta effettuare un breve calcolo).
+	\end{esempio}
+	
+	\subsection{Linux CFS}
+	Nelle sezioni precedenti abbiamo parlato in un esempio del funzionamento del sistema di scheduling di Linux, il cosiddetto $O(1)$. Per quanto tale mecceniasmo fosse a dir poco \textbf{geniale}, presentava criticità soprattutto per quanto riguardava la semplicità implementativa (bisognava gestire 140 code, e si avevano due array ognuno contenente entrambe le code) e l'effettiva iniquità con un grande numero di processi.\\
+	Per questo nella versione del kernel 2.26.23 tale algoritmo di scheduling è stato sostituito con un algoritmo detto \textbf{Completely Fair Scheduler (CFS)}.
+	\smallbreak
+	
+	L'idea di fondo di questo algoritmo è semplice, e il suo nome diventa dunque particolarmente intuitivo: fare in modo che ogni processo abbia la stessa importanza per la CPU. Dunque, se abbiamo $n$ processi, ad ognuno deve essere garantito un tempo pari a $\frac{1}{n}$ sulla CPU.\\
+	Dato che non possiamo eseguire tutti i processi simultaneamente, l'idea è quella di tenere traccia di quanto tempo di CPU ogni processo ha utilizzato finora, ed eseguire sempre quello che ne ha impiegato meno degli altri.
+	Questo è possibile grazie ad una grandezza chiamata \texttt{vruntime} (virual runtime) che indica appunto quanto tempo un determinato processo ha passato sulla CPU.\\
+	Tale grandezza si ottiene con la seguente formula:
+	\[
+		\text{vruntime}_i += \Delta t \cdot \frac{W_0}{w_i}
+	\]
+	dove:
+	\begin{itemize}
+		\item $\Delta t$ indica per quanto tempo il processo finora è stato effettivamente in esecuzione.
+		
+		\item $W_0$ indica il peso del processo che ha valore nice = 0. (ricordiamo la niceness essere il sistema con cui Linux misura la priorità di un processo). Si tratta di un parametro associato in modo univoco al valore di nice del processo.
+		
+		\item $w_i$ rappresenta il peso del processo corrente.
+	\end{itemize}
+	Come abbiamo detto prima, il concetto di base è che ogni volta che un processo viene eseguito dalla CPU, in base alla formula precedente calcoliamo per quanto tempo è stato eseguito. Dato che vogliamo mantenere l'equità tra i processi, volendo dunque garantire che ognuno goda dello stesso amount di CPU degli altri nel complesso, ogni volta che dobbiamo scegliere il processo da eseguire prendiamo quello con il \texttt{vruntime} più basso, poiché sarà quello che ha usato il quantitativo minore di CPU rispetto agli altri.
+	
+	\begin{osservazione}{Come viene effettivamente implementato?}{}
+		Ci accorgiamo che dunque bisogni mantenere un ordinamento tra i vari processi in esecuzione, in base al loro valore di \texttt{vruntime}. Per fare ciò, non ci conviene utilizzare una struttura dati come un Array (in quanto sappiamo che gli algoritmi di sorting sono particolarmente costosi) bensì una struttura dati ad albero, come ad esempio gli AVL oppure, nello specifico caso dell'algoritmo CFS gli \textbf{alberi rosso-nero}.\\
+		Non entreremo nel dettaglio della loro implementazione, ma basti sapere che questi sono un particolare tipo di Albero Binario di Ricerca (ABR) \textbf{bilanciato}, garantendo dunque \textbf{operazioni di modifica e ricerca in tempo logaritmico} rispetto al numero dei nodi.
+	\end{osservazione}
+	
+	Infine, per l'algoritmo CFS vengono definiti due ulteriori parametri:
+	\begin{description}
+		\item [Target Scheduling Latency:] ovvero un limite sul tempo di risposta, cioè un parametro che indica entro quanto tempo ogni processo deve essere eseguito almeno una volta (default 6ms).
+		
+		\item[Minimum Granularity:] parametro che indica il minimo quanto di tempo che hanno i processi per essere eseguiti prima di un context switch (default 0.75ms).
+	\end{description}
+	
+	\chapter{La virtualizzazione della memoria}
+	Avendo trattato le varie politiche di scheduling, riguardanti dunque la virtualizzazione della CPU facendo credere ai processi di avere tutto per sé e dando l'illusione all'utente del parallelismo, è giunto il momento che il sistema operativo si occupi di gestire la memoria. L'insieme delle operazioni di allocazione, deallocazione e tutte le politiche decisionali secondo queste avvengono fanno parte del macro-argomento della \textbf{virtualizzazione della memoria}.
+	\smallbreak
+	
+	Nei primi tempi in cui nacquero gli elaboratori il problema di virtualizzare la memoria non si poneva: si aveva un solo processore che poteva eseguire solo un processo alla volta e nessuno scheduling. Quel processo poteva dunque accedere a tutte le aree di memoria che voleva. Anche a quelle kernel, se non si stava attenti.\\
+	Insomma, ci rendiamo conto che questo oggi non sia e non debba  più essere possibile per due motivi:
+	\begin{enumerate}
+		\item Potremmo avere multipli processi in esecuzione nella stessa coda, e bisogna dunque gestire il cambio di contesto tra questi processi in maniera corretta.
+		
+		\item Bisogna garantire la protezione dei reciproci spazi di memoria: un processo A non dovrà \textbf{mai} poter scrivere sull'area del processo B (salvo ciò sia intenzionale), né tantomeno nell'area Kernel.
+	\end{enumerate}
+	
+	Il processo di virtualizzazione della memoria si occupa di mantenere dunque i seguenti principi:
+	\begin{description}
+		\item [Trasparenza:] i processi devono essere agnostici. Un processo non deve sapere il suo indirizzo di memoria reale: per lui il suo spazio di indirizzamento inizia sempre a \texttt{0x00...0}.
+		
+		\item[Efficienza:] la virtualizzazione deve essere veloce, in quanto è un'operazione interpellata praticamente sempre, ed efficiente in termini di spazio. Per questo motivo implementiamo il tutto anche mediante dei dispositivi hardware (es: Memory Management Unit).
+		
+		\item[Protezione:] un processo non deve essere in grado di accedere in alcun modo ad aree di memoria che non lo concernono.
+	\end{description}
+	
+	\begin{osservazione}{Gli indirizzi in C}{}
+		Quando mandiamo a schermo l'indirizzo di una variabile mediante l'operatore \texttt{\&}, entra in gioco la virtualizzazione: vediamo puramente l'indirizzo logico, in quanto il processo non deve poter avere la minima idea di dove è memorizzato fisicamente all'interno della RAM. A lui interessa che, almeno secondo la sua percezione, il suo spazio di indirizzamento sia contiguo.
+	\end{osservazione}
+	
+	\begin{osservazione}{Duplicazione di indirizzi logici}{}
+		Dato che ogni processo virtualmente parte dall'indirizzo \texttt{0x00...0} è molto probabile che due processi distinti abbiano una variabile entrambi memorizzata allo stesso indirizzo \texttt{0x43617}. Si specifica solo per completezza che quello \textbf{non è lo stesso indirizzo fisico}, in quanto lo stesso indirizzo logico può tranquillamente essere mappato a due indirizzi fisici diversi.
+	\end{osservazione}
+	
+	\section{Un primo approccio: l'allocazione statica}
+	Prima di passare a tecniche più complesse come il base and bounds e l'introduzione di dispositivi hardware per assistere il processo di virtualizzazione, la tecnica era molto più terra-terra: prendere ogni indirizzo logico, applicargli un \textbf{offset} ed ecco ottenuto il nostro indirizzo fisico definitivo. Inoltre, l'offset in sé non è niente di complesso: rappresenta banalmente l'indirizzo fisico in cui \textbf{inizia} il processo.\\
+	Dunque, se un processo inizia ad indirizzo \texttt{0x3000}, ad ogni indirizzo logico (che sia di istruzione, variabile, ... insomma appartenente alla gerarchia che avevamo visto col C) bisogna aggiungere \texttt{0x3000}.
+	\smallbreak
+	
+	Ci rendiamo conto che come modalità sia estremamente semplice da implementare, e dunque vantaggiosa secondo questo punto di vista, tuttavia soffre delle seguenti criticità:
+	\begin{enumerate}
+		\item \textbf{Nessuna protezione sugli indirizzi acceduti}: il processo A potrebbe tranquillamente venir erroneamente mappato ad un'area di memoria riservata al processo B e non vi sarebbe alcun controllo in merito.
+		
+		\item Spostare un processo da un'area di memoria all'altra è semplicemente un inferno: bisognerebbe copiare tutta l'area di memoria virtuale, copiare ogni singolo indirizzo fisico associato ad ogni variabile/istruzione, copiare gli indirizzi dei registri della CPU e poi spostare tutto nella nuova locazione. E' un processo così complesso che tanto vale non farlo.
+	\end{enumerate}
+	
+	\section{Un approccio migliorato: il Base \& Bounds}
+	Questo nuovo approccio non si basa su una traduzione diretta degli indirizzi (quindi non basta applicare semplicemente un offset) bensì si affida anche ad un componente hardware chiamato \textbf{Memory Management Unit (MMU)} nella sua versione ancora "embrionale" (capiremo nelle sezioni future il perché di questo aggettivo). L'affidarsi ad un componente hardware è una soluzione ottimale in quanto garantisce la \textbf{separazione delle responsabilità}: la CPU non deve effettuare controlli ma delega tutto il lavoro alla MMU che si occuperà semplicemente di mandargli il risultato.
+	\smallbreak
+	
+	Per quest'implementazione, è sufficiente definire due registri all'interno della MMU:
+	\begin{itemize}
+		\item Il registro \textbf{base}, che contiene al suo interno l'\textbf{indirizzo al quale inizia l'area di memoria riservata al processo} (simile all'offset di prima dunque).
+		
+		\item Il registro \textbf{bounds}, che contiene al proprio interno la \textbf{dimensione dello spazio di indirizzamento relativo al processo}. Se un processo avesse uno spazio di indirizzamento virtuale pari a \texttt{16KB}, all'interno del bounds register sarebbe riportato tale valore.
+	\end{itemize}
+	
+	\begin{osservazione}{Le assunzioni teoriche}{}
+		E' doveroso specificare che per modellare questa soluzione stiamo ancora facendo due assunzioni molto importanti e poco realistiche:
+		\begin{enumerate}
+			\item Lo spazio di indirizzamento virtuale è minore di quello di indirizzamento fisico. Nei sistemi moderni, questo è spesso e volentieri falso, in quanto lo spazio di indirizzamento virtuale corrisponde a $2^{\text{dimensione\_parola}}$ byte (che nei sistemi moderni può arrivare ad essere anche un $2^64$ byte), mentre la memoria RAM ha una dimensione di ormai 34-64GB. Ci rendiamo conto esserci una sostanziale differenza.\\
+			Un buon sistema operativo deve modellare anche questa casistica, ma lo vedremo in futuro mediante la tecnica del paging.
+			
+			\item Lo spazio di indirizzamento relativo ad un processo deve essere contiguo anche in memoria RAM. Questa è un'assunzione forte, in quanto ripetiamo essere pressoché impossibile a causa delle dimensioni dello spazio di indirizzamento rispetto a quello effettivo. Inoltre potrebbero verificarsi casi in cui un processo \textbf{per intero} non riesce ad entrare in memoria centrale, ma spezzettandolo si riesce. Anche questo verrà risolto col paging.
+		\end{enumerate}
+	\end{osservazione}
+	
+	La formula di traduzione risulta dunque immediata:
+	\[
+		\text{indirizzo\_fisico} = \text{indirizzo\_virtuale} + \text{base}
+	\]
+	e bisogna poi controllare che $\text{indirizzo\_virtuale} < bounds$, per verificare che l'indirizzo generato dal processo rimanga dentro i limiti imposti dalla MMU.
+	
+	Facciamo un esempio di un processo con $\text{base} = 32\text{ KB}$, $\text{limite} = 16\text{ KB}$:
+	
+	\begin{lstlisting}[style=stile-listings, language=C]
+		// Codice C (semplificato):
+		int x = 3000;       // memorizzato all'indirizzo virtuale 15 KB (stack)
+		x = x + 3;          // carica x, aggiunge 3, memorizza x
+	\end{lstlisting}
+	
+	Compilato in tre istruzioni x86 agli indirizzi virtuali 128, 132, 135:
+	
+	\begin{enumerate}
+		\item Prelievo dell'istruzione @ virtuale 128:\\
+		$\text{PC} = 128 \rightarrow \text{fisico} = 128 + 32{.}768 = 32{.}896$ \checkmark $\rightarrow$ prelevata dalla RAM
+		
+		\item Esecuzione: \texttt{movl 0x0(\%ebx), \%eax} (caricamento da virtuale $15\text{ KB} = 15{.}360$):\\
+		$15{.}360 < 16{.}384$ \checkmark $\rightarrow \text{fisico} = 15{.}360 + 32{.}768 = 48{.}128 \rightarrow$ lettura da RAM
+		
+		\item Esecuzione: \texttt{addl \$0x03, \%eax} (operazione pura su registri -- nessun accesso alla memoria)
+		
+		\item Esecuzione: \texttt{movl \%eax, 0x0(\%ebx)} (scrittura su virtuale $15\text{ KB} = 15{.}360$):\\
+		$15{.}360 < 16{.}384$ \checkmark $\rightarrow \text{fisico} = 15{.}360 + 32{.}768 = 48{.}128 \rightarrow$ scrittura in RAM
+	\end{enumerate}
+	
+	\begin{osservazione}{Il valore del registro bounds}{}
+		Alcune interpretazioni vogliono che all'interno del registro bound sia contenuto il valore dell'indirizzo finale al quale può accedere il processo (insomma quello che per la nostra implementazione attuale sarebbe il risultato della somma \texttt{base + bounds}).
+	\end{osservazione}
+	
+	E' inutile dire che la decisione del valore dei registri base e bounds spetta al sistema operativo, dunque tutte le operazioni di questo genere sono riservate alla Kernel mode (Ring 0).
+	
+	\begin{osservazione}{Come funziona per multipli processi}{}
+		Con questa implementazione, ad ogni processo sono associati i rispettivi valori dei registri base e bounds. Così facendo, stiamo aggiungendo un altro parametro da memorizzare all'interno del PCB per permettere di poter ripristinare anche la corretta area di lavoro del processo a seguito del context switch.
+	\end{osservazione}
+	
+	Con questa implementazione, anche il problema di spostare un processo da un'area di memoria all'altra è molto più semplice: basta copiare i contenuti dello spazio di indirizzamento e cambiare semplicemente il valore del registro base (dato che il bounds nella nostra implementazione rappresenta l'ampiezza dello spazio di memorizzazione, dunque rimane quello).\\
+	Affinché ciò sia possibile, dobbiamo spostare il processo in un'area di memoria libera. A tal proposito, il sistema operativo mantiene memorizzato un array di aree di memoria, in cui per ogni area di memoria libera viene memorizzato a che indirizzo inizia e per quanti indirizzi dura (è come il concetto base \& bounds ma applicato alle aree di memoria libere).
+	
+	Con l'implementazione del meccanismo Base \& Bounds, il sistema operativo deve gestire 4 scenari chiave.
+	
+	\subsection{Creazione di un processo}
+	Quando un nuovo processo viene creato, il sistema operativo deve fare in modo che questo venga allocato correttamente (e contiguamente, per le nostre assunzioni attuali) in memoria. Lo spazio da allocare in memoria, bene o male, può essere determinato dalla compilazione e dall'analisi del codice macchina del processo.\\
+	A quel punto, bisogna cercare uno slot libero in cui posizionare un processo. Si possono seguire 3 politiche nella ricerca e posizionamento di tale processo:
+	\begin{description}
+		\item [First-fit:] si posiziona il processo nella prima area di memoria che riesce a contenere il suo spazio di indirizzamento.
+		
+		\item[Best-fit:] si posiziona il processo nell'area più piccola capace di contenerlo.
+		
+		\item[Worst-fit:] si posiziona il processo nell'area di memoria libera più grande.
+	\end{description}
+	Dopo aver deciso dove posizionare il processo in memoria, il SO si occupa di copiare tutti i dati relativi allo spazio di indirizzamento virtuale nell'area di memoria selezionata. Successivamente dovrà valorizzare anche i registri base e bounds.
+	
+	\subsection{Terminazione di un processo}
+	Una volta che il processo termina la propria esecuzione, deve essere:
+	\begin{enumerate}
+		\item Rimosso dalla coda dei processi pronti.
+		
+		\item Impostare l'area di memoria occupata dal processo come libera. Nel pratico questo viene fatto leggendo i valori dei registri base e bound e inserendo tali valori nell'Array delle aree di memoria libere.\\
+		Facendo un esempio, supponiamo di avere un processo con base = 32KB e bounds = 16KB. Una volta terminato, il sistema si occuperà di fare \texttt{aree\_memoria\_libere.add(start=32KB, size=16KB)}.
+		
+		\item Controlla se la regione appena inserita è adiacente ad altre regioni libere: in tal caso viene fatta la cosiddetta \textbf{fusione} delle aree di memoria, utile per segnalare tutta la sezione come un'unica area libera e prevenire un minimo la frammentazione.
+	\end{enumerate}
+	
+	\subsection{Cambio di contesto tra processi}
+	Riprendendo brevemente quanto già detto prima, quando la CPU deve spostare l'esecuzione da un processo A ad un processo B, bisogna memorizzare nel PCB del processo A anche i valori dei suoi registri \textit{base} e \textit{bounds}. Fatta questa memorizzazione (insieme a tutti gli altri dati relativi al processo, ovviamente) verrà eseguito il processo B "sovrascrivendo" i precedenti valori dei registri base\&bounds del processo A con i suoi.
+	
+	\subsection{Spostare un processo da un'area di memoria all'altra}
+	Come detto prima, bisogna semplicemente modificare il valore del registro \textit{base} e cercare una locazione di memoria contigua di \textit{bounds} bytes all'interno dell'array \texttt{aree\_memoria\_libere}.
+	
+	\subsection{La frammentazione: un problema critico}
+	In una situazione realistica, avendo processi di dimensione variabile, è probabile che a seguito di molte allocazioni e de-allocazioni si creino piccole aree di memoria libere in cui non possiamo memorizzare i processi in quanto troppo grandi per quell'area (e sempre per l'assunzione di mantenere la contiguità). Il problema della \textbf{frammentazione} nasce dal fatto che \textbf{potremmo avere tante piccole aree di memoria libere che nel complesso consistono in tanta memoria}, che risulta dunque sprecata.\\
+	La seguente figura renderà il concetto:
+	
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.85\linewidth}{!}{%
+			\begin{tikzpicture}[thick, font=\sffamily\footnotesize]
+				% Blocchi di memoria ampliati in orizzontale mantenendo l'altezza invariata
+				\draw (0, 0) rectangle (2.2, 1.2) node[midway, align=center] {SO\\16 KB};
+				\draw (2.2, 0) rectangle (4.2, 1.2) node[midway, align=center] {LIBERO\\8 KB};
+				\draw (4.2, 0) rectangle (6.4, 1.2) node[midway, align=center] {Proc A\\16 KB};
+				\draw (6.4, 0) rectangle (8.2, 1.2) node[midway, align=center] {LIBERO\\4 KB};
+				\draw (8.2, 0) rectangle (10.4, 1.2) node[midway, align=center] {Proc B\\16 KB};
+				\draw (10.4, 0) rectangle (13.0, 1.2) node[midway, align=center] {LIBERO\\20 KB};
+			\end{tikzpicture}%
+		}
+		\caption{Frammentazione esterna della memoria fisica.}
+		\label{fig:frammentazione_esterna}
+	\end{figure}
+	
+	Memoria libera totale: $8 + 4 + 20 = 32\text{ KB}$\\
+	Se adesso dovesse entrare un processo richiedente 24 KB di memoria, complessivamente avremmo lo spazio, ma non contiguamente, e dunque non potremmo posizionarlo.
+	\smallbreak
+	
+	Oltre a questo problema della \textit{frammentazione esterna}, vi è anche il problema della \textit{frammentazione interna}. Ora come ora, noi per ogni processo allochiamo una quantità di spazio prefissato calcolata dalla compilazione del programma, e dunque allochiamo una quantità di memoria ad esempio per lo heap, che \textbf{inizialmente sarà vuoto}. Ci rendiamo conto che questo spazio di memoria libero potrebbe risultare utile per altri processi, tuttavia appartenendo al "blocco" del processo corrente non è possibile rendere quella sezione di memoria indirizzabile (almeno ad ora).
+	
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.80\linewidth}{!}{%
+			\begin{tikzpicture}[font=\sffamily\small]
+				% Intestazione del processo
+				\node[anchor=west] at (0, 2.4) {Processo A: dimensione spazio di indirizzamento = 16 KB};
+				
+				% Colonne ben distanziate: etichette a x=0.3, dimensioni a x=3.5, descrizioni a x=5.2
+				\node[anchor=west] at (0.3, 1.8) {-- Codice:};
+				\node[anchor=west] at (3.5, 1.8) {2 KB};
+				\node[anchor=west] at (5.2, 1.8) {(utilizzato attivamente)};
+				
+				\node[anchor=west] at (0.3, 1.35) {-- Dati statici:};
+				\node[anchor=west] at (3.5, 1.35) {1 KB};
+				\node[anchor=west] at (5.2, 1.35) {(utilizzato attivamente)};
+				
+				\node[anchor=west] at (0.3, 0.9) {-- Heap:};
+				\node[anchor=west] at (3.5, 0.9) {0 KB};
+				\node[anchor=west] at (5.2, 0.9) {(attualmente vuoto -- crescer\`a successivamente)};
+				
+				\node[anchor=west] at (0.3, 0.45) {-- Stack:};
+				\node[anchor=west] at (3.5, 0.45) {1 KB};
+				\node[anchor=west] at (5.2, 0.45) {(attualmente utilizzato)};
+				
+				\node[anchor=west] at (0.3, 0.0) {-- Spazio libero:};
+				\node[anchor=west] at (3.5, 0.0) {12 KB};
+				\node[anchor=west] at (5.2, 0.0) {(tra la cima dell'heap e il fondo dello stack)};
+			\end{tikzpicture}%
+		}
+		\caption{Ripartizione dello spazio di indirizzamento per il Processo A.}
+		\label{fig:spazio_indirizzamento_processo_a}
+	\end{figure}
+	
+	\begin{osservazione}{La condivisione di aree di memoria}{}
+		E' utile notare come, con questa tecnica del base \& bounds, far condividere un'area di memoria a due processi sia pressoché impossibile: dato che ad ogni processo è associata un'area di memoria, quando si prova ad accedere a qualcosa fuori da quello \textit{scope} risulta un errore. Non viene effettuato alcun controllo sulla natura dell'area di memoria, se questa sia condivisa o meno (pensiamo a quando creiamo un sottoprocesso con \texttt{fork()}: la sezione di memoria \texttt{code} è inizialmente condivisa tra i due processi, dunque questo con il base \& bounds classico non sarebbe possibile).
+	\end{osservazione}
 	
 \end{document}
