@@ -1702,4 +1702,556 @@
 		\end{enumerate}	
 	\end{algoritmo}
 	
+	\section{Ponti in un Grafo}
+	
+	\begin{definizione}{Ponte}{}
+		Sia $G$ un grafo connesso non diretto. Un arco $e \in E(G)$ è detto \textbf{ponte} se \textbf{non esiste un ciclo $C$ che contiene $e$}.
+	\end{definizione}
+	
+	A titolo esemplificativo, consideriamo la seguente rappresentazione grafica:
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[every node/.style={circle, draw=black, thick, fill=white, minimum size=14pt, inner sep=0pt}]
+			% Nodi del grafo
+			\node (A) at (-2.5, 1.2) {};
+			\node (B) at (-2.5, -1.2) {};
+			\node (C) at (-1, 0) {};
+			\node (D) at (1, 0) {};
+			\node (E) at (2.5, 1.2) {};
+			\node (F) at (2.5, -1.2) {};
+			
+			% Archi neri normali
+			\draw[thick] (A) -- (B);
+			\draw[thick] (B) -- (C);
+			\draw[thick] (D) -- (E);
+			\draw[thick] (D) -- (F);
+			\draw[thick] (E) -- (F);
+			
+			% Arco evidenziato arancione (non è un ponte)
+			\draw[orange, ultra thick] (A) -- (C);
+			
+			% Arco evidenziato viola (è un ponte)
+			\draw[violet, ultra thick] (C) -- (D);
+			
+			% Testi e frecce di annotazione
+			\node[draw=none, fill=none, orange, align=center, font=\bfseries] at (-0.8, 1.5) {non è\\un ponte};
+			\draw[->, orange, thick] (-1.4, 1.1) -- (-1.8, 0.7);
+			
+			\node[draw=none, fill=none, violet, font=\bfseries] at (0, -1.3) {è un ponte};
+			\draw[->, violet, thick] (0, -1) -- (0, -0.2);
+		\end{tikzpicture}
+		\caption{Esempio di archi ponte e non.}
+	\end{figure}
+	
+	\begin{osservazione}{}{}
+		Se $G$ è un albero, tutti gli archi sono ponti (perché un albero è un grafo connesso aciclico).
+	\end{osservazione}
+	
+	\begin{esercizio}{Stabilire se l'arco xy è un ponte}{}
+		Consideriamo il seguente problema: \textit{dato un grafo $G$ e un arco $xy$, stabilire se $xy$ è un ponte.}
+		
+		Per risolverlo, possiamo procedere \textbf{rimuovendo l'arco} $xy$ dal grafo: \textbf{se esiste comunque un cammino} da $x$ a $y$, \textbf{significa che originariamente vi era un ciclo che comprendeva quell'arco} e dunque $xy$ \textbf{non} può essere un ponte.
+		
+		Il costo computazionale di questo algoritmo è legato alla ricerca di un cammino, e corrisponde pertanto a quello di una visita DFS, ovvero $\mathcal{O}(n + m)$.
+	\end{esercizio}
+	
+	Se volessimo estendere la procedura per trovare \textit{tutti} i ponti di un grafo, l'idea di base si sviluppa nei seguenti passi:
+	\begin{enumerate}
+		\item Eseguiamo una visita DFS per ottenere l'albero delle visite $T$.
+		\item Per ogni arco $xy \in E(T)$, applichiamo la soluzione precedente: rimuoviamo l'arco e verifichiamo, tramite una DFS a partire da $x$, se riusciamo a raggiungere $y$.
+	\end{enumerate}
+	
+	Il costo computazionale di questo approccio diventa $\mathcal{O}(m \cdot (n + m))$, dal momento che dobbiamo eseguire una DFS distinta per ogni arco dell'albero delle visite.
+	
+	\begin{osservazione}{}{}
+		Sia $G$ un grafo connesso e $T$ un albero della DFS.
+		Sia $xy$ un arco di $T$, con $x$ discendente di $y$.
+		Sia $T_y$ il sottoalbero dei discendenti di $y$.
+		Se esiste un arco $uv \in E(G)$, $uv \neq xy$ con $u \in T_y$ e $v$ un antenato di $x \implies xy$ non è un ponte.
+	\end{osservazione}	
+	
+	L'osservazione risulta particolarmente intuitiva in quanto se esiste un arco NEL GRAFO (attenzione: l'albero $T$ è un sottoinsieme del grafo, e poi stiamo cercando i ponti del grafo $G$, non di $T$) che connette un nodo sotto ad $y$ con uno sopra al suo antenato $x$, quello sarà un arco all'indietro. Esistendo tale arco all'indietro vuol dire che esiste un ciclo e dunque $xy$ non può essere un ponte.
+	
+	\newpage
+	Prendendo in esempio la seguente figura, l'arco $(d, f)$ non può essere un ponte in quanto il nodo $e$ risulta essere antenato di $d$, che però è connesso ad $f$.
+
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[every node/.style={circle, draw=black, thick, fill=white, minimum size=14pt, inner sep=0pt}]
+			% Nodi del grafo
+			\node (e) at (-2.5, 1.2) {};
+			\node (f) at (-2.5, -1.2) {};
+			\node (d) at (-1, 0) {};
+			\node (c) at (1, 0) {};
+			\node (a) at (2.5, 1.2) {};
+			\node (b) at (2.5, -1.2) {};
+			
+			% Archi neri normali
+			\draw[thick] (e) -- (d);
+			\draw[thick] (c) -- (b);
+			
+			% Archi blu evidenziati con le relative etichette
+			\draw[blue, ultra thick] (e) -- node[draw=none, fill=none, left=2pt] {$f_5$} (f);
+			\draw[blue, ultra thick] (f) -- node[draw=none, fill=none, below right=1pt] {$f_4$} (d);
+			\draw[blue, ultra thick] (d) -- node[draw=none, fill=none, above=2pt] {$f_3$} (c);
+			\draw[blue, ultra thick] (c) -- node[draw=none, fill=none, above left=1pt] {$f_2$} (a);
+			\draw[blue, ultra thick] (a) -- node[draw=none, fill=none, right=2pt] {$f_1$} (b);
+			
+			% Etichette arancioni dei vertici
+			\node[draw=none, fill=none, orange, font=\bfseries] at (-2.5, 1.6) {$e$};
+			\node[draw=none, fill=none, orange, font=\bfseries] at (-2.8, -1.5) {$f$};
+			\node[draw=none, fill=none, orange, font=\bfseries] at (-1, -0.45) {$d$};
+			\node[draw=none, fill=none, orange, font=\bfseries] at (1, -0.45) {$c$};
+			\node[draw=none, fill=none, orange, font=\bfseries] at (2.8, 1.5) {$a$};
+			\node[draw=none, fill=none, orange, font=\bfseries] at (2.8, -1.2) {$b$};
+		\end{tikzpicture}
+		\caption{Come vediamo}
+		\label{fig:grafo_archi_blu}
+	\end{figure}
+	
+	\begin{proposizione}{Caratterizzazione dei ponti in un albero DFS}{}
+		Sia $G$ un grafo connesso e $T$ un albero di ricerca DFS. Siano $xy \in E(T)$ con $y$ discendente di $x$.\\
+		Allora esiste un arco $(u, v) \in E(G)$ con $u \in T_y$ e $v$ antenato di $x$ $\iff (x, y)$ \textbf{non è un ponte}.
+	\end{proposizione}
+	Questa proporizione sostanzialmente completa la precedente, collegando i due concetti di arco all'indietro e ponte mediante una doppia implicazione.
+	
+	\begin{dimostrazione}{}{}
+		$\implies$: Per quanto osservato in precedenza.\\
+		$\impliedby$: Se $xy$ non è un ponte, significa che esiste un ciclo $C$ che contiene $xy$. Avere un ciclo vuol dire che esiste un cammino $P$ da $x$ a $y$ che non usa l'arco $xy$. Banalmente, tale cammino risulta essere $P = C \setminus xy$.
+		
+		Ma intuitivamente, se parto dal vertice $y$ (che è un discendente di sé stesso) e in qualche modo arrivo ad $x$ (sicuramente posso arrivarci dato che c'era un ciclo), sicuramente ho usato un arco che mi porta da $T_y$ ad $x$ (o un suo antenato).
+		
+		Formalmente, $u \in T_y$ e $uv$ è un arco all'indietro, allora $v$ è anche un antenato di $y$. Inoltre è impossibile che $uv = xy$ dato che $uv \in P$ e $xy \notin P$.
+	\end{dimostrazione}
+	
+	Fatte le dovute osservazioni teoriche, possiamo procedere con la stesura dell'algoritmo.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python, caption={Algoritmo per la ricerca dei ponti in un grafo.}]
+		def trovaPonti(G):
+			ponti = []
+			t = [0] * n
+			c = 0
+			dfs_ric(G, x, x, t, ponti)
+			return ponti
+			
+		def dfs_ponti(G, u: nodo, z: nodo, t, c, ponti):
+			c += 1
+			t[u] = c
+			back = t[u]
+			
+			for v in u.neighbr:
+				if t[v] == 0:
+					b = dfs_ric(G, v, u, t, c, ponti)
+					if b >= t[v]:
+						ponti.add((u, v))
+					if b < back:
+						back = b
+				else:
+					if t[v] < back AND t[v] != t[z]:
+						back = t[v]
+			
+			return back
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Ricerca di tutti i ponti in un grafo}{}
+		\begin{itemize}
+			\item \textbf{Inizializzazione (\texttt{trovaPonti}):}
+			\begin{enumerate}
+				\item \texttt{ponti = []}: Inizializziamo una lista vuota per raccogliere tutti gli archi che risulteranno essere ponti.
+				\item \texttt{t = [0] * n}: Array che tiene traccia di tutte le prime volte in cui un nodo è stato visitato (tempi di scoperta).
+				\item \texttt{c = 0}: Contatore globale per tenere traccia di ogni nodo visitato la prima volta.
+			\end{enumerate}
+			
+			\item \textbf{Procedura ricorsiva (\texttt{dfs\_ponti}):}
+			La funzione riceve in input il grafo $G$, il nuovo vertice corrente $u$, il padre $z$ da cui siamo arrivati, l'array dei tempi $t$, il contatore $c$ e la lista dei \texttt{ponti}.
+			\begin{enumerate}
+				\item \texttt{c += 1} e \texttt{t[u] = c}: Incrementiamo il contatore e registriamo il tempo di scoperta del nodo corrente $u$.
+				\item \texttt{back = t[u]}: Teniamo traccia del nodo più indietro a cui possiamo arrivare tramite archi all'indietro.
+				\item \textbf{Esplorazione dei vicini (\texttt{for v in u.neighbr}):}
+				\begin{itemize}
+					\item \textbf{Se il nodo $v$ non è visitato (\texttt{t[v] == 0}):}
+					\begin{itemize}
+						\item \texttt{b = dfs\_ric(G, v, u, t, c, ponti)}: Ci prendiamo il valore \texttt{back} ottenuto dalla DFS a partire dal nodo $v$.
+						\item \textbf{Condizione di ponte (\texttt{b >= t[v]}):} Se questo è vero, vuol dire che partendo da $v$ siamo arrivati al massimo a $v$ stesso o dopo, perché $b$ indica al massimo quanto indietro possiamo andare partendo da $v$. Non esistono dunque vie alternative per risalire a un antenato di $u$, il che rende l'arco $(u, v)$ un ponte. Di conseguenza aggiungiamo l'arco alla lista: \texttt{ponti.add((u, v))}.
+						\item \textbf{Aggiornamento del back (\texttt{b < back}):} Se risultiamo avere $b < back$ vuol dire che siamo andati ancora più indietro rispetto a dove siamo partiti, dunque l'arco corrente \textbf{non} può essere un ponte. A questo punto però sappiamo che il massimo indietro a cui possiamo andare a partire dal nodo corrente corrisponde a $b$ e dunque aggiorniamo il valore di \texttt{back}.
+					\end{itemize}
+					\item \textbf{Se il nodo $v$ è già stato visitato (\texttt{else}):}
+					\begin{itemize}
+						\item \textbf{Controllo dell'arco all'indietro (\texttt{t[v] < back AND t[v] != t[z]}):} Se invece lo avessimo già visitato, se il nodo figlio $v$ è stato scoperto di fatto prima del nodo corrente $u$ (e non è il padre $z$ da cui siamo arrivati), aggiorniamo il \texttt{back} con il tempo di scoperta di $v$ (\texttt{back = t[v]}).
+					\end{itemize}
+				\end{itemize}
+				\item \textbf{Restituzione:} Alla fine dell'esplorazione, la funzione restituisce il valore di \texttt{back}.
+			\end{enumerate}
+		\end{itemize}
+	\end{algoritmo}
+	
+	\newpage
+	\section{Grafi e componenti fortemente connessi}
+	
+	\begin{definizione}{Grafo fortemente connesso}{}
+		Un grafo diretto si dice \textbf{fortemente connesso} se $\forall x, y \in V(G)$ esiste un cammino diretto $x \to y$ e un cammino da $y \to x$.
+	\end{definizione}
+	
+	{\centering
+		\vspace{-2em}
+		\begin{tikzpicture}[
+			scale=1,
+			transform shape,
+			every node/.style={circle, draw=black, thick, fill=white, minimum size=14pt, inner sep=0pt}
+			]
+			% --- PRIMO GRAFO (NON FORTEMENTE CONNESSO) ---
+			\node (x1) at (0, 0) {};
+			\node (y1) at (2.2, 0) {};
+			
+			\draw[->, thick] (x1) -- (y1);
+			
+			\node[draw=none, fill=none, font=\bfseries] at (0, -0.45) {$x$};
+			\node[draw=none, fill=none, font=\bfseries] at (2.2, -0.45) {$y$};
+			
+			\node[draw=none, fill=none, violet, font=\bfseries, align=center] at (1.1, -1.2) {NON FORT.\\CONNESSO};
+			
+			% --- SECONDO GRAFO (FORTEMENTE CONNESSO) ---
+			\node (x2) at (5.2, 0) {};
+			\node (y2) at (7.8, 0) {};
+			
+			\draw[->, thick] (x2) to[bend left=40] (y2);
+			\draw[->, thick] (y2) to[bend left=40] (x2);
+			
+			\node[draw=none, fill=none, font=\bfseries] at (4.8, 0) {$x$};
+			\node[draw=none, fill=none, font=\bfseries] at (8.2, 0) {$y$};
+			
+			\node[draw=none, fill=none, violet, font=\bfseries, align=center] at (6.5, -1.2) {FORTEMENTE CONNESSO};
+		\end{tikzpicture}
+		\par
+		\vspace{-5em}
+	}
+	
+	\begin{osservazione}{}{}
+		Per qualsiasi grafo diretto e $x \in V(G)$, esiste un sottografo fortemente connesso che contiene $x$.
+	\end{osservazione}
+	
+	\begin{dimostrazione}{}{}
+		Il sottografo consistente del solo nodo $\{x\}$ da solo è fortemente connesso, dunque sicuramente esiste.
+	\end{dimostrazione}
+	
+	\begin{definizione}{Componente fortemente connessa}{}
+		Una \textbf{componente fortemente connessa} è un \textbf{sottografo $H$ fortemente connesso massimale (il più grande possibile con quei nodi)}. Formalmente, se $\exists H \subseteq H' \subseteq G$, allora $H'$ non è più fortemente connesso.
+	\end{definizione}
+	
+	Per questo motivo, due componenti non possono avere un vertice comune, altrimenti non sarebbe la massimale.
+	
+	\newpage
+	Ci si potrebbe chiedere: se $x, y$ sono vertici della stessa componente fortemente connessa, esiste allora un ciclo che contiene $x$ e $y$?
+	
+	La risposta è \textbf{no}. Vediamo un controesempio:
+	
+	\begin{figure}[H]
+		\centering
+		\begin{tikzpicture}[
+			every node/.style={circle, draw=black, thick, fill=white, minimum size=14pt, inner sep=0pt}, scale=1
+			]
+			% Definizione dei nodi con coordinate proporzionate al disegno
+			\node (x) at (0, 0) {};
+			\node (v1) at (0.7, 1.6) {};
+			\node (v2) at (1.1, 0.5) {};
+			\node (v3) at (2.4, 1.1) {};
+			\node (c) at (2.2, 0) {};       % Nodo centrale di giunzione
+			\node (v4) at (2.7, -1.1) {};
+			\node (v5) at (4.0, -0.6) {};
+			\node (y) at (3.7, 0.5) {};
+			
+			% Ciclo/circuito superiore a sinistra
+			\draw[->, thick] (x) -- (v2);
+			\draw[->, thick] (v2) -- (c);
+			\draw[->, thick] (c) -- (v3);
+			\draw[->, thick] (v3) -- (v1);
+			\draw[->, thick] (v1) -- (x);
+			
+			% Ciclo/circuito inferiore a destra
+			\draw[->, thick] (c) -- (v4);
+			\draw[->, thick] (v4) -- (v5);
+			\draw[->, thick] (v5) -- (y);
+			\draw[->, thick] (y) -- (c);
+			
+			% Etichette per i nodi x e y
+			\node[draw=none, fill=none, font=\bfseries] at (-0.2, -0.45) {$x$};
+			\node[draw=none, fill=none, font=\bfseries] at (4.3, 0.5) {$y$};
+		\end{tikzpicture}
+	\end{figure}
+	
+	Nota: quando ci viene chiesto se ``allora esiste'', si intende ``allora \textbf{esiste sempre}''.
+	
+	Al contrario, vale la seguente proprietà: se esiste un ciclo $C$ diretto che contiene $x$ e $y$, ciò implica che $x$ e $y$ fanno parte della stessa componente fortemente connessa?
+	
+	La risposta è \textbf{sì}. 
+	\begin{dimostrazione}{}{}
+		Sia $H$ la componente che contiene $x$ e un ciclo $C$ che contiene $x, y$. 
+		Ne consegue che $H$ e $C$ hanno un vertice in comune, e l'unione $H \cup C$ è fortemente connessa. Dunque, per massimalità, $H \cup C$ è la componente finale a cui appartengono $x$ e $y$.
+	\end{dimostrazione}
+	
+	\begin{osservazione}{}{}
+		Ogni vertice è singolarmente una componente fortemente connessa (ricordiamo $\{x\}$ essere una componente valida). 
+		Due componenti fortemente connesse sono sicuramente disgiunte (per massimalità) e dunque \textbf{le componenti costituiscono una partizione dei vertici del grafo}.
+	\end{osservazione}
+	
+	A titolo esemplificativo, consideriamo la seguente scomposizione in componenti fortemente connesse:
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			scale=0.8,
+			transform shape,
+			every node/.style={circle, draw=black, thick, fill=white, minimum size=13pt, inner sep=0pt}
+			]
+			% --- NODI ---
+			% Blocco sinistro
+			\node (A) at (0, 2) {};
+			\node (B) at (0, 0) {};
+			\node (C) at (3, 2) {};
+			\node (D) at (3, 0) {};
+			
+			% Nodo centrale
+			\node (M) at (5, 1) {};
+			
+			% Blocco destro
+			\node (E) at (7, 2) {};
+			\node (F) at (7, 0) {};
+			\node (G) at (10, 2) {};
+			\node (H) at (10, 0) {};
+			
+			% --- ARCHI ORIENTATI (GRAFO) ---
+			% Blocco sinistro
+			\draw[->, thick] (B) -- (A);
+			\draw[->, thick] (A) -- (C);
+			\draw[->, thick] (C) -- (D);
+			\draw[->, thick] (D) -- (B);
+			\draw[->, thick] (A) -- (D);
+			
+			% Collegamenti con il nodo centrale
+			\draw[->, thick] (C) -- (M);
+			\draw[->, thick] (D) -- (M);
+			\draw[->, thick] (M) -- (E);
+			\draw[->, thick] (M) -- (F);
+			
+			% Blocco destro
+			\draw[->, thick] (F) -- (E);
+			\draw[->, thick] (E) -- (G);
+			\draw[->, thick] (G) -- (H);
+			\draw[->, thick] (H) -- (E);
+			\draw[->, thick] (F) -- (H);
+			
+			% --- RIQUADRI VIOLA (COMPONENTI FORTEMENTE CONNESSE) ---
+			% 1. Riquadro componente sinistra
+			\draw[violet, very thick] (-0.6, -0.45) rectangle (3.5, 2.45);
+			
+			% 2. Riquadro nodo centrale singolo
+			\draw[violet, very thick] (4.45, 0.5) rectangle (5.55, 1.5);
+			
+			% 3. Riquadro nodo F singolo (in basso a destra)
+			\draw[violet, very thick] (6.5, -0.45) rectangle (7.5, 0.45);
+			
+			% 4. Riquadro componente destra (con diagonale parallela all'arco H -> E e distanziata)
+			\draw[violet, very thick] (6.5, 1.6) -- (6.5, 2.45) -- (10.5, 2.45) -- (10.5, -0.45) -- (9.6, -0.45) -- (7.25, 1.12) -- (7.25, 1.6) -- cycle;
+		\end{tikzpicture}
+		\caption{Esempio grafico di come le componenti di un grafo diretto ne costituiscano una partizione.}
+		\label{fig:componenti_fortemente_connesse}
+	\end{figure}
+	
+	Ora abbiamo qualcosa con cui giocare: \textbf{trovare tutte le componenti fortemente connesse di un grafo}.
+	
+	\begin{proposizione}{}{}
+		Sia $G$ un grafo diretto e $u \in V(G)$.
+		\[
+		G \text{ è fort. conn.} \iff \forall x \in V(G) \, \exists \text{ un cammino } x \to u \text{ e un cammino } u \to x
+		\]
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		``$\implies$'': segue per la definizione di grafo fortemente connesso.\\
+		``$\impliedby$'': Sia $x, y \in V(G)$. Esiste un cammino $P$ da $x \to u$ e un cammino $Q$ da $u \to y$.
+		Dunque $P \cup Q$ è una passeggiata da $x \to y$ e dunque esiste anche un cammino.
+		Per simmetria, possiamo fare questo discorso anche da $y \to x$ passando per $u$.
+	\end{dimostrazione}
+	
+	\begin{enumerate}
+		\item Se il grafo non ha cicli, ogni singolo nodo è una componente fortemente connessa.
+		
+		\item Dobbiamo poi applicare una tecnica chiamata \textbf{contrazione}.
+		
+		Prendiamo $X \subset V(G)$ e sostituiamo quell'insieme di vertici con un unico nuovo vertice $v_x$. Avendo rimosso tutti i $v \in X$, dobbiamo anche rimuovere tutti gli archi del tipo $xy$ con $x, y \in X$ (gli archi interni a quella porzione di grafo), ma \textbf{mantenere tutti gli archi che arrivano a $v_x$ dall'esterno} ($(y, x)$ t.c. $y \notin X, x \in X$) \textbf{o che vanno verso l'esterno} ($(x, y)$ t.c. $x \in X, y \notin X$).
+	\end{enumerate}
+	
+	\begin{proposizione}{Contrazione di un sottografo fortemente connesso}{}
+		Se $G$ è un grafo fortemente connesso e $H \subseteq G$ è un sottografo fortemente connesso, allora il grafo quoziente $G / V(H)$ ottenuto contraendo $H$ in un unico vertice è anch'esso fortemente connesso.
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		Per qualsiasi $y \in V(G / V(H))$ con $y \neq v_H$, sia $x \in H \subseteq G$ e sia $P$ un cammino da $y \to x$ in $G$.
+		
+		Sia $\bar{P}$ il pezzo del cammino $P$ da $y$ al primo vertice di $H$: allora $\bar{P}$ è un cammino in $G / V(H)$ da $y \to v_H$.
+		
+		Per lo stesso argomento, esiste un cammino da $v_H \to y$ e, per la proposizione precedente, $G / V(H)$ è fortemente connesso. Ciò è possibile ed ovvio dato che il grafo di partenza era fortemente connesso.
+	\end{dimostrazione}
+	
+	La notazione $G / V(H)$ indica il nuovo grafo ottenuto dopo la contrazione. Se volessimo definirlo formalmente:
+	\[
+	G / V(H) = (G - H) \cup v_H
+	\]
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			scale=0.8,
+			transform shape,
+			every node/.style={circle, draw=black, thick, fill=white, minimum size=10pt, inner sep=0pt}
+			]
+			
+			% ================= GRAFO DI SINISTRA =================
+			\node (w)   at (-3.5,  0)   {};
+			\node (n)   at (-2.1,  1)   {};
+			\node (s)   at (-2.1, -1)   {};
+			\node (e)   at (-0.9,  0)   {};
+			\node (ext) at ( 1.8,  0)   {};
+			
+			% Archi interni
+			\draw[->, thick] (w) -- (n);
+			\draw[->, thick] (s) -- (w);
+			\draw[->, thick] (n) -- (e);
+			\draw[->, thick] (e) -- (s);
+			
+			% Archi verso il nodo esterno con etichette 1 e 2
+			\draw[->, thick] (n)   -- node[draw=none, fill=none, orange, font=\bfseries\small, above=1pt] {1} (ext);
+			\draw[->, thick] (e)   -- (ext);
+			\draw[->, thick] (ext) -- node[draw=none, fill=none, orange, font=\bfseries\small, below=1pt] {2} (s);
+			
+			% Riquadro viola componente X
+			\draw[violet, ultra thick] (-4.0, -1.35) rectangle (-0.2, 1.3);
+			\node[draw=none, fill=none, violet, font=\bfseries\large] at (0.3, 1.4) {$X$};
+			
+			% ================= FRECCIA CENTRALE =================
+			\draw[->, thick, violet] (2.8, 0) -- (5.2, 0);
+			
+			% ================= GRAFO DI DESTRA =================
+			\node[draw=violet, ultra thick] (vx)    at (6.4, 0) {};
+			\node                           (right) at (9.2, 0) {};
+			
+			% Archi con curva omogenea e simmetrica (bend left)
+			\draw[->, thick] (vx)    to[bend left=35] node[draw=none, fill=none, orange, font=\bfseries\small, below=1pt] {1} (right);
+			\draw[->, thick] (right) to[bend left=35] node[draw=none, fill=none, orange, font=\bfseries\small, below=1pt] {2} (vx);
+			
+			% Etichetta vx
+			\node[draw=none, fill=none, violet, font=\bfseries\large] at (6.4, -0.4) {$v_X$};
+			
+		\end{tikzpicture}
+	\end{figure}
+	
+	Presentiamo dunque ora un primo algoritmo (inefficiente) per l'estrazione di tutte le componenti fortemente connesse di un grafo.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python]
+		def Fort(G):
+			C = trova_ciclo(G)
+			
+			if not C:
+				return {v_1, v_2, ..., v_n}
+			
+			G = G/C
+			
+			{u_1, ..., u_k} = Fort(G)
+			
+			for i in range(1, k):
+				if v_c in u_i:
+					u_i = (u_i - {v_c}) U V(C) #1
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Estrazione componenti fort. connesse}{}
+		Analizziamo passo dopo passo il funzionamento dell'algoritmo:
+		\begin{enumerate}
+			\item \textbf{Ricerca del ciclo}: L'algoritmo inizia cercando un ciclo $C$ all'interno del grafo diretto $G$.
+			\item \textbf{Caso base}: Se il grafo non contiene alcun ciclo, significa che ogni vertice costituisce una componente fortemente connessa a sé stante, e l'algoritmo restituisce l'insieme di tutti i vertici $\{v_1, v_2, \dots, v_n\}$.
+			\item \textbf{Contrazione}: Se viene trovato un ciclo $C$, il grafo viene contratto mediante l'operazione $G = G / C$, collassando i vertici del ciclo in un unico super-vertice $v_c$.
+			\item \textbf{Chiamata ricorsiva}: Si invoca nuovamente la funzione ricorsiva sul grafo contratto per ottenere le componenti fortemente connesse $\{u_1, \dots, u_k\}$.
+			\item \textbf{Fase di unione (unpacking)}: Infine, si esamina ciascuna componente restituita: se il vertice di contrazione $v_c$ appartiene alla componente $u_i$, esso viene sostituito dall'insieme di tutti i vertici originali che componevano il ciclo $C$ da cui è stato ottenuto il vertice $v_c$, ripristinando la struttura iniziale.
+		\end{enumerate}
+	\end{algoritmo}
+	
+	A titolo esemplificativo, consideriamo il seguente grafo orientato e seguiamo l'evoluzione dell'algoritmo:
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[very thick, >=stealth, scale=0.9]
+			\tikzset{nodo/.style={circle, draw, thin, minimum size=0.6cm, inner sep=0pt, font=\sffamily\small}}
+			
+			% Componente sinistra
+			\node[nodo] (a) at (0, 1) {a};
+			\node[nodo] (b) at (1, 0) {b};
+			\node[nodo] (c) at (1, 2) {c};
+			\node[nodo] (d) at (2, 1) {d};
+			
+			\draw[->] (a) -- (c);
+			\draw[->] (a) -- (b);
+			\draw[->] (c) -- (d);
+			\draw[->] (b) -- (d);
+			\draw[->] (c) -- (b); % ciclo interno
+			
+			% Componente destra
+			\node[nodo] (e) at (3, 2) {e};
+			\node[nodo] (f) at (3, 0) {f};
+			\node[nodo] (g) at (4.5, 1) {g};
+			
+			\draw[->] (d) -- (e);
+			\draw[->] (e) -- (f);
+			\draw[->] (f) -- (d);
+			\draw[->] (e) -- (g);
+			\draw[->] (g) -- (f);
+			
+			% Regione evidenziata che racchiude il ciclo {d, e, f}
+			\draw[violet, thick, smooth cycle] plot coordinates {
+				(1.5, 1) (2.7, 2.5) (3.5, 2.2) (3.5, -0.2) (2.8, -0.6)
+			};
+		\end{tikzpicture}
+	\end{figure}
+	
+	\textbf{Passo 1:} Troviamo il ciclo $C_1 = \{d, e, f\}$ e lo sostituiamo con il super-vertice $v_1$. Il grafo contratto appare come segue:
+	
+	\begin{center}
+		\begin{tikzpicture}[very thick, >=stealth, scale=0.9]
+			\tikzset{nodo/.style={circle, draw, thin, minimum size=0.6cm, inner sep=0pt, font=\sffamily\small}}
+			
+			\node[nodo] (a) at (0, 1) {a};
+			\node[nodo] (b) at (1, 0) {b};
+			\node[nodo] (c) at (1, 2) {c};
+			\node[nodo] (v1) at (2.5, 1) {$v_1$};
+			\node[nodo] (g) at (4.5, 1) {g};
+			
+			\draw[->] (a) -- (c);
+			\draw[->] (a) -- (b);
+			\draw[->] (c) -- (v1);
+			\draw[->] (b) -- (v1);
+			\draw[->] (c) -- (b);
+			\draw[->] (v1) -- (g);
+			\draw[->] (g) -- (v1);
+			
+			\draw[violet, thick, rounded corners=12pt] (-0.4, -0.4) rectangle (1.4, 2.4);
+		\end{tikzpicture}
+	\end{center}
+	
+	\textbf{Passo 2:} Troviamo il secondo ciclo $C_2 = \{a, b, c\}$ e lo sostituiamo con il super-vertice $v_2$.
+	
+	\begin{center}
+		\begin{tikzpicture}[very thick, >=stealth, scale=0.9]
+			\tikzset{nodo/.style={circle, draw, thin, minimum size=0.6cm, inner sep=0pt, font=\sffamily\small}}
+			
+			\node[nodo] (v2) at (0, 1) {$v_2$};
+			\node[nodo] (v1) at (2, 1) {$v_1$};
+			\node[nodo] (g) at (4, 1) {g};
+			
+			\draw[->] (v2) -- (v1);
+			\draw[->] (v1) -- (g);
+			\draw[->] (g) -- (v1);
+		\end{tikzpicture}
+	\end{center}
+	
+	\textbf{Passo 3:} Siccome non abbiamo più cicli, iniziamo la fase di \textit{unpacking} (quella marcata con \#1 nel codice), espandendo i super-vertici precedentemente contratti per ritornare alla rappresentazione originale delle componenti fortemente connesse.
+	
 \end{document}

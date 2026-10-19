@@ -10,7 +10,7 @@
 	\chapter{La memorizzazione dei dati nel passato}
 	Si ritiene opportuno, come introduzione al corso, fornire vari esempi e una definizione abbastanza comune di "base di dati".
 	Interagiamo con basi di dati costantemente durante la nostra quotidianità: accedendo all'applicazione della nostra banca, utilizzando i social network, effettuando un acquisto su piattaforme di E-Commerce, ...\\
-	Questi sono solo pochi degli innumerevoli esempi di basi di dati con le quali ci troviamo a contatto ogni giorno. Possiamo dunque concludere che una definizione molto poco formale e spiccola di "base di dati" sia letteralmente \textit{un grande e organizzato contenitore di dati di alcun tipo}.
+	Questi sono solo pochi degli innumerevoli esempi di basi di dati con le quali ci troviamo a contatto ogni giorno. Possiamo dunque concludere che una definizione molto poco formale e spicciola di "base di dati" sia letteralmente \textit{un grande e organizzato contenitore di dati di alcun tipo}.
 	
 	\section{Sistema informativo e sistema informatico}
 	Nelle situazioni sopra elencate, ma anche nella vita di tutti i giorni, è strettamente necessario tenere traccia delle informazioni riguardanti persone o cose. Pensiamo ad esempio ad un'azienda: all'interno di questa sarà necessario tenere traccia di tutti i dettagli anagrafici dei dipendenti, ma anche dei contratti, degli stipendi, ecc...\\
@@ -102,6 +102,7 @@
 		\end{itemize}
 	\end{definizione}
 	
+	\newpage
 	\begin{tabella}{|c|c|c|}
 		Matricola & Cognome & E-Mail \\
 		2671072 & Rossi & rossi@sapienza.it \\ \hline
@@ -118,6 +119,7 @@
 	\end{description}
 	
 	\section{Architettura ANSI/SPARC}
+	\label{sec:ansi_sparc}
 	Nello studio dei sistemi di gestione di basi di dati, risulta particolarmente utile ed efficace distinguere tre differenti livelli di descrizione dei dati, noti comunemente come schemi. Tale suddivisione permette di garantire l'indipendenza dei dati e di gestire la complessità strutturale del sistema.
 	Vediamo più nel dettaglio ciascun livello componente questa architettura.
 	
@@ -160,6 +162,7 @@
 		\end{tikzpicture}
 	\end{center}
 	
+	\newpage
 	\section{Le transazioni}
 	Un buon DBMS deve inoltre gestire anche una serie di operazioni sensibili di inserimento, modifica e cancellazione di dati, in modo che queste vengano effettuate senza contrattempi o errori.
 	\begin{definizione}{Transazione}{}
@@ -941,7 +944,6 @@
 		\label{fig:tutoraggio_studente_docente}
 	\end{figure}
 	
-	\newpage
 	E' possibile delineare la cardinalità anche per gli attributi: quando questa non viene indicata è implicitamente (1, 1).
 	\begin{figure}[H]
 		\centering
@@ -1615,7 +1617,6 @@
 	
 	Generalmente, è consigliato rinominare gli attributi che costituiscono un vincolo di integrità referenziale, dando come nome un qualcosa di indicativo della tabella di provenienza (es: se l'attributo di partenza si chiama \texttt{Codice} e proviene dalla tabella \texttt{Impiegato}, potremmo chiamare la chiave esterna come \texttt{FK\_Codice\_Impiegato} oppure semplicemente \texttt{Impiegato}. In caso di chiavi composte da più attributi, possiamo rinominarle come \texttt{Impiegato1}, \texttt{Impiegato2}, ...). 
 	
-	\newpage
 	Particolare attenzione deve essere posta sulle associazioni molti a molti ricorsive, in quanto in quel caso è di vitale importanza il nome delle chiavi esterne.
 	\begin{figure}[htbp]
 		\centering
@@ -2031,7 +2032,6 @@
 		\item[Vincoli di integrità inter-relazionali:] sono \textbf{vincoli che si stabiliscono tra relazioni diverse}, "collegando" ad esempio attributi con lo stesso dominio e creando un legame in base al valore assunto dai due attributi. Un esempio è il vincolo di chiave esterna che abbiamo citato qualche sezione fa.
 	\end{description}
 	
-	\newpage
 	Facciamo alcuni esempi concreti di violazione di vincoli, oppure di casi in cui si potrebbero imporre dei vincoli.
 	\begin{tabella}{|c|c|c|c|c|}
 		CodiceImp & Cognome & Ruolo & Assunzione & Dip\\\hline
@@ -2056,6 +2056,568 @@
 	\end{enumerate}
 	Ovviamente esistono tanti altri tipi di vincoli, e altrettanti modi per definirli nello schema della base di dati, ma li vedremo più nel dettaglio durante la creazione effettiva delle relazioni.
 	
+	\chapter{Algebra relazionale}
+	L'algebra relazionale è un \textbf{linguaggio formale che si basa su modelli matematici utile per interrogare una base di dati relazionale}. Consiste in un insieme di operatori che agiscono su una singola relazione, detti appunto \textbf{unari}, e un insieme di attributi che agiscono su coppie di relazioni, per l'appunto \textbf{binari}. Il \textbf{risultato} di ognuna di queste operazioni è una \textbf{nuova relazione}.
+	
+	\begin{osservazione}{Algebra relazionale come linguaggio procedurale}{}
+		L'algebra relazionale può essere anche vista come \textbf{linguaggio procedurale}, ovvero un linguaggio per cui si \textbf{esprimono in sequenza le operazioni da eseguire, come operare sulle relazioni e cosa estrarre da esse}.\\
+		Questa è un'importante differenza con il linguaggio DQL con il quale effettueremo effettivamente le interrogazioni, che è invece un linguaggio \textbf{dichiarativo}, cioè dove noi non diciamo cosa fare al linguaggio ma solo cosa vogliamo ottenere (sarà poi il DBMS ad attuare le dovute operazioni per mostrarci il risultato richiesto).
+	\end{osservazione}
+	
+	Di seguito elenchiamo i vari operatori dell'algebra relazionale, discutendoli poi più nel dettaglio in sezioni separate.
+	
+	\section{Proiezione}
+	Si tratta di un \textbf{operatore unario} \textbf{che permette di selezionare da una relazione tutte le tuple limitando ciascuna ad un insieme di attributi specificato}.\\
+	Formalmente parlando, data un'istanza di relazione $r$ con un insieme di attributi $X$, se effettuiamo una proiezione su $r$ sull'insieme $\{A_1, A_2, \dots, A_k\} \subseteq X$ otteniamo una nuova relazione che contiene tutte le tuple $t \in r$ ognuna ristretta agli attributi $\{A_1, A_2, \dots, A_k\}$.\\
+	Corrisponde all'operatore \texttt{SELECT DISTINCT} del linguaggio DQL, che permette di specificare quali attributi della relazione vogliamo visionare come risultato della query.\\
+	L'operazione di proiezione si indica con la notazione
+	\[
+		\pi_{A_1, A_2, \dots, A_k}(r)
+	\]
+	
+	\begin{esempio}{Esempio di proiezione su una tabella "Clienti"}{}
+		\begin{tabella}{|c|c|c|}
+			Nome & C\# & Citta\\\hline
+			Rossi & C1 & Roma\\\hline
+			Rossi & C2 & Milano\\\hline
+			Bianchi & C3 & Roma\\\hline
+			Verdi & C4 & Roma\\
+		\end{tabella}
+		\vspace{1em}
+		Supponiamo di voler sapere tutti i nomi dei clienti:
+		\[
+			\pi_{\text{Nome}}(\text{Clienti})
+		\]
+		La relazione risultante sarà
+		\begin{tabellaSemplice}{|c|}
+			Rossi\\\hline
+			Bianchi\\\hline
+			Verdi\\
+		\end{tabellaSemplice}
+		
+		Ovviamente, dato che il risultato dell'operazione è a sua volta una relazione (di fatto un sottoinsieme), nella stessa colonna non potremo avere valori duplicati, ed ecco perché appare solo 1 volta "Rossi".
+	\end{esempio}
+	
+	\begin{osservazione}{Come ottenere tutte le tuple}{}
+		Come abbiamo visto, la proiezione è un'operazione insiemistica, e per tanto non mantiene duplicati. Se volessimo fare in modo che la relazione risultante dalla proiezione mostrasse tutte le tuple, anche quelle contenenti omonimi (ma questo discorso vale per qualsiasi istanza in cui si va ad usare un'operazione di proiezione) dovremmo includere anche la \textbf{chiave primaria} della relazione nell'insieme di attributi della proiezione.
+		\smallbreak
+		
+		Questo avviene in quanto ricordiamo essere la chiave primaria di una tupla ad identificarla univocamente all'interno dell'istanza di relazione. Ed è proprio il motivo per cui quando inseriamo come unico attributo della selezione il campo "Nome", essendo quello l'unico diventerà lui la chiave primaria della nuova relazione, e dunque non saranno ammesse occorrenze duplicate.
+	\end{osservazione}
+	
+	Possiamo dire che la proiezione compie un \textbf{taglio verticale} su una relazione, eliminando solo alcune colonne (e i relativi valori per ogni tupla) dalla relazione di partenza.
+	
+	\section{Selezione}
+	Si tratta di un \textbf{operatore unario} che permette di \textbf{selezionare dalla relazione di partenza solo le tuple che rispettano una determinata condizione} $C$.\\
+	Formalmente parlando, sia $r$ un istanza di relazione e $C$ una condizione proposizionale. L'operazione di selezione produce una nuova relazione in cui sono contenute tutte le tuple $t \in r$ per cui $C$ risulta vera.\\
+	Quest'operazione è il corrispettivo della clausola \texttt{WHERE} nel linguaggio DQL.
+	L'operazione di selezione si indica con la notazione
+	\[
+		\sigma_C(r)
+	\]
+	
+	\begin{esempio}{Esempio di selezione su una tabella "Clienti"}{}
+		\noindent
+		\begin{minipage}[c]{0.44\textwidth}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & C\# & Citt\`a & \dots\dots \\
+				\hline
+				Rossi   & C1 & Roma   & \dots\dots \\
+				Rossi   & C2 & Milano & \dots\dots \\
+				Rossi   & C3 & Roma   & \dots\dots \\
+				Bianchi & C4 & Roma   & \dots\dots \\
+				Verdi   & C5 & Roma   & \dots\dots \\
+				\hline
+			\end{tabular}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.08\textwidth}
+			\centering
+			\begin{tikzpicture}
+				\draw[->, >=stealth, very thick, rossoSapienza] (0,0) -- (0.8,0);
+			\end{tikzpicture}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.44\textwidth}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & C\# & Citt\`a & \dots\dots \\
+				\hline
+				Rossi   & C1 & Roma & \dots\dots \\
+				Rossi   & C3 & Roma & \dots\dots \\
+				Bianchi & C4 & Roma & \dots\dots \\
+				Verdi   & C5 & Roma & \dots\dots \\
+				\hline
+			\end{tabular}
+		\end{minipage}
+		
+		\vspace{1em}
+		La relazione di destra è la relazione risultante dall'operazione $\sigma_{\text{Citta = "Roma"}}(\text{Clienti})$.
+	\end{esempio}
+	
+	\section{Unione}
+	L'operatore di unione è un operatore binario che ci permette di costruire una nuova relazione che conterrà \textbf{tutte le tuple che appartengono ad entrambe le relazioni} (dunque tutte le tuple della prima e tutte le tuple della seconda).\\
+	La definizione formale dell'operatore è proprio quella matematiche che ci aspetteremmo: date due istanze di relazione $r_1, r_2$, l'unione tra queste due relazioni è l'insieme $\{t \,|\, t \in r_1 \vee t \in r_2\}$.
+	\smallbreak
+	
+	\begin{definizione}{Relazioni "union compatibili"}{}
+		L'operazione di unione non è applicabile su qualsiasi coppia di relazioni. Due relazioni si dicono \textbf{union compatibili} se:
+		\begin{itemize}
+			\item \textbf{Hanno lo stesso numero di attributi}.
+			
+			\item \textbf{Hanno gli stessi domini} (in ordine).
+		\end{itemize}
+	\end{definizione}
+	
+	L'operazione è ugualmente chiamata \texttt{UNION} anche nel linguaggio DQL, e si indica con la seguente notazione:
+	\[
+		r_1 \cup r_2
+	\]
+	\begin{figure}[htbp]
+		\centering
+		\usetikzlibrary{patterns}
+		\resizebox{0.40\linewidth}{!}{%
+			\begin{tikzpicture}
+				\fill[pattern=north east lines, pattern color=black] 
+				(0,0) circle (1.2) 
+				(1.4,0) circle (1.2);
+				
+				\draw[thick, rossoSapienza] (0,0) circle (1.2);
+				\draw[thick, rossoSapienza] (1.4,0) circle (1.2);
+				
+				\node[font=\Large\itshape, rossoSapienza] at (-1.8, 0.4) {$r_1$};
+				\node[font=\Large\itshape, rossoSapienza] at (3.2, 0.4) {$r_2$};
+			\end{tikzpicture}%
+		}
+		\caption{Rappresentazione grafica dell'unione tra $r_1$ e $r_2$.}
+		\label{fig:unione_relazioni}
+	\end{figure}
+	
+	Di seguito un esempio di come risulta essere l'unione tra due relazioni, rispettivamente \texttt{Docenti} e \texttt{Amministrativi}.
+	\begin{esempio}{Esempio di unione tra due relazioni}{}
+		\noindent
+		\begin{minipage}[t]{0.48\textwidth}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodDoc & Dipartimento \\
+				\hline
+				Rossi   & D1 & Matematica \\
+				Rossi   & D2 & Lettere    \\
+				Bianchi & D3 & Matematica \\
+				Verdi   & D4 & Lingue     \\
+				\hline
+			\end{tabular}
+		\end{minipage}\hfill
+		\begin{minipage}[t]{0.48\textwidth}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodAmm & Dipartimento \\
+				\hline
+				Esposito & A1 & Lingue     \\
+				Riccio   & A2 & Matematica \\
+				Pierro   & A3 & Lettere    \\
+				Verdi    & A4 & Lingue     \\
+				Bianchi  & A5 & Lingue     \\
+				\hline
+			\end{tabular}
+		\end{minipage}
+		
+		\vspace{1em}
+		L'unione tra queste due relazioni risulta essere la seguente relazione:
+		\begin{tabella}{|C|C|C|}
+			Nome & Cod & Dipartimento \\
+			\hline
+			Rossi    & D1 & Matematica \\
+			Rossi    & D2 & Lettere    \\
+			Bianchi  & D3 & Matematica \\
+			Verdi    & D4 & Lingue     \\
+			Esposito & A1 & Lingue     \\
+			Riccio   & A2 & Matematica \\
+			Pierro   & A3 & Lettere    \\
+			Verdi    & A4 & Lingue     \\
+			Bianchi  & A5 & Lingue     \\
+		\end{tabella}
+		
+	\end{esempio}
+	
+	\begin{osservazione}{Coerenza degli attributi nell'unione}{}
+		E' doveroso fare un'osservazione. Due relazioni definite rispettivamente come \texttt{Studenti(Nome, Eta)} e \texttt{Professore(Nome, NumeroTelefono)} sono di fatto union compatibili: il campo \texttt{Nome} è in entrambi i casi un attributo di dominio \texttt{String}, e gli attributi \texttt{Eta} e \texttt{NumeroTelefono} sono entrambi numeri interi. Ci rendiamo conto che però il significato dei due attributi sia diverso, nonostante condividano lo stesso dominio. Dunque la relazione risultante sarà ambigua o incoerente nel campo di dominio \texttt{Intero}.
+	\end{osservazione}
+	
+	\begin{osservazione}{Come rendere due relazioni Union compatibili}{}
+		
+		\begin{minipage}[t]{0.45\textwidth}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodDoc & Dipartimento \\
+				\hline
+				Rossi   & D1 & Matematica \\
+				Rossi   & D2 & Lettere    \\
+				Bianchi & D3 & Matematica \\
+				Verdi   & D4 & Lingue     \\
+				\hline
+			\end{tabular}
+		\end{minipage}\hfill
+		\begin{minipage}[t]{0.53\textwidth}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodAmm & Dipartimento & Stip \\
+				\hline
+				Esposito & A1 & Lingue     & 1250 \\
+				Riccio   & A2 & Matematica & 2000 \\
+				Pierro   & A3 & Lettere    & 1000 \\
+				\hline
+			\end{tabular}
+		\end{minipage}
+		
+		\vspace{1em}
+		Ora come ora, queste relazioni non risultano essere Union compatibili, in quanto la relazione di destra presenta un attributo in più. Se però prendessimo come relazione quella risultante da $\pi_{\text{Nome, CodAmm, Dipartimento}}(\text{Amministrativi})$ otterremmo una nuova relazione che sarà adesso Union compatibile con quella di sinistra.
+		\smallbreak
+		
+		Il succo della questione è: \textbf{possiamo rendere due relazioni Union compatibili considerando la relazione risultante dalla proiezione di una di queste}. Ovviamente supponendo che abbiano almeno un dominio comune, altrimenti ciò rimarrebbe impossibile.
+	\end{osservazione}
+	
+	\section{Differenza}
+	Si tratta di un operatore \textbf{binario} che si può applicare tra due relazioni che sono già "Union compatibili". Il risultato dell'operazione è una \textbf{relazione che contiene tutti gli elementi della prima relazione che non sono anche nella seconda}.\\
+	Definendo quest'operazione matematicamente, abbiamo che la differenza tra una relazione $r_1, r_2$ è l'insieme $\{t \, |\, t \in r_1 wedge t \notin r_2\}$.\\
+	Tale operazione si indica nel seguente modo
+	\[
+		r_1 - r_2
+	\]
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.40\linewidth}{!}{%
+			\begin{tikzpicture}
+				\begin{scope}
+					% Ritaglia solo l'area appartenente al cerchio r1
+					\clip (0,0) circle (1.2);
+					% Riempie con il tratteggio
+					\fill[pattern=north east lines, pattern color=black] (0,0) circle (1.2);
+					% Cancella la porzione che si sovrappone a r2 per ottenere la differenza (r1 - r2)
+					\fill[white] (1.4,0) circle (1.2);
+				\end{scope}
+				
+				% Bordi dei due insiemi
+				\draw[thick, rossoSapienza] (0,0) circle (1.2);
+				\draw[thick, rossoSapienza] (1.4,0) circle (1.2);
+				
+				% Etichette degli insiemi
+				\node[font=\Large\itshape, rossoSapienza] at (-1.8, 0.4) {$r_1$};
+				\node[font=\Large\itshape, rossoSapienza] at (3.2, 0.4) {$r_2$};
+			\end{tikzpicture}%
+		}
+		\caption{Differenza insiemistica tra le relazioni $r_1$ e $r_2$ ($r_1 - r_2$).}
+		\label{fig:differenza_relazioni}
+	\end{figure}
+	
+	\begin{esempio}{Esempio di differenza tra due relazioni}{}
+		Consideriamo le seguenti relazioni, \texttt{Studenti} e \texttt{Amministrativi}:\\
+		\begin{minipage}[t]{0.48\textwidth}
+			\vspace{0.1em}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodFiscale & Dipartimento \\
+				\hline
+				Rossi   & C1 & Matematica \\
+				Rossi   & C2 & Lettere    \\
+				Bianchi & C3 & Matematica \\
+				Verdi   & C4 & Lingue     \\
+				\hline
+			\end{tabular}
+		\end{minipage}\hfill
+		\begin{minipage}[t]{0.48\textwidth}
+			\vspace{0.1em}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodFiscale & Dipartimento \\
+				\hline
+				Esposito & C5 & Lettere    \\
+				Riccio   & C6 & Matematica \\
+				Pierro   & C7 & Lingue     \\
+				Bianchi  & C3 & Matematica \\
+				\hline
+			\end{tabular}
+		\end{minipage}
+		
+		\vspace{1em}
+		La differenza tra relazioni \textbf{non è un'operazione commutativa}. Dunque fare \texttt{Studenti - Amministrativi} è diverso dal fare \texttt{Amministrativi - Studenti}.\\
+		Di seguito vediamo entrambi i risultati:\\
+		\begin{minipage}[t]{0.48\textwidth}
+			\vspace{0.1em}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodFiscale & Dipartimento \\
+				\hline
+				Rossi & C1 & Matematica \\
+				Rossi & C2 & Lettere    \\
+				Verdi & C4 & Lingue     \\
+				\hline
+			\end{tabular}
+		\end{minipage}\hfill
+		\begin{minipage}[t]{0.48\textwidth}
+			\vspace{0.1em}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodFiscale & Dipartimento \\
+				\hline
+				Esposito & C5 & Lettere    \\
+				Riccio   & C6 & Matematica \\
+				Pierro   & C7 & Lingue     \\
+				\hline
+			\end{tabular}
+		\end{minipage}
+		
+		\vspace{1em}
+		A sinistra abbiamo la relazione \texttt{Studenti - Amministrativi}, che contiene al suo interno \textit{tutti gli studenti tranne quelli che sono anche amministrativi}.\\
+		A destra abbiamo la relazione \texttt{Amministrativi - Studenti} che contiene \textit{tutti gli amministrativi tranne quelli che sono anche studenti}.
+	\end{esempio}
+	
+	\section{Intersezione}
+	Per quanto si potrebbe pensare all'intersezione come un operatore primitivo, esso è in realtà un operatore derivato dalla seguente operazione insiemistica: $r_1 - (r_1 - r_2)$.\\
+	Il risultato dell'intersezione tra due relazioni è una nuova relazione che contiene \textbf{solo le tuple comuni ad entrambe le relazioni}. Formalmente la definiremmo come $\{t \, |\, t \in r_1 \wedge t \in r_2\}$.
+	L'operazione di intersezione tra due relazioni si denota nel seguente modo:
+	\[
+		r_1 \cap r_2
+	\]
+	\begin{figure}[htbp]
+		\centering
+		\resizebox{0.40\linewidth}{!}{%
+			\begin{tikzpicture}
+				\begin{scope}
+					% Ritaglia l'area di intersezione tra i due cerchi
+					\clip (0,0) circle (1.2);
+					\fill[pattern=north east lines, pattern color=black] (1.4,0) circle (1.2);
+				\end{scope}
+				
+				% Bordi dei due insiemi
+				\draw[thick, rossoSapienza] (0,0) circle (1.2);
+				\draw[thick, rossoSapienza] (1.4,0) circle (1.2);
+				
+				% Etichette degli insiemi
+				\node[font=\Large\itshape, rossoSapienza] at (-1.8, 0.4) {$r_1$};
+				\node[font=\Large\itshape, rossoSapienza] at (3.2, 0.4) {$r_2$};
+			\end{tikzpicture}%
+		}
+		\caption{Intersezione tra le relazioni $r_1$ e $r_2$ ($r_1 \cap r_2$).}
+		\label{fig:intersezione_relazioni}
+	\end{figure}
+	
+	\begin{esempio}{Esempio di intersezione tra due relazioni}{}
+		Consideriamo le precedenti relazioni \texttt{Studenti} e \texttt{Amministrativi}:\\
+		\begin{minipage}[t]{0.48\textwidth}
+			\vspace{0.1em}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodFiscale & Dipartimento \\
+				\hline
+				Rossi   & C1 & Matematica \\
+				Rossi   & C2 & Lettere    \\
+				Bianchi & C3 & Matematica \\
+				Verdi   & C4 & Lingue     \\
+				\hline
+			\end{tabular}
+		\end{minipage}\hfill
+		\begin{minipage}[t]{0.48\textwidth}
+			\vspace{0.1em}
+			\centering
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodFiscale & Dipartimento \\
+				\hline
+				Esposito & C5 & Lettere    \\
+				Riccio   & C6 & Matematica \\
+				Pierro   & C7 & Lingue     \\
+				Bianchi  & C3 & Matematica \\
+				\hline
+			\end{tabular}
+		\end{minipage}
+		
+		\vspace{1em}
+		L'intersezione tra relazioni è ovviamente un'operazione commutativa, in quanto prende i record che si trovano in entrambe le relazioni. Il risultato dunque dell'intersezione delle precedenti relazioni sarà dunque l'unico studente che è sia \texttt{Studente} che \texttt{Amministrativo}.
+		
+		\begin{center}
+			\renewcommand{\arraystretch}{1.3}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				\rowcolor{BrickRed!60!white}
+				Nome & CodFiscale & Dipartimento \\
+				\hline
+				Bianchi & C3 & Matematica \\
+				\hline
+			\end{tabular}
+		\end{center}
+	\end{esempio}
+	
+	\section{Prodotto cartesiano}
+	L'operazione di prodotto cartesiano tra due istanze di relazione funziona esattamente come il prodotto cartesiano tra due insiemi: si ottengono tutte le n-uple della prima relazione concatenate a quelle della seconda relazione. Abbiamo già parlato di prodotto cartesiano quando definivamo il concetto stesso di \textit{relazione}, dunque ci limiteremo solo a dire che il prodotto cartesiano tra una relazione $r_1$ e una relazione $r_2$ si indica nel seguente modo:
+	\[
+		r_1 \times r_2
+	\]
+	Vedendo un esempio più concreto, supponiamo di avere una tabella \texttt{Docenti} e una tabella \texttt{Corsi}.\\
+	\begin{minipage}[t]{0.48\textwidth}
+		\vspace{0.5em}
+		\centering
+		\renewcommand{\arraystretch}{1.3}
+		\begin{tabular}{|c|c|c|}
+			\hline
+			\rowcolor{BrickRed!60!white}
+			ID\_Docente & Cognome & CodCorso \\
+			\hline
+			D1 & De Marsico & C01\\\hline
+			D2 & Pirri & C03\\\hline
+		\end{tabular}
+	\end{minipage}\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\vspace{0.5em}
+		\centering
+		\renewcommand{\arraystretch}{1.3}
+		\begin{tabular}{|c|c|c|}
+			\hline
+			\rowcolor{BrickRed!60!white}
+			CodCorso & NomeCorso\\
+			\hline
+			C01 & Basi di dati\\\hline
+			C02 & Algoritmi \\\hline
+			C03 & Reti\\\hline
+		\end{tabular}
+	\end{minipage}
+	
+	\vspace{1em}
+	Il prodotto cartesiano tra queste due tabelle risulta essere il seguente:\\
+	\begin{tabella}{|c|c|c|c|c|}
+		ID\_Docente & Cognome & CodCorso & NomeCorso \\\hline
+		D1 & De Marsico & C01 & Basi di Dati \\\hline
+		D1 & De Marsico & C02 & Algoritmi \\\hline
+		D1 & De Marsico & C03 & Reti \\\hline
+		D2 & Pirri & C01 & Basi di Dati \\\hline
+		D2 & Pirri & C02 & Algoritmi \\\hline
+		D2 & Pirri & C03 & Reti \\\hline
+	\end{tabella}
+	Come vediamo, dal prodotto cartesiano di queste due tabella abbiamo ottenuto una combinazione di tutte le istanze di docente con tutte le possibili istanze di corso. Tuttavia, come vediamo, avendo attributi con lo stesso nome, come riusciamo a determinare quale attributo è associato a quale relazione? E come facciamo a capire quale corrispondenza risulta veritiera?
+	
+	\section{Ridenominazione}
+	A tal proposito, introduciamo l'operatore di \textbf{ridenominazione}, che è l'unico che agisce sullo schema della relazione. Il punto di questo operatore è proprio modificare il nome della relazione e degli attributi al suo interno, proprio per evitare casi del genere in cui vi è presente un attributo che nelle relazioni di partenza ha lo stesso nome.\\
+	L'operazione di ridenominazione ha la seguente sintassi:
+	\[
+		\text{NuovoNomeRelazione} = \rho_{\text{NuovoNome1, NuovoNome2, \dots <- Nome1, Nome2, \dots (R)}}
+	\]
+	dove "NuovoNome$(i)$" indica il nuovo nome che si vuole dare agli attributi nella nuova relazione.
+	\smallbreak
+	
+	Dunque per porre un rimedio alla situazione precedente, si potrebbe ad esempio cambiare il nome dell'attributo che si riferisce al corso nella tabella \texttt{Docenti}, ad esempio nel seguente modo: $\text{DocentiNuovo} = \rho_{\text{CodCorsoInsegnato <- CodCorso(R)}}$. Avendo ridenominato l'attributo \texttt{CodCorso} della tabella \texttt{Docenti} possiamo effettuare il prodotto cartesiano senza il rischio di perdita di informazioni.\\
+	Effettuando il prodotto cartesiano, il risultato sarà adesso:
+	\begin{tabella}{|c|c|c|c|c|}
+		ID\_Docente & Cognome & CodCorsoInsegnato & CodCorso & NomeCorso \\\hline
+		D1 & De Marsico & C01 & C01 & Basi di Dati \\\hline
+		D1 & De Marsico & C01 & C02 & Algoritmi \\\hline
+		D1 & De Marsico & C01 & C03 & Reti \\\hline
+		D2 & Pirri & C03 & C01 & Basi di Dati \\\hline
+		D2 & Pirri & C03 & C02 & Algoritmi \\\hline
+		D2 & Pirri & C03 & C03 & Reti \\\hline
+	\end{tabella}
+	Notiamo però adesso che c'è una discrepanza di valori: in alcune righe, il codice del corso insegnato dal docente non risulta essere lo stesso di quello corrispondente nella tupla. Basta ad esempio vedere la seconda e la terza tupla: per la tabella docenti, noi sappiamo che il docente di codice \texttt{D1} insegna il corso di codice \texttt{C01}; tuttavia nelle righe 2 e 3 il docente \texttt{D1} risulta avere una corrispondenza con i corsi di codice \texttt{C02} e \texttt{C03}.
+	\begin{corollario}{Correttezza di una query che coinvolge più tabelle}{}
+		Quando enunciato di seguito deve diventare un mantra per tutte le volte che si dovrà scrivere una query in cui vengono coinvolte più tabelle: se queste hanno un dominio comune che rappresenta la stessa informazione (come \texttt{CodCorso} nell'esempio antecedente) è \textit{strettamente necessario} \textbf{eguagliare quei due valori in modo da mantenere all'interno della tabella risultante solo i record che contengono la corrispondenza corretta}.
+	\end{corollario}
+	Dunque, nell'esempio precedente, se volessimo ottenere la tabella contenente solo le informazioni coerenti, l'operazione da fare dovrà essere una selezione delle righe in cui \texttt{CodCorsoInsegnato = CodCorso}.
+	\[
+		\sigma_{\text{CodCorsoInsegnato = CodCorso}}(\text{Docenti} \times \text{Corsi})
+	\]
+	Ottenendo dunque la seguente relazione:
+	\begin{tabella}{|c|c|c|c|c|}
+		ID\_Docente & Cognome & CodCorsoInsegnato & CodCorso & NomeCorso \\\hline
+		D1 & De Marsico & C01 & C01 & Basi di Dati \\\hline
+		D2 & Pirri & C03 & C03 & Reti \\\hline
+	\end{tabella}
+	Dove, come vediamo, abbiamo la duplicazione dell'attributo codice corso (seppur con nome diverso, il valore di quel campo è sostanzialmente duplicato). Seppur questo non sia un errore, potremmo decidere di omettere uno dei due attributi per garantire un risultato più carino. Si può ottenere con una semplice proiezione:
+	\[
+		\pi_{\text{ID\_Docente, Cognome, CodCorsoInsegnato, NomeCorso}}(\sigma_{\text{CodCorsoInsegnato = CodCorso}}(\text{Docenti} \times \text{Corsi}))
+	\]
+	Ottenendo così infine la tabella
+	\begin{tabella}{|c|c|c|c|}
+		ID\_Docente & Cognome & CodCorsoInsegnato & NomeCorso \\\hline
+		D1 & De Marsico & C01 & Basi di Dati \\\hline
+		D2 & Pirri & C03 & Reti \\\hline
+	\end{tabella}
+	
+	\section{Join naturale}
+	Fatte tutte queste considerazioni sul prodotto cartesiano, sulla necessità di ridenominare gli attributi e sulla stretta necessità di eguagliare due domini che rappresentano la stessa informazione per garantire la coerenza dei dati, introduciamo l'operatore dell'algebra relazionale che accorpa tutte queste operazioni: il \textbf{join naturale}.\\
+	L'operazione di join naturale funziona esattamente come tutto il processo visto precedentemente:
+	\begin{enumerate}
+		\item Fa il prodotto cartesiano tra due relazioni.
+		\item Di questo prodotto cartesiano, se specifichiamo due domini comuni che condividono la stessa informazione, verranno selezionate solo le tuple che hanno valore uguale in quei due attributi.
+	\end{enumerate}
+	Tale operazione è infatti definita come segue:
+	\[
+		r_1 \bowtie r_2 := \pi_{XY}(\sigma_C(r_1 \times r_2))
+	\]
+	\begin{osservazione}{Funzionamento del Join naturale}{}
+		L'operazione di join naturale funziona ad una sola condizione: che i \textbf{due attributi condividenti dominio e "scope" informativo abbiano lo stesso nome in entrambe le due relazioni}. Dunque nell'esempio precedente non sarebbe servito a nulla usare il join naturale, a meno che noi non avessimo usato la ridenominazione per rendere i nomi degli attributi uguali.
+		\smallbreak
+		
+		Nota che il risultato di un'operazione di Join naturale potrebbe tranquillamente essere una \textbf{relazione vuota}, in caso di \textbf{mancate corrispondenze tra i valori delle tuple}.
+	\end{osservazione}
+	
+	\begin{osservazione}{Importanza dell'ordine delle operazioni}{}
+		Si nota come l'ordine in cui vengono eseguite i vari operatori in un'interrogazione complessa è fondamentale, in quanto da ciò potrebbe cambiare l'efficienza dell'interrogazione. Ovviamente tutti i DBMS relazionali moderni implementano già le interrogazioni eseguendo le operazioni nell'ordine più efficiente. Tuttavia è importante notare come, ad esempio, effettuare una selezione delle tuple compatibili \textbf{prima} di fare il prodotto cartesiano sia un risparmio particolarmente sostanzioso, in quanto si riduce il numero di tuple che vanno combinate l'un l'altra.
+	\end{osservazione}
+	
+	\section{Theta Join}
+	L'operazione di Join naturale è un'operazione potentissima, che ci permette finalmente di costruire gli effettivi collegamenti mediante valori tra le relazioni. Tuttavia presenta alcune limitazioni:
+	\begin{itemize}
+		\item I due attributi che condividono il dominio devono avere lo stesso nome (risolvibile con la ridenominazione ma è un'operazione costosa).
+		
+		\item Gli attributi omonimi possono esclusivamente essere uguagliati e non confrontati in alcun altro modo.
+		
+		\item Elimina le colonne duplicate, dunque di quelle che consentono di creare la corrispondenza ne mantiene una sola.
+	\end{itemize}
+	A tal proposito, si è deciso di definire un operatore chiamato $\theta$-Join (Theta Join) che rifinisce tali aspetti:
+	\begin{itemize}
+		\item Non è necessario che gli attributi colleganti abbiano lo stesso nome.
+		
+		\item Il confronto tra questi attributi è definibile sotto qualsiasi operatore matematico di confronto.
+		
+		\item Mantiene tutte le colonne delle relazioni di partenza, dunque non applica alcuna proiezione sul risultato finale.
+	\end{itemize}
+	La definizione formale di tale operazione è la seguente:
+	\[
+		r_1 \bowtie_{A\theta B} r_2 := \sigma_{A \theta B}(r_1 \times r_2)
+	\]
+	
 	\chapter{Il linguaggio SQL}
 	Al fine di creare i database, le tabelle, stabilire i vincoli tra queste ed effettuare operazioni di interrogazione sui dati era necessario un apposito linguaggio con cui fare tutto questo.\\
 	Nasce così \textbf{SQL (Structured Query Language)}, il linguaggio diventato ormai di riferimento per tutti i DBMS moderni.
@@ -2073,7 +2635,10 @@
 		\end{itemize}
 	\end{definizione}
 	
-	\section{Domini di dati}
+	\section{Il linguaggio di definizione dati: DDL}
+	Nella seguente sezione andremo ad analizzare tutte le operazioni fondamentali che riguardano il linguaggio DDL per la creazione, modifica, cancellazione di tabelle, definizioni di dati e domini, creazione di vincoli intra e inter-relazionali.
+	
+	\subsection{Domini di dati}
 	Come abbiamo già discusso nella formalizzazione del modello relazionale per la memorizzazione dei dati, ad ogni attributo è associato un dominio di valori che possono essere assunti da esso.\\
 	Nel linguaggio SQL ci vengono forniti dei domini di dati predefiniti, ma ci è anche dato modo di crearne di nostri.\\
 	Di seguito una tabella in cui riassumiamo i domini principali forniti dal linguaggio SQL. Chiaramente ne esistono molto di più, ma questi sono gli essenziali nella progettazione di una base di dati standard.
@@ -2116,27 +2681,27 @@
 		
 		\item Stabiliamo un valore di default, cioè in caso il dato non sia ancora stato inserito nella tabella. In questo caso abbiamo impostato \texttt{DEFAULT NULL}.
 		
-		\item Definiamo l'effettiva \textit{restrizione} da applicare al tipo di dato di partenza. La parola chiave \texttt{CHECK} serve per indicare che il DBMS deve \textbf{controllare} che la seguente condizione racchiusa tra () sia rispettata.
+		\item Definiamo l'effettiva \textit{restrizione} da applicare al tipo di dato di partenza.
 		
 		\item \texttt{value} è un attributo specifico di ogni dominio di dato e rappresenta l'effettivo valore che si è provato ad inserire nella tabella. In questo caso vogliamo imporre che tutti i dati che apparterranno al dominio "AnnoAssunzione" debbano avere un valore $>=$ 1990.
 	\end{enumerate}
 	
-	\section{Definizione delle tabelle}
+	\subsection{Creazione di una tabella e constraint}
 	Di seguito vediamo come definire una tabella in SQL (mediante istruzioni del linguaggio DDL) e analizzeremo tutti i \textit{constraint} che possiamo imporre sullo schema di questa.\\
 	Innanzitutto, partiamo dalle basi: la creazione di una tabella avviene con l'istruzione \texttt{CREATE TABLE nomeTabella (...);}
 	Mostriamo di seguito un esempio di creazione di due tabelle e della creazione dei vincoli inter-relazionali e intra-relazionali.
 	\begin{lstlisting}[language=SQL]
 		CREATE TABLE Dipartimento(
-			Codice CHAR(15) PRIMARY KEY,
-			Nome CHAR(30) UNIQUE NOT NULL
+		Codice CHAR(15) PRIMARY KEY,
+		Nome CHAR(30) UNIQUE NOT NULL
 		);
 		
 		CREATE TABLE Impiegato(
-			Matricola CHAR(6) PRIMARY KEY,
-			CF CHAR(16) UNIQUE NOT NULL,
-			Cognome CHAR(30) NOT NULL,
-			Stipendio DOUBLE DEFAULT 0,
-			FK_Dipartimento CHAR(15) REFERENCES Dipartimento(Codice)
+		Matricola CHAR(6) PRIMARY KEY,
+		CF CHAR(16) UNIQUE NOT NULL,
+		Cognome CHAR(30) NOT NULL,
+		Stipendio DOUBLE DEFAULT 0,
+		FK_Dipartimento CHAR(15) REFERENCES Dipartimento(Codice)
 		);
 	\end{lstlisting}
 	Analizziamo adesso ogni istruzione, spieghiamola e forniamo eventuali varianti di sintassi.
@@ -2156,9 +2721,45 @@
 			\texttt{TABELLA\_DI\_PROVENIENZA(NOME\_ATTRIBUTO\_DI\_PROVENIENZA)}
 			
 			\item Utilizzando una sintassi simile a quella per le chiavi primarie composte, ovvero \texttt{FOREIGN KEY(NOME\_ATTRIBUTO) REFERENCES}\\
-			\texttt{TABELLA\_DI\_PROVENIENZA(NOME\_ATTRIBUTO\_DI\_PROVENIENZA)}. Di nuovo, questa modalità è \textbf{obbligatoria} quando la chiave esterna ereditata dalla relazione sia una chiave primaria composta nella relazione di partenza.
+			\texttt{TABELLA\_DI\_PROVENIENZA(NOME\_ATTRIBUTO\_DI\_PROVENIENZA)}.\\
+			Di nuovo, questa modalità è \textbf{obbligatoria} quando la chiave esterna ereditata dalla relazione sia una chiave primaria composta nella relazione di partenza.
 		\end{enumerate}
+		
 	\end{itemize}
+	
+	\subsection{Creazione dei vincoli inter-relazionali}
+	Il constraint \texttt{NOT NULL} indica che \textbf{non sono ammessi valori nulli per quell'attribito}.
+	
+	Il constraint \texttt{UNIQUE} indica che ogni \textbf{ogni tupla deve avere un valore diverso per quell'attributo}.
+	
+	Il constraint \texttt{CHECK} indica un \textbf{controllo sul valore di uno o più attributi}. Viene effettuato il controllo che il valore inserito all'interno della tupla rispetti la condizione indicata tra parentesi tonde, altrimenti l'inserimento non va a buon fine. Se un \texttt{CHECK} coinvolge due o più attributi, deve necessariamente essere definito come vincolo della tabella (dunque non su una riga di un attributo).\\
+	Un esempio classico può essere impedire che la data di fine risulti inferiore della data di inizio. Il constraint da impostare è dunque \texttt{CHECK (dataFine >= dataInizio)}.
+	
+	\begin{proposizione}{Definizione dei constraint}{}
+		Come abbiamo visto, possiamo definire i constraint in due modi:
+		\begin{itemize}
+			\item Inline, dunque sulla stessa riga su cui vogliamo far valere il constraint (metodo utilizzabile solo se il suddetto constraint coinvolge un solo attributo).
+			
+			\item In una riga autonoma della tabella, e qui possiamo coinvolgere quanti attributi vogliamo.
+		\end{itemize}
+		Se volessimo \textbf{dare un nome al constraint}, specifico per la tabella in cui ci troviamo, possiamo usare la parola chiave \texttt{CONSTRAINT} e specificando di seguito il nome che vogliamo dare al vincolo. Questo ci sarà utile nel futuro se mai volessimo eliminare o modificare un vincolo.\\
+		Ad esempio:
+		\begin{center}
+			\texttt{Matricola INT CONSTRAINT Chiave\_Primaria PRIMARY\_KEY} (inline)\\
+			\texttt{CONSTRAINT Chiave\_Primaria PRIMARY\_KEY(Matricola)} (non inline)
+		\end{center}
+		\smallbreak
+		
+		Se invece volessimo aggiungere un constraint dopo aver già creato la tabella:
+		\begin{center}
+			\texttt{ALTER TABLE Studente ADD CONSTRAINT CHK\_Anno\_Nascita CHECK(DataNascita > 1920)}
+		\end{center}
+		e per rimuoverlo:
+		\begin{center}
+			\texttt{ALTER TABLE Studente DROP CONSTRAINT CHK\_Anno\_Nascita}
+		\end{center}
+		Come vediamo, per rimuovere un constraint è \textit{essenziale che questo abbia un nome identificativo}.
+	\end{proposizione}
 	
 	\begin{osservazione}{Il constraint \textbf{PRIMARY KEY}}{}
 		Il constraint \texttt{PRIMARY KEY} include implicitamente anche i vincoli \texttt{UNIQUE} (cioè che ogni valore memorizzato per quell'attributo deve essere univoco e non devono apparire valori duplicati) e \texttt{NOT NULL} (ovvero che non sono ammessi valori nulli per quel campo), oltre all'indicizzazione da parte del DBMS (ma qui si scende al modello fisico).
@@ -2166,6 +2767,201 @@
 	
 	\begin{osservazione}{Importanza dei domini nelle \texttt{FOREIGN KEY}}{}
 		Come visto nell'esempio, affinché la creazione di un vincolo di integrità inter-relazionale tra due tabelle vada a buon fine è importante che l'attributo/gli attributi che si vogliono mettere in relazione abbiano \textbf{lo stesso dominio}. E ciò non vuol dire semplicemente che siano entrambi due \texttt{CHAR}, ma vuol dire ad esempio che se è stata configurata una dimensione per la stringa dei caratteri, questa debba essere rispettata (es: se nella tabella di partenza avevo \texttt{CHAR(16)}, anche in quella di arrivo deve essere \texttt{CHAR(16)}).
+		\smallbreak
+		
+		Per notazione, la tabella da cui \textit{proviene} la chiave esterna (dunque la tabella in cui gli attributi sono chiave primaria) è detta \textbf{master}. La tabella in cui vengono importati tali valori viene invece detta \textbf{slave}.
 	\end{osservazione}
+	
+	Nella creazione di una tabella, si possono anche definire i comportamenti da attuare quando un certo valore viene cancellato o aggiornato. Questo è particolarmente importante quando si lavora con chiavi esterne, in quanto è importante definire come si devono comportare tutte le tabelle che implementano la chiave esterna quando la chiave interna di provenienza viene eliminata oppure gli viene cambiato valore.\\
+	\begin{esempio}{Opzioni di aggiornamento chiave esterna}{}
+		Supponiamo di avere la definizione delle tabelle viste nell'esempio precedente:
+		\begin{lstlisting}[language=SQL]
+			CREATE TABLE Dipartimento(
+			Codice CHAR(15) PRIMARY KEY,
+			Nome CHAR(30) UNIQUE NOT NULL
+			);
+			
+			CREATE TABLE Impiegato(
+			Matricola CHAR(6) PRIMARY KEY,
+			CF CHAR(16) UNIQUE NOT NULL,
+			Cognome CHAR(30) NOT NULL,
+			Stipendio DOUBLE DEFAULT 0,
+			FK_Dipartimento CHAR(15) REFERENCES Dipartimento(Codice)
+			);
+		\end{lstlisting}
+		Se ad esempio il codice del dipartimento cambiasse, oppure un dipartimento con un certo codice venisse eliminato, dovremmo indirizzare il DBMS su come comportarsi.
+	\end{esempio}
+	
+	Ci sono due modalità principali:
+	\begin{itemize}
+		\item \texttt{ON DELETE}, per definire il comportamento da attuare quando la \textbf{chiave primaria di riferimento viene cancellata}.
+		
+		\item \texttt{ON UPDATE}, per definire il comportamento da attuare quando la \textbf{chiave primaria di riferimento viene aggiornata}.
+	\end{itemize}
+	Per ciascuna di queste modalità abbiamo due opzioni:
+	\begin{enumerate}
+		\item \texttt{CASCADE}, significa che \textbf{propaghiamo quel comportamento} (cancellazione oppure aggiornamento) \textbf{su tutti i record che contenevano quel valore}. Usare \texttt{ON DELETE CASCADE} è molto pericoloso, in quanto \textbf{cancella interamente i record che avevano come valore della chiave esterna il valore della chiave primaria appena cancellata}.
+		
+		\item \texttt{SET NULL}, significa che \textbf{ogni campo che conteneva il valore che abbiamo cancellato/modificato viene impostato a NULL}.
+	\end{enumerate}
+	
+	Il linguaggio SQL ci mette anche a disposizione gli strumenti per creare degli \textbf{indici}. Il concetto di indice verrà più approfonditamente trattato in seguito, ma per ora basti sapere che la maggior parte dei DBMS utilizza l'\textbf{indicizazzione dei campi per poterli accedere più velocemente durante le operazioni di interrogazione} e per identificare univocamente quell'attributo nella base di dati. Come ci si può immaginare, quando creiamo una \textbf{chiave primaria} viene \textbf{automaticamente definito un indice su quel campo}: ecco perché è importante scegliere come PK un insieme di attributi anche essenziali nella maggior parte delle operazioni di interrogazione.
+	\smallbreak
+	
+	La definizione di un indice permette di:
+	\begin{enumerate}
+		\item \textbf{Accedere in modo quasi istantaneo ai record contenenti l'attributo} che abbiamo indicizzato. Senza quest'operazione, il database dovrebbe "manualmente" scorrere milioni di righe per trovare quella corretta (operazione \texttt{WHERE} nelle interrogazioni).
+		
+		\item \textbf{Migliorare le prestazioni quando si coinvolgono più tabelle} (operazione \texttt{JOIN} nelle interrogazioni).
+		
+		\item \textbf{Rendere più rapide operazioni di ordinamento e raggruppamento delle tuple} secondo una specifica condizione (operazioni \texttt{ORDER BY} e \texttt{GROUP BY} delle interrogazioni). 
+	\end{enumerate}
+	Possiamo definire un indice personalizzato semplicemente con:
+	\[
+	\text{\texttt{CREATE INDEX nome\_indice ON tabella(attributo1, attributo2, ...)}}
+	\]
+	Tuttavia non bisogna abusare degli indici in quanto \textbf{rallentano le operazioni di modifica della base di dati} e \textbf{consumano spazio aggiuntivo sul disco}.
+	
+	\subsection{Modifica degli schemi}
+	Il linguaggio DDL serve anche a modificare le tabelle per aggiungere/rimuovere attributi e vincoli.
+	
+	\begin{itemize}
+		
+		\item \textbf{Aggiungere una colonna ad una tabella}: \texttt{ALTER TABLE tabella ADD COLUMN colonna TIPO CONSTRAINT}. Se la tabella contiene già dei dati, questa nuova colonna viene popolata con valori nulli.
+		
+		\item \textbf{Rimuovere una colonna da una tabella}: \texttt{ALTER TABLE tabella DROP COLUMN colonna}.
+		
+		\item \textbf{Modificare il tipo di una colonna}: \texttt{ALTER TABLE tabella MODIFY colonna TIPO}.
+		
+		\item \textbf{Rinominare una colonna}: \texttt{ALTER TABLE tabella RENAME COLUMN vecchio\_nome\_colonna TO nuovo\_nome}
+		
+		\item \textbf{Rinominare una tabella}: \texttt{ALTER TABLE tabella RENAME TO nuovo\_nome\_tabella}
+		
+		\item \textbf{Cancellare una tabella}: \texttt{DROP TABLE tabella}. Cancella lo schema e tutti i dati al suo interno.
+		
+	\end{itemize}
+	
+	\subsection{Creazione delle viste}
+	In riferimento al modello ANSI/SPARC visto nella Sezione \ref{sec:ansi_sparc}, ricordiamo di come, in base ai propri permessi nella base di dati, dovrebbe essere possibile accedere solo ad una porzione dei dati memorizzati.\\
+	Questa tecnica si ottiene mediante la creazione delle cosiddette \textbf{viste}, ossia delle \textbf{tabelle virtuali create a partire da una query} formulata usando il linguaggio QL.\\
+	La sintassi di base per la creazione di una vista è:
+	\begin{center}
+		\texttt{CREATE VIEW nome\_vista AS}\\
+		\texttt{<descrizione di una query>}
+	\end{center}
+	Mediante una vista, potremmo fare in modo che gli utenti accedano solo ai dati della vista, dunque già di per sé una porzione filtrata dei dati risultato di una speciale interrogazione.
+	
+	\section{Il linguaggio di interrogazione dei dati: DQL}
+	Lo studio degli operatori dell'algebra relazionale è fondamentale per capire la logica che avviene dietro alle interrogazioni di una base di dati che segue il modello relazionale. Avendo definito il linguaggio formale e matematico da cui prendere le fondamenta, possiamo spostarci sull'effettivo \textbf{linguaggio che useremo per ottenere le informazioni sulla nostra base di dati}: il \textbf{Data Query Language (DQL)}.\\
+	\begin{osservazione}{Natura del linguaggio DQL}{}
+		Come abbiamo visto, l'algebra relazionale è un linguaggio \textit{procedurale}: occorre specificare l'esatta sequenza delle operazioni da effettuare per ottenere l'informazione richiesta.\\
+		Il linguaggio DQL è invece un linguaggio \textbf{dichiarativo}: ci basta dire \textit{cosa} trovare, \textit{dove} trovarlo e \textit{quali controlli effettuare sui dati}.
+	\end{osservazione}
+	
+	\subsection{I comandi essenziali}
+	Sono 3 i comandi essenziali per la scrittura di una query nel linguaggio DQL.
+	\begin{description}
+		\item [La clausola \texttt{SELECT}:] la primissima e più basilare operazione che può essere fatta con il linguaggio DQL è \textbf{indicare quali dati vogliamo visualizzare come risultato della nostra interrogazione}. L'operazione di \texttt{SELECT} è infatti il diretto corrispettivo della \textbf{proiezione} nell'algebra relazionale.
+		
+		\item[La clausola \texttt{FROM}:] al fine di recuperare i dati da una o più tabelle, dobbiamo però comunicare al linguaggio \textit{da quali tabelle vogliamo prendere questi dati}. Ed è proprio qui che entra in gioco la clausola \texttt{FROM}, in seguito alla quale dovremo indicare i nomi delle tabelle da esaminare.
+		
+		\item[La clausola \texttt{WHERE}:] si tratta di una clausola opzionale, che permette di filtrare le tuple esaminate mediante una condizione. Come si può immaginare dalla descrizione appena fornita, quest'operatore è il corrispettivo della \textbf{selecione} nell'algebra relazionale.
+	\end{description}
+	
+	\begin{lstlisting}[language=SQL, caption={Sintassi di base di una query nel linguaggio DQL}]
+		SELECT attributo1, attributo2, ...
+		FROM tabella1, tabella2, ...
+		[ WHERE condizione ]
+	\end{lstlisting}
+	
+	Forniamo di seguito la tabella \texttt{Persone} che prenderemo come riferimento per vari esempi di interrogazioni nel corso di questa sezione.
+	\begin{tabella}{|c|c|c|}
+		Nome & Eta & Reddito \\
+		\hline
+		Andrea  & 27 & 21 \\
+		Aldo    & 25 & 15 \\
+		Maria   & 55 & 42 \\
+		Anna    & 50 & 35 \\
+		Filippo & 26 & 30 \\
+		Luigi   & 50 & 40 \\
+		Franco  & 60 & 20 \\
+		Olga    & 30 & 41 \\
+		Sergio  & 85 & 35 \\
+		Luisa   & 75 & 87 \\
+	\end{tabella}
+	
+	\begin{esempio}{Primo esempio di query}{}
+		Data la precedente tabella, supponiamo di voler estrarre da questa "nome e reddito di tutte le persone".\\
+		Seguendo la logica dichiarativa del linguaggio DQL, prima di impostare la sintassi dobbiamo porci le seguenti domande:
+		\begin{itemize}
+			\item \textbf{Quali dati} voglio mandare a schermo? Nel nostro caso sono il \textit{nome} e il \textit{reddito}.
+			
+			\item \textbf{Da quali tabelle} prendiamo questi dati? Nel nostro caso, esclusivamente dalla tabella \textit{persone}.
+			
+			\item \textbf{Quale condizione devono rispettare le tuple} in cui sono contenuti certi dati? Nel nostro caso, vogliamo sapere il nome e reddito di \textit{tutte} le persone, dunque non poniamo condizioni.
+		\end{itemize}
+		\smallbreak
+		
+		Alla luce di queste considerazioni, l'effettiva query da scrivere sarà
+		\begin{lstlisting}[language=SQL]
+			SELECT Nome, Reddito
+			FROM Persone
+		\end{lstlisting}
+		Il risultato di questa interrogazione sarà a sua volta una tabella (come nell'algebra relazionale) e nello specifico sarà la tabella \texttt{Persone} senza però i valori dell'attributo \textit{Eta}. 
+	\end{esempio}
+	
+	\begin{esempio}{Esempio di query con condizione}{}
+		Se invece volessimo ottenere i dati solo ed unicamente delle persone di età inferiore ai 30 anni, dovremo stavolta applicare una condizione secondo cui le tuple verranno filtrate. Supponendo di voler visualizzare nome, reddito ed età di queste persone, la query da scrivere sarà la seguente.
+		\begin{lstlisting}[language=SQL]
+			SELECT Nome, Eta, Reddito
+			FROM Persone
+			Where Eta < 30
+		\end{lstlisting}
+		Come funziona questo meccanismo di filtraggio? Banalmente, la condizione viene valutata tupla per tupla: si prendono prima tutte le tabelle coinvolte, poi tupla per tupla si valuta la condizione scritta nella \texttt{WHERE} e si decide se scartare o meno la tupla dal risultato finale.
+		
+		\begin{tabella}{|c|c|c|c|}
+			Nome & Eta & Reddito & (Filtrata?) \\\hline
+			Andrea  & 27 & 21 & eta < 30 ? s\`i \\\hline
+			Aldo    & 25 & 15 & eta < 30 ? s\`i \\\hline
+			Maria   & 55 & 42 & eta < 30 ? no \\\hline
+			Anna    & 50 & 35 & eta < 30 ? no \\\hline
+			Filippo & 26 & 30 & eta < 30 ? s\`i \\\hline
+			Luigi   & 50 & 40 & eta < 30 ? no \\\hline
+			Franco  & 60 & 20 & eta < 30 ? no \\\hline
+			Olga    & 30 & 41 & eta < 30 ? no \\\hline
+			Sergio  & 85 & 35 & eta < 30 ? no \\\hline
+			Luisa   & 75 & 87 & eta < 30 ? no \\\hline
+		\end{tabella}
+		Nella tabella risultante (che non verrà proposta per brevità) figureranno solo le tuple che hanno "superato" il filtraggio.
+	\end{esempio}
+	
+	\begin{osservazione}{Abbreviazioni del DQL}{}
+		E' doveroso citare anche alcune abbreviazioni e scorciatoie visive che possono essere utilizzate durante la stesura di una query.
+		\begin{description}
+			\item[Rinominare una tabella:] è una tecnica che si usa quando si hanno nomi di tabelle molto lunghi e ci si vuole riferire a loro più brevemente. Ovviamente, \textbf{questa è un'operazione solo logica e non va a cambiare fisicamente il nome della tabella} (non è una \texttt{ALTER TABLE} insomma). Per ottenere questa ridenominazione è sufficiente scrivere \texttt{FROM nomeOriginale AS ridenominazioneLogica}. Così facendo, nel corso della query ci si dovrà riferire alla tabella col nome logico e non con quello originale.
+			
+			\item[Rinominare un attributo:] è una tecnica che si usa generalmente quando si hanno nomi di attributi poco descrittivi dell'attributo stesso. Ovviamente, \textbf{questa è un'operazione solo logica e non va a cambiare fisicamente il nome della tabella} (non è una \texttt{ALTER TABLE} insomma). Per ottenere questa ridenominazione è sufficiente scrivere \texttt{SELECT Nome AS NomePersona}. Così facendo, nel corso della query ci si dovrà riferire all'attributo col nome logico e non con quello originale.
+			
+			\item[Riferirsi a specifici attributi:] questa tecnica è utile nel caso si abbiano due tabelle con lo stesso nome di uno o più attributi, e dunque scrivere semplicemente \texttt{Nome}, ad esempio, risulterebbe in un conflitto di interessi. La soluzione in questo caso è di anteporre al nome dell'attributo quello della tabella di provenienza, utilizzando la "dot-notation" vista anche nelle classi del linguaggio Java. Prendendo in esempio la tabella precedente, se volessimo fare riferimento al nome potremmo scrivere \texttt{persona.Nome}.
+		\end{description}
+	\end{osservazione}
+	
+	\subsubsection*{Espressioni matematiche nelle query}
+	Possiamo anche effettuare operazioni matematiche sui dati con i classici operatori \texttt{+, -, *, /, \%} e l'aggiunta di un operatore \texttt{POW(x, y)} che ci permette di elevare alla potenza di \texttt{y} il numero \texttt{x}. Le regole seguite dagli operatori, come ci si può immaginare, sono quelle dell'algebra di base che conosciamo dalle elementari.
+	\begin{lstlisting}[language=SQL, caption={Esempio di query con operazioni matematiche nella \texttt{SELECT}}]
+		SELECT Reddito/2 AS RedditoSemestrale
+		FROM Persone
+		WHERE Nome = "Luigi";
+	\end{lstlisting}
+	Chiaramente tali operatori non sono limitati alla clausola \texttt{SELECT}, bensì possono essere utilizzati anche per controlli nella clausola \texttt{WHERE}.
+	
+	\subsubsection*{Il comando LIKE}
+	Abbiamo poi ad esempio anche l'operatore \texttt{LIKE} che ci permette di controllare se una stringa di caratteri rispetta una certa sintassi: se ad esempio scrivessimo \texttt{WHERE Nome LIKE "A\_d\%"} staremo chiedendo tutte le tuple in cui il nome ha 'A' come prima lettera, una qualsiasi lettera come seconda, 'd' come terza lettera e poi una qualsiasi sequenza di lettere di qualsiasi lunghezza (rappresentata dal \%).
+	
+	\subsubsection*{Controllo dei valori NULLI}
+	Per controllare che un valore sia o meno \texttt{NULL} non si usano gli operatori \texttt{=} o \texttt{<>/!=} (diverso), bensì degli speciali comandi \texttt{IS NULL} e \texttt{IS NOT NULL}.
+	
+	\subsubsection*{L'operatore \texttt{DISTINCT}}
+	Se volessimo replicare esattamente il comportamento dell'operatore di proiezione nell'algebra relazionale, dovremmo usare l'operatore \texttt{DISTINCT}, che ci permette di filtrare i valori \textbf{univoci} per una certa colonna. Se ad esempio scriviamo \texttt{SELECT DISTINCT(Nome)}, nella tabella risultante non avremo mai due persone con lo stesso nome.
 	
 \end{document}

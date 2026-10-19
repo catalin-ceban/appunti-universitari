@@ -50,7 +50,7 @@
 \RequirePackage{float}
 \RequirePackage[export]{adjustbox}
 \RequirePackage{tikz}
-\usetikzlibrary{positioning}
+\usetikzlibrary{positioning, patterns}
 \RequirePackage{forest}
 \RequirePackage{caption}
 \RequirePackage{subcaption}
@@ -309,6 +309,27 @@
 	\begin{tabularx}{\textwidth}{#2}
 		\hline
 		\rowcolor{BrickRed!60!white}
+		\BODY
+		\hline
+	\end{tabularx}%
+	\if\relax\detokenize{#1}\relax
+	% Nessuna caption fornita
+	\else
+	\vspace{0.5em}%
+	\captionof{table}{#1}%
+	\fi
+	\par
+	\endgroup
+	\vspace{0.5em}%
+}
+
+\NewEnviron{tabellaSemplice}[2][]{%
+	\par\vspace{0.5em}%
+	\begingroup
+	\centering
+	\renewcommand{\arraystretch}{1.5}%
+	\begin{tabularx}{\textwidth}{#2}
+		\hline
 		\BODY
 		\hline
 	\end{tabularx}%
