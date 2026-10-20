@@ -1,0 +1,33 @@
+\documentclass[12pt]{report}
+
+\usepackage{../../nuovo_stile}
+\lstset{style=stile-listings}
+
+\begin{document}
+	
+	\generaFrontespizio{Architettura degli Elaboratori 1}{2026}{Salvatore Pontarelli}{m}
+	
+	\chapter{Il sistema di numerazione binario}
+	Al fine di riuscire a progettare calcolatori o componenti per questi, dobbiamo prima capire \textit{come} ragiona un elaboratore.
+	Se noi esseri umani siamo abituati a ragionare formulando dei nostri pensieri, i calcolatori non sono così: si basano su un set algoritmico di istruzioni da eseguire, a ripetizione. E per loro, l'unico modo di interpretare queste istruzioni è mediante segnali elettrici.\\
+	Se si fosse dovuta codificare un'istruzione per ogni singolo valore di corrente, l'architettura di un calcolatore sarebbe stata un qualcosa di incomprensibile ad un occhio inesperto. E' qui che entra in gioco qualcosa di molto importante: l'\textbf{astrazione}, ovverosia la \textit{capacità di rendere facile (o almeno leggibile, comprensibile) qualcosa che a primo impatto risulta, di fatto, incomprensibile}. E' per questo che gli studiosi in materia hanno deciso di far ragionare i calcolatori suddividendo in due stati diversi la corrente percepita: corrente alta e corrente bassa.\\
+	Ciò si traduce matematicamente con l'uso di un sistema di numerazione composto da sole due cifre, e detto per l'appunto \textbf{binario}. Queste due cifre sono ovviamente 0, che indica i valori vuoti, correnti basse, ecc.., e 1, che rappresenta l'esatto opposto.
+	
+	\section{Operazioni con il sistema binario}
+	Dato che noi umani siamo abituati a maneggiare numeri scritti nel sistema decimale, dunque con cifre scritte da 0 a 9, dobbiamo imparare a "spostarci" nel sistema binario.
+	
+	\subsection{Conversione da decimale a binario}
+	Per convertire un qualsiasi numero in base 10 ad uno in base 2, l'algoritmo standard proposto è il seguente:
+	\begin{enumerate}
+		\item Si prende il numero decimale e si divide per 2. Il resto di tale operazione viene scritto a lato, mentre il quoziente viene preso e messo di nuovo in colonna.
+		
+		\item Si continua l'operazione di divisione e scrittura del resto finché il numero raggiunto non è 1, e dunque scriveremo come risultato 0 con resto 1.
+		
+		\item Allora, si prendono i resti di tali divisioni consecutive e si leggono dal "basso verso l'alto", dunque dall'ultimo resto scritto al primo: la sequenza di cifre risultante sarà il nostro corrispondente numero binario.
+	\end{enumerate}
+	
+	\begin{esempio}{Conversione di un numero da decimale a binario}{}
+		
+	\end{esempio}
+	
+\end{document}

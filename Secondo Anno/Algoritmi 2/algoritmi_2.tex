@@ -119,7 +119,7 @@
 	Essendo questo un problema di piccole dimensioni, possiamo ottenere la seguente struttura:
 	\begin{figure}[htbp]
 		\centering
-		\includegraphics[width=0.5\textwidth]{konigsberg_graph.png}
+		\includegraphics[width=0.4\textwidth]{konigsberg_graph.png}
 		\caption{Rappresentazione a grafo del problema dei ponti.}
 	\end{figure}
 	
@@ -347,34 +347,12 @@
 	\end{figure}
 	
 	\begin{corollario}{}{}
-		Esiste una passeggiata da $x$ a $y$ $\iff$ esiste un cammino da $x$ a $y$.
+		Esiste una passeggiata da $x$ a $y$ $\iff$ esiste un cammino da $x$ a $y$.\\
+		La dimostrazione è reperibile \hyperref[dim:cammino_sse_passeggiata]{qui}.
 	\end{corollario}
 	
-	\begin{dimostrazione}{}{}
-		Chiaramente, se esiste un cammino allora sicuramente esiste anche una passeggiata, dato che ogni cammino è un particolare tipo di passeggiata. Abbiamo così dimostrato la prima implicazione ($\Rightarrow$).\\
-		\smallbreak
-		Viceversa, supponiamo di avere una passeggiata $W = (v_0, v_1, \dots, v_K)$. Abbiamo due possibilità:
-		\begin{enumerate}
-			\item Se tutti i vertici sono distinti, allora la passeggiata è già un cammino.
-			\item Se invece abbiamo almeno un indice ripetuto, cioè esistono $i, j$ tali che $v_i = v_j$ con $i < j$.
-		\end{enumerate}
-		Questo significa che all'interno della passeggiata è presente un sottociclo:
-		\[
-		W_1 = (v_i, v_{i+1}, \dots, v_{j-1}, v_j)
-		\]
-		ma sapendo che $v_i = v_j$, la struttura si chiude. Possiamo eliminare $W_1$ dalla passeggiata iniziale mantenendo però il nodo in cui parte la diramazione (in questo caso $v_i$). La passeggiata iniziale può essere dunque riscritta come:
-		\[
-		W = (v_1, \dots, v_i, \underbrace{v_{i+1}, \dots, v_{j-1}, v_j}_{W_1}, v_{j+1}, \dots, v_K)
-		\]
-		Eliminando $W_1$ otteniamo un cammino più corto, e reiterando il procedimento rimuoviamo tutti i cicli ottenendo infine un cammino semplice.
-	\end{dimostrazione}
-	
-	\begin{definizione}{Ciclo}{}
-		Un \textbf{ciclo} è un grafo connesso in cui \textbf{ogni vertice ha grado 2}.
-	\end{definizione}
-	
-	\begin{figure}[htbp]
-		\noindent\begin{minipage}[c]{0.50\textwidth}
+	\begin{figure}[H]
+		\begin{minipage}[c]{0.50\textwidth}
 			\centering
 			\begin{tikzpicture}[thick, baseline=(current bounding box.center)]
 				% Stile dei nodi
@@ -562,7 +540,7 @@
 		\end{itemize}
 	\end{itemize}
 	
-	\section{Visite di un grafo}
+	\section{DFS - Depth-First-Search}
 	Prima di discutere i modi in cui si possono effettuare le visite su un grafo, diamo alcune definizioni importanti.
 	
 	\begin{definizione}{Nodo raggiungibile}{}
@@ -577,18 +555,7 @@
 	
 	Il metodo più sicuro consiste nel \textbf{visitare}, a partire dal nodo $x$, uno ad uno tutti i nodi del grafo. Ovviamente, se durante tale visita si incontra il nodo $y$, la risposta alla domanda sarà affermativa.
 	
-	Ciò si può fare principalmente in due modi:
-	
-	\begin{description}
-		\item [DFS (\textit{Depth-First-Search}, Visita in profondità):] 
-		Funziona come l'esplorazione di un labirinto: si sceglie un percorso e si avanza finché non si trova un vicolo cieco. A quel punto si torna indietro fino al primo incrocio in cui si sono lasciate strade inesplorate e si prova un'altra via.
-		
-		\item [BFS (\textit{Breadth-First-Search}, Visita in ampiezza):] 
-		Preso un nodo iniziale, si visitano prima tutti i suoi vicini diretti, poi i vicini dei vicini, e così via.
-	\end{description}
-	
-	\subsection{DFS - Depth-First-Search}
-	Vediamo per prima la visita DFS.
+	La \textbf{visita in profondità}, o \textbf{Depth-First-Search (DFS)}, funziona come l'esplorazione di un labirinto: si sceglie un percorso e si avanza finché non si trova un vicolo cieco. A quel punto si torna indietro fino al primo incrocio in cui si sono lasciate strade inesplorate e si prova un'altra via.
 	
 	In base alla brevissima e introduttiva descrizione dell'algoritmo fornita poco fa, possiamo delinearne un'idea algoritmica di base:
 	\begin{enumerate}
@@ -647,7 +614,7 @@
 	
 	Combinando queste due osservazioni, otteniamo che il costo di questa versione è $O(n^2)$, che risulta non essere particolarmente ottimale.
 	
-	\smallbreak
+	\newpage
 	Proponiamo di seguito una versione ottimizzata dell'algoritmo.	
 	\begin{lstlisting}[style=stile-listings, language=Python]
 		def DFS_ottimizzato(G, x):
@@ -702,21 +669,7 @@
 					dfs_ric(G, v, vis)
 	\end{lstlisting}
 	
-	La visita costa sempre $O(n+m)$. L'unica limitazione è lo stack delle funzioni, che per grafi molto pieni potrebbe andare in \textit{recursion depth}.
-	
-	\begin{dimostrazione}{Correttezza della DFS ricorsiva}{}
-		Dimostriamo ora che questo algoritmo funziona.
-		
-		Appuntiamo che se un nodo $y$ è raggiungibile a partire da $x$, allora esiste un cammino che collega $x \to y$ e dunque $\text{vis}[y] = 1$.
-		Se $y$ è raggiungibile da $x \implies \exists W = (v_0, v_1, \dots, v_k)$ cammino che collega $x$ ($v_0$) e $y$ ($v_k$).
-		
-		Per assurdo, assumiamo che $\text{vis}[y] = 0$.
-		Siccome $\text{vis}[x] = 1 \implies \exists$ un indice $i$ con $\text{vis}[v_i] = 1$ e $\text{vis}[v_{i+1}] = 0$.
-		Se $\text{vis}[v_i] = 1$ allora $v_i$ è stato visitato ed è stato inserito nello stack $S$.
-		Dato che l'algoritmo è terminato, significa che ad un certo punto $v_i$ è stato rimosso dallo stack.
-		
-		\textbf{Contraddizione}: se è stato rimosso, vuol dire che tutti gli adiacenti a $v_i$ erano a loro volta stati visitati. Tuttavia prima avevamo detto che $\text{vis}[v_{i+1}] = 0$, dunque abbiamo dimostrato per assurdo che l'algoritmo funziona.
-	\end{dimostrazione}
+	La visita costa sempre $O(n+m)$. L'unica limitazione è lo stack delle funzioni, che per grafi molto pieni potrebbe andare in \textit{recursion depth}. La dimostrazione di correttezza di tale algoritmo, nella sua versione ricorsiva, è reperibile \hyperref[dim:funzionamento_dfs]{qui}.
 	
 	Proponiamo ora un esercizio che ci aiuterà a lavorare con i grafi e con la visita in profondità (DFS).
 	
@@ -994,7 +947,7 @@
 	
 	Quando poniamo un nodo ad un gruppo (ad esempio $1$), allora tutti i suoi adiacenti dovranno appartenere all'altro gruppo ($2$) e viceversa.
 	
-	Vediamo l'effettivo codice che, preso in input un grafo, restituisce un Array \texttt{part} rappresentante la partizione. Se l'Array restituito risulta essere vuoto, significa che tale grafo non era bi-colorabile.
+	Vediamo l'effettivo codice che, preso in input un grafo, restituisce un Array \texttt{part} rappresentante l'eventuale partizione.
 	
 	\begin{lstlisting}[style=stile-listings, language=Python]
 		def dfs_part(G, x):
@@ -1080,14 +1033,9 @@
 	\end{center}
 	
 	\begin{proposizione}{Inesistenza dell'ordine topologico}{}
-		Se il \textbf{grafo orientato} $G$ definito dai processi \textbf{contiene un ciclo diretto}, allora \textbf{non esiste} alcun ordine topologico.
+		Se il \textbf{grafo orientato} $G$ definito dai processi \textbf{contiene un ciclo diretto}, allora \textbf{non esiste} alcun ordine topologico.\\
+		La dimostrazione di tale proposizione si trova \hyperref[dim:no_ord_top_aciclico]{qui}.
 	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		Procediamo per assurdo. Assumiamo che esista un ciclo diretto formato dalla sequenza di vertici $(v_1, \dots, v_k)$ e che, contemporaneamente, esista un ordine topologico valido per il grafo.
-		
-		Se $v_i$ precede $v_{i+1}$ lungo il ciclo, allora per soddisfare la condizione di chiusura del ciclo deve esistere un arco che dal termine della sequenza ritorna all'inizio. Tuttavia, la presenza dell'arco $(v_i, v_{i+1})$ rende impossibile preservare l'ordinamento topologico lineare, poiché per definizione tutti gli archi orientati devono puntare coerentemente nella medesima direzione della sequenza (da destra verso sinistra nella notazione stabilita). Di conseguenza, almeno un arco lungo il ciclo violerà necessariamente la relazione d'ordine.
-	\end{dimostrazione}
 	
 	\begin{proposizione}{Proprietà dei cicli nei grafi diretti}{}
 		Se $\nexists$ un ciclo in un grafo diretto $\implies \exists$ un ordine topologico.
@@ -1159,6 +1107,7 @@
 		Dato un grafo diretto G, trovare un ciclo al suo interno.
 	\end{esercizio}
 	
+	\newpage
 	\begin{lstlisting}[style=stile-listings, language=Python, caption={Algoritmo per la ricerca di un ciclo diretto}]
 		def trovaCicloDiretto(G):
 			L = []  # Per memorizzare i nodi del ciclo
@@ -1382,32 +1331,9 @@
 		\item \textbf{ARCHI ALL'INDIETRO:} archi che vanno da un nodo ad un suo \textbf{antenato}.
 		\item \textbf{ARCHI DI ATTRAVERSAMENTO:} archi che vanno da un nodo ad un suo \textbf{"cugino"}.
 	\end{itemize}
+	La dimostrazione del fatto che un arco non possa appartenere contemporaneamente a più di una di queste categorie si trova \hyperref[dim:tipologie_archi]{qui}.
 	
-	\begin{dimostrazione}{}{}
-		Per dimostrare che vale almeno una di queste proprietà, è necessario dimostrare che \textbf{non esiste} alcun caso in cui i due intervalli si sovrappongono parzialmente.
-		
-		\begin{center}
-			\begin{tikzpicture}[scale=1.2, every node/.style={font=\small}]
-				% Primo intervallo (u)
-				\draw[thick, |-|] (0, 0.6) -- (3, 0.6);
-				\node[above] at (0, 0.6) {$t(u)$};
-				\node[above] at (3, 0.6) {$T(u)$};
-				
-				% Secondo intervallo (v)
-				\draw[thick, |-|] (1.5, 0) -- (4.5, 0);
-				\node[below] at (1.5, 0) {$t(v)$};
-				\node[below] at (4.5, 0) {$T(v)$};
-			\end{tikzpicture}
-		\end{center}
-		
-		Cioè, una situazione in cui $t(u) < t(v) \le T(u) < T(v)$ è \textbf{impossibile}.
-		
-		Supponiamo che $u$ sia il nodo inserito per primo nello stack. Di conseguenza, deve valere necessariamente $t(u) < t(v)$, dato che $v$ viene visitato successivamente.
-		
-		Per la natura LIFO (Last In, First Out) dello stack, il nodo $v$ deve essere rimosso prima di $u$, poiché l'ultimo elemento a essere visitato deve essere anche il primo a essere rimosso. Siccome $v$ viene sicuramente rimosso prima di $u$, è \textbf{impossibile} che si verifichi $T(v) > T(u)$.
-	\end{dimostrazione}
-	
-	\section{Comportamento nei grafi non diretti}
+	\subsection{Comportamento nei grafi non diretti}
 	
 	Come si comporta questa implementazione nei \textbf{grafi non diretti}?
 	
@@ -1441,22 +1367,9 @@
 	\end{center}
 	
 	\begin{proposizione}{}{}
-		Dato un DFS su un grafo \textbf{non diretto}, se un arco $(u, v)$ non fa parte dell'\textbf{albero di visita} (ovvero è un arco all'indietro/back edge), allora è impossibile che si verifichi il caso \textbf{iii)} degli intervalli disgiunti.
+		Dato un DFS su un grafo \textbf{non diretto}, se un arco $(u, v)$ non fa parte dell'\textbf{albero di visita} (ovvero è un arco all'indietro/back edge), allora è impossibile che si verifichi il caso \textbf{iii)} degli intervalli disgiunti.\\
+		La dimostrazione è \hyperref[dim:unicità_archi]{qui}.
 	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		Supponiamo per assurdo che gli intervalli siano disgiunti, ovvero che esista un arco $(u, v)$ tale che:
-		\[
-		I_u \cap I_v = \emptyset
-		\]
-		Sicuramente uno dei due nodi verrà visitato prima dell'altro; senza perdita di generalità, assumiamo che questo sia $u$, ovvero che $t(u) < t(v)$.
-		
-		Data questa assunzione e data la natura LIFO dello stack, è impossibile che $u$ venga rimosso dallo stack prima che inizi la visita di $v$, poiché l'esistenza dell'arco $(u, v)$ impone che $v$ venga scoperto prima della chiusura di $u$. Di conseguenza, deve valere:
-		\[
-		t(v) \le T(u)
-		\]
-		Il che dimostra che gli intervalli non sono disgiunti, giungendo a una contraddizione.
-	\end{dimostrazione}
 	
 	\begin{osservazione}{Archi fuori dall'albero in grafi non orientati}{}
 		Tutti gli archi $(u, v)$ che non fanno parte dell'albero di visita di una DFS su un grafo non orientato sono necessariamente \textbf{archi all'indietro} (o in avanti; non essendoci un orientamento nel grafo, la distinzione non è rilevante).
@@ -1467,18 +1380,8 @@
 		\[
 		G \text{ ha un ciclo} \iff \text{ogni DFS ha almeno un arco all'indietro}
 		\]
+		La dimostrazione è \hyperref[dim:cicli_e_archi_indietro]{qui}.
 	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		Analizziamo le due direzioni della doppia implicazione:
-		\begin{itemize}
-			\item \textbf{Direzione} ``$\implies$'':\\
-			Abbiamo osservato in precedenza che tutti gli archi che non appartengono all'albero di visita DFS sono archi all'indietro. Dato un ciclo $C$ nel grafo, ed essendo l'albero di visita un grafo aciclico connesso per definizione, deve necessariamente esistere almeno un arco di $C$ che non appartiene all'albero. Tale arco sarà quindi un arco all'indietro.
-			
-			\item \textbf{Direzione} ``$\impliedby$'':\\
-			Sia $(u, v)$ un arco all'indietro, con $u$ discendente di $v$ nell'albero DFS. Per definizione di discendenza, nell'albero di visita esiste un cammino $P$ da $v$ a $u$. Di conseguenza, l'unione del cammino $P$ con l'arco all'indietro $(u, v)$ forma un ciclo nel grafo.
-		\end{itemize}
-	\end{dimostrazione}
 	
 	\begin{proposizione}{Caratterizzazione dei cicli in grafi orientati}{}
 		Dato un grafo orientato $G$:
@@ -1487,27 +1390,8 @@
 		\]
 	\end{proposizione}
 	
-	\begin{dimostrazione}{}{}
-		Analizziamo le due direzioni della doppia implicazione:
-		\begin{itemize}
-			\item \textbf{Direzione} ``$\impliedby$'':\\
-			Supponiamo che esista un arco all'indietro $(u, v)$, il che implica che $u$ è un discendente di $v$ nell'albero DFS. Nell'albero delle visite esiste quindi un cammino diretto $v \to u$. L'unione di tale cammino con l'arco diretto $(u, v)$ costituisce un ciclo diretto nel grafo.
-			
-			\item \textbf{Direzione} ``$\implies$'':\\
-			Sia $C$ un ciclo nel grafo $G$ e sia $v$ il primo vertice di $C$ ad essere visitato dalla DFS. Di conseguenza, tutti gli altri vertici del ciclo $C$ verranno scoperti mentre $v$ è ancora attivo, diventando quindi discendenti di $v$ nell'albero DFS.
-			
-			Il vertice $v_k$ che completa il ciclo e si ricongiunge con $v$ darà origine a un arco $(v_k, v)$ che si configura come un arco all'indietro.
-			
-			Questo comportamento è garantito per tutti i nodi $u$ del ciclo visitati dopo $v$, in quanto, trovandosi all'interno del ciclo ed essendo stati scoperti dopo $v$, verranno terminati (e quindi rimossi dallo stack di ricorsione) prima di $v$. In termini di tempi di scoperta $t$ e fine visita $T$:
-			\[
-			t(v) < t(u) \land T(v) > T(u) \quad \forall u \in C \setminus \{v\}
-			\]
-		\end{itemize}
-	\end{dimostrazione}
-	
 	Torniamo molto a monte: vogliamo usare tutte queste supposizioni per dare un codice per trovare l'ordine topologico in un tempo $O(n+m)$ usando la DFS.
 	
-	\newpage
 	Programmiamo ora una DFS ricorsiva che ci permette di ottenere $t[x]$ e $T[x]$ per ogni vertice.
 	
 	\begin{lstlisting}[style=stile-listings, language=Python]
@@ -1527,7 +1411,7 @@
 			DFS_ric(G, x, t, T, c)
 	\end{lstlisting}
 	
-	\begin{algoritmo}{Ricerca in profondità (DFS) con tempi di visita}{}
+	\begin{algoritmo}{DFS con tempi di visita}{}
 		La seguente procedura implementa la visita DFS tenendo traccia dei tempi di scoperta $t[x]$ e di fine visita $T[x]$ per ciascun vertice $x$.
 		
 		\paragraph{Spiegazione dettagliata delle istruzioni:}
@@ -1652,7 +1536,6 @@
 		\end{itemize}
 	\end{esercizio}
 	
-	\newpage
 	\begin{lstlisting}[style=stile-listings, language=Python]
 		def trovaPozzo(G):
 			i, j = 1, 2
@@ -1773,7 +1656,6 @@
 	
 	L'osservazione risulta particolarmente intuitiva in quanto se esiste un arco NEL GRAFO (attenzione: l'albero $T$ è un sottoinsieme del grafo, e poi stiamo cercando i ponti del grafo $G$, non di $T$) che connette un nodo sotto ad $y$ con uno sopra al suo antenato $x$, quello sarà un arco all'indietro. Esistendo tale arco all'indietro vuol dire che esiste un ciclo e dunque $xy$ non può essere un ponte.
 	
-	\newpage
 	Prendendo in esempio la seguente figura, l'arco $(d, f)$ non può essere un ponte in quanto il nodo $e$ risulta essere antenato di $d$, che però è connesso ad $f$.
 
 	\begin{figure}[htbp]
@@ -1806,7 +1688,6 @@
 			\node[draw=none, fill=none, orange, font=\bfseries] at (2.8, 1.5) {$a$};
 			\node[draw=none, fill=none, orange, font=\bfseries] at (2.8, -1.2) {$b$};
 		\end{tikzpicture}
-		\caption{Come vediamo}
 		\label{fig:grafo_archi_blu}
 	\end{figure}
 	
@@ -1814,16 +1695,7 @@
 		Sia $G$ un grafo connesso e $T$ un albero di ricerca DFS. Siano $xy \in E(T)$ con $y$ discendente di $x$.\\
 		Allora esiste un arco $(u, v) \in E(G)$ con $u \in T_y$ e $v$ antenato di $x$ $\iff (x, y)$ \textbf{non è un ponte}.
 	\end{proposizione}
-	Questa proporizione sostanzialmente completa la precedente, collegando i due concetti di arco all'indietro e ponte mediante una doppia implicazione.
-	
-	\begin{dimostrazione}{}{}
-		$\implies$: Per quanto osservato in precedenza.\\
-		$\impliedby$: Se $xy$ non è un ponte, significa che esiste un ciclo $C$ che contiene $xy$. Avere un ciclo vuol dire che esiste un cammino $P$ da $x$ a $y$ che non usa l'arco $xy$. Banalmente, tale cammino risulta essere $P = C \setminus xy$.
-		
-		Ma intuitivamente, se parto dal vertice $y$ (che è un discendente di sé stesso) e in qualche modo arrivo ad $x$ (sicuramente posso arrivarci dato che c'era un ciclo), sicuramente ho usato un arco che mi porta da $T_y$ ad $x$ (o un suo antenato).
-		
-		Formalmente, $u \in T_y$ e $uv$ è un arco all'indietro, allora $v$ è anche un antenato di $y$. Inoltre è impossibile che $uv = xy$ dato che $uv \in P$ e $xy \notin P$.
-	\end{dimostrazione}
+	Questa proposizione sostanzialmente completa la precedente, collegando i due concetti di arco all'indietro e ponte mediante una doppia implicazione. La dimostrazione si trova \hyperref[dim:caratterizzazione_ponti]{qui}.
 	
 	Fatte le dovute osservazioni teoriche, possiamo procedere con la stesura dell'algoritmo.
 	
@@ -1886,8 +1758,7 @@
 		\end{itemize}
 	\end{algoritmo}
 	
-	\newpage
-	\section{Grafi e componenti fortemente connessi}
+	\section{Grafi e componenti fortemente connesse}
 	
 	\begin{definizione}{Grafo fortemente connesso}{}
 		Un grafo diretto si dice \textbf{fortemente connesso} se $\forall x, y \in V(G)$ esiste un cammino diretto $x \to y$ e un cammino da $y \to x$.
@@ -1941,7 +1812,6 @@
 	
 	Per questo motivo, due componenti non possono avere un vertice comune, altrimenti non sarebbe la massimale.
 	
-	\newpage
 	Ci si potrebbe chiedere: se $x, y$ sono vertici della stessa componente fortemente connessa, esiste allora un ciclo che contiene $x$ e $y$?
 	
 	La risposta è \textbf{no}. Vediamo un controesempio:
@@ -1984,11 +1854,7 @@
 	
 	Al contrario, vale la seguente proprietà: se esiste un ciclo $C$ diretto che contiene $x$ e $y$, ciò implica che $x$ e $y$ fanno parte della stessa componente fortemente connessa?
 	
-	La risposta è \textbf{sì}. 
-	\begin{dimostrazione}{}{}
-		Sia $H$ la componente che contiene $x$ e un ciclo $C$ che contiene $x, y$. 
-		Ne consegue che $H$ e $C$ hanno un vertice in comune, e l'unione $H \cup C$ è fortemente connessa. Dunque, per massimalità, $H \cup C$ è la componente finale a cui appartengono $x$ e $y$.
-	\end{dimostrazione}
+	La risposta è \textbf{sì}, e la dimostrazione si trova \hyperref[dim:ciclo_componente_elementi_comuni]{qui}.
 	
 	\begin{osservazione}{}{}
 		Ogni vertice è singolarmente una componente fortemente connessa (ricordiamo $\{x\}$ essere una componente valida). 
@@ -2060,19 +1926,13 @@
 	
 	Ora abbiamo qualcosa con cui giocare: \textbf{trovare tutte le componenti fortemente connesse di un grafo}.
 	
-	\begin{proposizione}{}{}
+	\begin{proposizione}{Caratterizzazione di grafo fort. conn.}{}
 		Sia $G$ un grafo diretto e $u \in V(G)$.
 		\[
 		G \text{ è fort. conn.} \iff \forall x \in V(G) \, \exists \text{ un cammino } x \to u \text{ e un cammino } u \to x
 		\]
+		Dimostrazione \hyperref[dim:caratterizzazione_grafo_fort_conn]{qui}.
 	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		``$\implies$'': segue per la definizione di grafo fortemente connesso.\\
-		``$\impliedby$'': Sia $x, y \in V(G)$. Esiste un cammino $P$ da $x \to u$ e un cammino $Q$ da $u \to y$.
-		Dunque $P \cup Q$ è una passeggiata da $x \to y$ e dunque esiste anche un cammino.
-		Per simmetria, possiamo fare questo discorso anche da $y \to x$ passando per $u$.
-	\end{dimostrazione}
 	
 	\begin{enumerate}
 		\item Se il grafo non ha cicli, ogni singolo nodo è una componente fortemente connessa.
@@ -2083,23 +1943,16 @@
 	\end{enumerate}
 	
 	\begin{proposizione}{Contrazione di un sottografo fortemente connesso}{}
-		Se $G$ è un grafo fortemente connesso e $H \subseteq G$ è un sottografo fortemente connesso, allora il grafo quoziente $G / V(H)$ ottenuto contraendo $H$ in un unico vertice è anch'esso fortemente connesso.
+		Se $G$ è un grafo fortemente connesso e $H \subseteq G$ è un sottografo fortemente connesso, allora il grafo quoziente $G / V(H)$ ottenuto contraendo $H$ in un unico vertice è anch'esso fortemente connesso.\\
+		Dimostrazione \hyperref[dim:contrazione_grafo]{qui}.
 	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		Per qualsiasi $y \in V(G / V(H))$ con $y \neq v_H$, sia $x \in H \subseteq G$ e sia $P$ un cammino da $y \to x$ in $G$.
-		
-		Sia $\bar{P}$ il pezzo del cammino $P$ da $y$ al primo vertice di $H$: allora $\bar{P}$ è un cammino in $G / V(H)$ da $y \to v_H$.
-		
-		Per lo stesso argomento, esiste un cammino da $v_H \to y$ e, per la proposizione precedente, $G / V(H)$ è fortemente connesso. Ciò è possibile ed ovvio dato che il grafo di partenza era fortemente connesso.
-	\end{dimostrazione}
 	
 	La notazione $G / V(H)$ indica il nuovo grafo ottenuto dopo la contrazione. Se volessimo definirlo formalmente:
 	\[
 	G / V(H) = (G - H) \cup v_H
 	\]
 	
-	\begin{figure}[htbp]
+	\begin{figure}[H]
 		\centering
 		\begin{tikzpicture}[
 			scale=0.8,
@@ -2253,5 +2106,682 @@
 	\end{center}
 	
 	\textbf{Passo 3:} Siccome non abbiamo più cicli, iniziamo la fase di \textit{unpacking} (quella marcata con \#1 nel codice), espandendo i super-vertici precedentemente contratti per ritornare alla rappresentazione originale delle componenti fortemente connesse.
+	
+	\begin{proposizione}{Proprietà degli archi di attraversamento}{}
+		Sia $T$ l'albero di ricerca DFS su un grafo diretto, sia $u \in V(G)$ e sia $(x, y)$ un arco di attraversamento tale che $x \in T_u$ e $y \notin T_u$.
+		
+		Allora esiste un vertice $z \in V(G)$, antenato comune più vicino (LCA) di $x$ e $y$, tale che:
+		\begin{itemize}
+			\item $z$ è un antenato di $u$;
+			\item esistono due figli distinti $u_1, u_2$ di $z$ tali che:
+			\[
+			x \in T_{u_1} \qquad \text{e} \qquad y \in T_{u_2}
+			\]
+			\item per ogni $x' \in T_{u_1}$ e per ogni $y' \in T_{u_2}$, vale la relazione sui tempi di scoperta:
+			\[
+			t(x') > t(y')
+			\]
+		\end{itemize}
+	\end{proposizione}
+	
+	\begin{figure}[H]
+		\centering
+		\begin{tikzpicture}[
+			point/.style={circle, fill=black, inner sep=1.8pt, outer sep=1pt},
+			bluepoint/.style={circle, fill=blue, inner sep=1.8pt, outer sep=1pt},
+			hollownode/.style={circle, draw=black, thick, fill=white, minimum size=8pt, inner sep=0pt}
+			]
+			% --- RAMI DEL GRAFO (curve morbide) ---
+			% Ramo da radice a z
+			\draw[thick] (0,0) to[out=40, in=200] (1.5,1);
+			
+			% Ramo superiore da z verso u e le sue foglie
+			\draw[thick] (1.5,1) to[out=45, in=170] (2.8,1.4) to[out=-10, in=160] (4,1.2);
+			\draw[thick] (4,1.2) to[out=20, in=170] (5.5,1.2) to[out=-10, in=180] (6.5,1.0) to[out=0, in=180] (7, 1.2);
+			\draw[thick] (4,1.2) to[out=-50, in=170] (5,0.4) to[out=-10, in=180] (6.5,0.3) to[out=0, in=180] (7, 0.5);
+			
+			% Ramo inferiore da z verso y' e le sue foglie
+			\draw[thick] (1.5,1) to[out=-40, in=110] (2.5,-0.3) to[out=-70, in=150] (4,-1.5);
+			\draw[thick] (4,-1.5) to[out=20, in=180] (4.8,-1.2) to[out=0, in=170] (5.5,-1.3) to[out=-10, in=180] (6.5,-1.5) to[out=0, in=180] (7, -1.3);
+			\draw[thick] (4,-1.5) to[out=-70, in=160] (5,-2.5) to[out=-20, in=180] (6.8,-2.6);
+			
+			% --- SOTTOALBERO Tu (curva viola) ---
+			\draw[violet, very thick, smooth cycle] plot coordinates {
+				(3.8, 1.3) (4.5, 1.9) (6.4, 1.7) (6.8, 0.9) (6.4, 0.1) (4.5, 0.2)
+			};
+			
+			% --- ARCO DI ATTRAVERSAMENTO (freccia blu) ---
+			\draw[->, blue, very thick] (5, 0.3) to[out=260, in=110] (5.5, -1.2);
+			
+			% --- NODI ---
+			\node[hollownode] (root) at (0,0) {};
+			\node[hollownode] (z) at (1.5,1) {};
+			
+			\node[point] (u1) at (2.8,1.4) {};
+			\node[point] (u) at (4,1.2) {};
+			\node[point] (xp) at (5.5,1.2) {};
+			\node[bluepoint] (x) at (5,0.4) {};
+			
+			\node[point] (u2) at (2.5,-0.3) {};
+			\node[point] (yp) at (4,-1.5) {};
+			\node[bluepoint] (y) at (5.5,-1.3) {};
+			
+			% --- ETICHETTE ---
+			\node[draw=none, fill=none, font=\bfseries] at (0,-0.4) {RADICE};
+			
+			\node[draw=none, fill=none, orange, font=\bfseries] at (1.2, 1.3) {z};
+			\node[draw=none, fill=none, orange, font=\bfseries] at (2.6, 1.7) {$u_1$};
+			\node[draw=none, fill=none, orange, font=\bfseries] at (2.1, -0.6) {$u_2$};
+			
+			\node[draw=none, fill=none, violet, font=\bfseries, scale=1.1] at (3.8, 1.6) {$u$};
+			\node[draw=none, fill=none, violet, font=\bfseries, scale=1.1] at (7.2, 1.2) {$T_u$};
+			
+			\node[draw=none, fill=none, font=\bfseries] at (5.7, 1.4) {$x'$};
+			\node[draw=none, fill=none, font=\bfseries, scale=1.1] at (3.6, -1.8) {$y'$};
+			
+			\node[draw=none, fill=none, blue, font=\bfseries] at (5.2, 0.6) {$x$};
+			\node[draw=none, fill=none, blue, font=\bfseries] at (5.7, -1.5) {$y$};
+			
+			\node[draw=none, fill=none, blue, font=\bfseries, right] at (5.6, -0.5) {arco di attraversamento};
+			
+		\end{tikzpicture}
+		\label{fig:arco_attraversamento}
+	\end{figure}
+	
+	Intuitivamente, dall'analisi della struttura ad albero, è immediato osservare che tutti i nodi appartenenti a $T_{u_2}$ vengono visitati \textbf{prima} di quelli appartenenti a $T_{u_1}$, dato che l'arco di attraversamento è orientato da $x \in T_{u_1}$ verso $y \in T_{u_2}$.
+	
+	\begin{definizione}{$C$-radice}{}
+		Sia $C$ una componente fortemente connessa di un grafo diretto $G$ e sia $T$ un'arborescenza prodotta da una visita DFS su $G$.
+		
+		Si definisce \textbf{$C$-radice} il primo nodo appartenente a $C$ che viene visitato dalla DFS.
+	\end{definizione}
+	
+	\begin{proposizione}{Proprietà delle $C$-radici}{}
+		Sia $u$ una $C$-radice all'interno di un'arborescenza DFS $T$. Allora valgono le seguenti proprietà:
+		\begin{enumerate}
+			\item $C(u) \subseteq T_u$, dove la notazione $C(u)$ indica l'intera componente fortemente connessa che contiene il vertice $u$.
+			\item Se $u_1, u_2, \dots, u_k$ sono tutte le $C$-radici contenute nel sottoalbero $T_u$, allora l'insieme dei vertici di $T_u$ è dato dall'unione disgiunta delle relative componenti fortemente connesse:
+			\[
+			V(T_u) = C(u_1) \cup C(u_2) \cup \dots \cup C(u_k)
+			\]
+		\end{enumerate}
+		La dimostrazione dei due punti si può trovare al \hyperref[dim_c_radici_1]{seguente riferimento}.
+	\end{proposizione}
+	
+	Prendendo come esempio il grafo di seguito riportato, verifichiamo intuitivamente la validità delle proprietà enunciate.
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			scale=1.1, >=stealth, thick,
+			nodo/.style={circle, draw=black, fill=white, inner sep=0pt, minimum size=7mm, font=\small\bfseries},
+			comp/.style={draw=DarkOrchid3, line width=1.3pt},
+			lblRadice/.style={text=DarkGoldenrod3, font=\footnotesize\bfseries, align=center}
+			]
+			% Posizionamento nodi
+			\node[nodo] (u) at (0, 0) {$u$};
+			\node[nodo] (a) at (1.5, 1) {$a$};
+			\node[nodo] (b) at (1.5, -1) {$b$};
+			
+			\node[nodo] (w) at (3, 0) {$w$};
+			\node[nodo] (d) at (4.5, 1) {$d$};
+			\node[nodo] (c) at (4.5, -1) {$c$};
+			
+			\node[nodo] (z) at (6, 0) {$z$};
+			
+			% Archi C1
+			\draw[->] (u) -- (a);
+			\draw[->] (a) -- (b);
+			\draw[->] (b) -- (u);
+			
+			% Archi da C1 a C2
+			\draw[->] (a) -- (w);
+			\draw[->] (b) -- (w);
+			
+			% Archi C2
+			\draw[->] (w) -- (d);
+			\draw[->] (d) -- (c);
+			\draw[->] (c) -- (w);
+			
+			% Archi da C2 a C3
+			\draw[->] (d) -- (z);
+			\draw[->] (c) -- (z);
+			
+			% Riquadri componenti connesse (viola)
+			% C1
+			\draw[comp] (-0.48, 0) 
+			to[out=90, in=195] (1.4, 1.48) 
+			arc[start angle=105, end angle=-15, radius=0.5cm]
+			-- (1.98, -1)
+			arc[start angle=0, end angle=-120, radius=0.5cm]
+			to[out=165, in=-90] (-0.48, 0) -- cycle;
+			\node[DarkOrchid3, font=\bfseries] at (-0.1, 1.5) {$C_1$};
+			
+			% C2
+			\draw[comp] (2.52, 0) 
+			to[out=90, in=195] (4.4, 1.48) 
+			arc[start angle=105, end angle=-15, radius=0.5cm]
+			-- (4.98, -1)
+			arc[start angle=0, end angle=-120, radius=0.5cm]
+			to[out=165, in=-90] (2.52, 0) -- cycle;
+			\node[DarkOrchid3, font=\bfseries] at (2.9, 1.5) {$C_2$};
+			
+			% C3
+			\draw[comp] (z) circle (0.55cm);
+			\node[DarkOrchid3, font=\bfseries] at (6.5, 1.1) {$C_3$};
+			
+			% Etichette radici spostate più in basso (below=1.0cm) con frecce più lunghe
+			\node[lblRadice, below=1.0cm of u] (lblU) {$u$\\\textnormal{radice di }$C_1$};
+			\draw[->, DarkGoldenrod3, thin] (lblU) -- (u);
+			
+			\node[lblRadice, below=1.0cm of w] (lblW) {$w$\\\textnormal{radice di }$C_2$};
+			\draw[->, DarkGoldenrod3, thin] (lblW) -- (w);
+			
+			\node[lblRadice, below=1.0cm of z] (lblZ) {$z$\\\textnormal{radice di }$C_3$};
+			\draw[->, DarkGoldenrod3, thin] (lblZ) -- (z);
+		\end{tikzpicture}
+		\label{fig:componenti_radici}
+	\end{figure}
+	
+	\newpage
+	\begin{itemize}
+		\item \textbf{Verifica del Punto 1:}
+		
+		Prendiamo $u$ come radice dell'arborescenza $T_u$ e supponiamo che la visita DFS esplori i vertici nel seguente ordine:
+		\[
+		T_u = \{u, a, w, d, z, c, b\}
+		\]
+		Si verifica immediatamente la validità della proprietà, in quanto:
+		\[
+		C_1 \subseteq T_u
+		\]
+		Considerando invece il vertice $w$, l'arborescenza generata dalla DFS a partire da $w$ risulta:
+		\[
+		T_w = \{w, d, z, c\}
+		\]
+		Anche in questo caso vale banalmente:
+		\[
+		C(w) = C_2 \subseteq T_w
+		\]
+		La proprietà risulta verificata in modo immediato anche per il terzo caso ($T_z = \{z\} = C_3$).
+		
+		\item \textbf{Verifica del Punto 2:}
+		
+		Consideriamo ad esempio l'arborescenza $T_w = \{w, d, z, c\}$. La proprietà afferma che l'arborescenza generata dalla DFS a partire da un nodo può essere ottenuta come l'unione delle componenti fortemente connesse a cui appartiene ciascun nodo raggiunto dalla visita.
+		
+		Determiniamo la componente fortemente connessa di appartenenza per ogni vertice in $T_w$:
+		\begin{align*}
+			C(w) &= \{w, d, c\} & C(c) &= \{w, d, c\} \\
+			C(d) &= \{w, d, c\} & C(z) &= \{z\}
+		\end{align*}
+		
+		Calcolando l'unione di tali componenti:
+		\[
+		T_w = \underbrace{C(w) \cup C(d) \cup C(c)}_{*} \cup \; C(z) = \{w, d, c\} \cup \{z\} = \{w, d, z, c\}
+		\]
+		\begin{small}
+			\textit{(*) Essendo $C(w) = C(d) = C(c)$, i duplicati non alterano il risultato dell'unione insiemistica.}
+		\end{small}
+		
+		L'uguaglianza risulta pertanto pienamente confermata.
+	\end{itemize}
+	
+	Supponendo di disporre di un metodo per riconoscere le \textbf{$C$-radici} (ovvero le radici delle componenti fortemente connesse), è possibile utilizzare una visita in profondità (DFS) modificata per individuare ed estrarre le componenti fortemente connesse (SCC) di un grafo orientato.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python, caption={Propotipo di algoritmi efficiente per la ricerca delle componenti fortemente connesse}]
+		def DFS_SCC(G, u, open, output, vis):
+			vis[u] = 1
+			open.push(u)
+			
+			for v in u.neighbor:
+				if vis[v] == 0:
+					DFS_SCC(G, v, open, output, vis)
+			
+			if u è una C-radice(u):
+				C = []
+				do:
+					w = open.pop()
+					C.append(w)
+				while w != u
+			
+			output.add(C)
+			
+		def SCC(G):
+			open = Stack()
+			output = set()
+			vis = [0] * n
+			
+			for v in G:
+				if vis[v] == 0:
+					DFS_SCC(G, v, open, output, vis)
+			
+			return output
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Ricerca componenti fortemente connesse}{alg_scc}
+		L'algoritmo si struttura in una funzione principale \texttt{SCC(G)} e in una procedura ausiliaria ricorsiva \texttt{DFS\_SCC}.
+		
+		\paragraph{Ruolo dei parametri e delle variabili:}
+		\begin{itemize}
+			\item \texttt{u}: rappresenta il \textbf{nodo corrente} in fase di esame.
+			\item \texttt{open}: è una pila (\emph{stack}) utilizzata per tenere traccia dei nodi visitati ma i cui sottoalberi non sono stati ancora "chiusi", ovvero le cui componenti non sono ancora state completate.
+			\item \texttt{output}: la struttura dati contenente l'insieme di tutte le componenti fortemente connesse identificate.
+			\item \texttt{vis}: il vettore booleano di marcatura per i nodi visitati.
+		\end{itemize}
+		
+		\paragraph{Spiegazione dettagliata del funzionamento:}
+		\begin{enumerate}
+			\item \textbf{Inizializzazione (\texttt{SCC})}:
+			Viene creato uno stack \texttt{open} vuoto, un insieme \texttt{output} per contenere le componenti individuate e il vettore \texttt{vis} di dimensione $n$ azzerato. Per ogni vertice non ancora visitato, si avvia la procedura ricorsiva \texttt{DFS\_SCC}.
+			
+			\item \textbf{Visita e tracciamento (\texttt{DFS\_SCC})}:
+			All'ingresso nella procedura, il nodo $u$ viene marcato come visitato (\texttt{vis[u] = 1}) e inserito nello stack \texttt{open}. Successivamente, si esplorano ricorsivamente tutti i vicini $v$ non visitati.
+			
+			\item \textbf{Identificazione e chiusura della componente}:
+			Una volta terminata l'esplorazione dei vicini di $u$, si verifica se $u$ è una $C$-radice (supponendo di conoscere un modo efficiente per determinare questa condizione).
+			\begin{itemize}
+				\item Se $u$ è una $C$-radice, si definisce una nuova lista $C$, la quale rappresenterà esattamente la componente fortemente connessa di cui $u$ è la radice.
+				\item Si esegue un ciclo \texttt{do-while} che rimuove mediante \texttt{pop()} tutti i nodi dallo stack \texttt{open} fino a incontrare il nodo $u$ incluso. Questo ciclo si occupa sostanzialmente di estrarre tutti i nodi che nello stack si trovano al di sopra della $C$-radice $u$, poiché essi vi sono stati inseriti successivamente e appartengono necessariamente alla medesima componente.
+				\item Infine, la componente $C$ così costruita viene aggiunta alla collezione globale \texttt{output}.
+			\end{itemize}
+		\end{enumerate}
+	\end{algoritmo}
+	
+	Vediamo un esempio con il seguente grafo:
+	
+	\begin{center}
+		\begin{tikzpicture}[thick, scale=1.1, >=stealth]
+			\tikzset{nodo/.style={circle, draw, minimum size=0.65cm, inner sep=0pt, font=\sffamily\bfseries}}
+			
+			\node[nodo] (1) at (0, 1) {1};
+			\node[nodo] (2) at (1.2, 2) {2};
+			\node[nodo] (3) at (1.2, 0) {3};
+			\node[nodo] (4) at (2.8, 2) {4};
+			\node[nodo] (5) at (2.8, 0) {5};
+			
+			\draw[->] (1) -- (2);
+			\draw[->] (1) -- (3);
+			\draw[->] (2) -- (3);
+			\draw[->] (3) -- (4);
+			\draw[->] (4) -- (5);
+			\draw[->] (5) -- (4);
+		\end{tikzpicture}
+	\end{center}
+	
+	\begin{enumerate}
+		\item \textbf{Passo 1-5:} Visitiamo con DFS il grafo, ottenendo ciò:
+		\[
+		\text{open} = [1, 2, 3, 4, 5], \qquad \text{output} = []
+		\]
+		A questo punto da $5$ si dovrebbe andare ad un nodo non visitato. Siccome non ne abbiamo altri, durante la visita di $5$ si esce dal ciclo \texttt{for} e si passa al controllo.
+		$5$ non è una $C$-radice e dunque si esce senza restituire nulla.
+		
+		\item \textbf{Passo 6:} Risaliamo nella ricorsione tornando a $4$. Anche qui non possiamo visitare nuovi nodi dunque controllo. In questo caso $4$ è una $C$-radice, dunque eseguiamo il \texttt{while}.
+		
+		In questo caso rimuoviamo solo $5$ che è l'unico nodo sopra a $4$ (oltre a $4$ stesso) e li mettiamo nella stessa componente.
+		
+		\textbf{Nota:} Il \texttt{do-while} si ferma appena rimuoviamo la $C$-radice.
+		\[
+		\text{open} = [1, 2, 3], \qquad \text{output} = [[4, 5]]
+		\]
+		
+		\item \textbf{Passo 7-8:} Si sale nella ricorsione, prima a $3$ e poi a $2$. Siccome nessuna delle due è una $C$-radice si ritorna $[]$.
+		
+		\item \textbf{Passo 9:} Arrivati ad $1$ e avendo visitato tutti i nodi, finiamo nel controllo.
+		In questo caso siamo su una $C$-radice, dunque procediamo col rimuovere tutti i nodi sopra di essa, fermandoci quando avremo rimosso anche lei.
+		
+		Siccome $1$ era l'ultimo nodo, l'algoritmo termina col seguente output:
+		\[
+		\text{output} = [[5, 4], [3, 2, 1]]
+		\]
+	\end{enumerate}
+	
+	Abbiamo dato per assunto di saper riconoscere una C-rad in modo abbastanza semplice. Formalizziamo.
+	
+	\begin{proposizione}{Caratterizzazione di C-radice}{}
+		Un nodo $u$ non è una C-radice $\iff$ dalle chiamate ricorsive \texttt{DFS\_SCC} con radice $u$, viene attraversato un arco $(v, w)$ t.c. $w$ è stato già visitato ($t(w) < t(u)$) ma la componente di $w$ non è stato stabilito ($w \in \text{open}$, è ancora nello stack).\\
+		La dimostrazione si trova \hyperref[dim:caratterizzazione_c_radice]{qui}.
+	\end{proposizione}
+	
+	In parole molto povere: affinché un nodo sia C-radice deve necessariamente essere il più vecchio (quello scoperto prima di tutto il suo gruppo).
+	
+	Inseriamo nel codice una variabile \texttt{back} che è il più all'indietro a cui possiamo arrivare nelle chiamate a partire da $u$.
+	
+	Definiamo anche un nuovo array $\text{CC}[]$ dove $\text{CC}[v]$ vale:
+	\begin{itemize}
+		\item $0$: se $v$ non è stato visitato
+		\item $-t[v]$: se è stato visitato e sta nello stack
+		\item $C$: valore positivo che indica il numero della componente a cui appartiene e dunque non sta nello stack.
+	\end{itemize}
+	
+	Stiamo adottando una logica analoga a quella impiegata per l'individuazione dei ponti all'interno di un grafo.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python, caption={Algoritmo di Tarjan per la ricerca delle componenti fortemente connesse}]
+		def DFS_SCC(G, u, CC, open, t, comp):
+			t += 1
+			CC[u] = -t
+			open.push(u)
+			back = t
+			
+			for v in u.neighbr:
+				if CC[v] == 0:
+					b = DFS_SCC(G, v, CC, open, t, comp)
+					back = min(b, back)
+				if CC[v] < 0:
+					back = min(back, -CC[v])
+			
+			if back == -CC[u]:
+				comp += 1
+				while True:
+					w = open.pop()
+					CC[w] = comp
+					if w == u:
+						break
+			
+			return back
+			
+		def SCC(G):
+			CC = [0] * n
+			open = Stack()
+			t = 0
+			comp = 0
+			
+			for u in G:
+				if CC[u] == 0:
+					DFS_SCC(G, u, CC, open, t, comp)
+			
+		return CC
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Algoritmo di Tarjan}{alg:scc_tarjan}
+		\begin{itemize}
+			\item \textbf{Inizializzazione del nodo (\texttt{CC[u] = -t})}: Il contatore globale del tempo $t$ viene incrementato e assegnato a $u$. Memorizziamo temporaneamente $-t$ nell'array \texttt{CC} per indicare sia che il vertice è attualmente presente nello stack (\texttt{open}), sia l'istante esatto della sua scoperta.
+			
+			\item \textbf{Inizializzazione di \texttt{back}}: Inizialmente, il nodo raggiungibile più indietro nel percorso coincide con il nodo stesso, per cui poniamo $\texttt{back} = t$.
+			
+			\item \textbf{Esplorazione dei vicini}: Per ciascun vertice adiacente $v \in u.\text{neighbr}$:
+			\begin{itemize}
+				\item \textbf{Nodo non visitato (\texttt{CC[v] == 0})}: Si visita ricorsivamente $v$. La chiamata restituisce il valore minimo di scoperta raggiungibile dal sottoalbero di $v$, permettendo di aggiornare $\texttt{back} = \min(b, \texttt{back})$.
+				\item \textbf{Arco all'indietro o trasversale verso nodo attivo (\texttt{CC[v] < 0})}: Se $v$ è già stato visitato ma appartiene ancora allo stack \texttt{open} (segnalato dal valore negativo di \texttt{CC[v]}), significa che $v$ appartiene alla componente corrente. Aggiorniamo quindi il valore tramite $\texttt{back} = \min(\texttt{back}, -\texttt{CC}[v])$.
+			\end{itemize}
+			
+			\item \textbf{Identificazione della $C$-radice ed estrazione}: Se $\texttt{back} == -\texttt{CC}[u]$, significa che dal sottoalbero radicato in $u$ non è possibile risalire ad alcun antenato scoperto prima di $u$. Di conseguenza, $u$ è la \textbf{$C$-radice} della componente. Incrementiamo il contatore \texttt{comp} ed estraiamo gli elementi dalla pila \texttt{open} fino a rimuovere $u$ stesso, assegnando a ciascuno di essi l'identificativo definitivo della componente (\texttt{CC[w] = comp}).
+		\end{itemize}
+	\end{algoritmo}
+	
+	\begin{osservazione}{Funzionamento dell'algoritmo}{}
+		In base alla proprietà precedentemente enunciata, un nodo è una $C$-radice se e solo se è il primo vertice della componente connessa ad essere scoperto durante la visita DFS. Da tale vertice in avanti esisteranno esclusivamente archi discendenti nell'arborescenza di visita. Per tale motivo, la soluzione si basa sulla medesima strategia di tracciamento del valore \texttt{back} impiegata per la ricerca dei ponti.
+	\end{osservazione}
+	
+	\chapter{Appendice delle dimostrazioni}
+	Al fine di non appesantire eccessivamente la lettura teorica della dispensa, si è deciso di lasciare questo capitolo appendice alla fine della dispensa in cui sono contenute tutte le proposizioni a cui è stata data una dimostrazione formale. Navigando nelle pagine teoriche, tuttavia, verrà lasciato un riferimento alla dimostrazione per ogni proposizione, in caso si fosse curiosi di leggerla.
+	
+	\begin{corollario}{}{}
+		Esiste una passeggiata da $x$ a $y$ $\iff$ esiste un cammino da $x$ a $y$.
+	\end{corollario}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:cammino_sse_passeggiata}
+		Chiaramente, se esiste un cammino allora sicuramente esiste anche una passeggiata, dato che ogni cammino è un particolare tipo di passeggiata. Abbiamo così dimostrato la prima implicazione ($\Rightarrow$).\\
+		\smallbreak
+		Viceversa, supponiamo di avere una passeggiata $W = (v_0, v_1, \dots, v_K)$. Abbiamo due possibilità:
+		\begin{enumerate}
+			\item Se tutti i vertici sono distinti, allora la passeggiata è già un cammino.
+			\item Se invece abbiamo almeno un indice ripetuto, cioè esistono $i, j$ tali che $v_i = v_j$ con $i < j$.
+		\end{enumerate}
+		Questo significa che all'interno della passeggiata è presente un sottociclo:
+		\[
+		W_1 = (v_i, v_{i+1}, \dots, v_{j-1}, v_j)
+		\]
+		ma sapendo che $v_i = v_j$, la struttura si chiude. Possiamo eliminare $W_1$ dalla passeggiata iniziale mantenendo però il nodo in cui parte la diramazione (in questo caso $v_i$). La passeggiata iniziale può essere dunque riscritta come:
+		\[
+		W = (v_1, \dots, v_i, \underbrace{v_{i+1}, \dots, v_{j-1}, v_j}_{W_1}, v_{j+1}, \dots, v_K)
+		\]
+		Eliminando $W_1$ otteniamo un cammino più corto, e reiterando il procedimento rimuoviamo tutti i cicli ottenendo infine un cammino semplice.
+	\end{dimostrazione}
+	
+	\begin{lstlisting}[language=Python]
+		def dfs(G, x):
+		vis = [0] * n
+		return dfs_ric(G, x, vis)
+		
+		def dfs_ric(G, x, vis):
+		vis[x] = 1
+		for v in x.neighbr:
+		if vis[v] == 0:
+		dfs_ric(G, v, vis)
+	\end{lstlisting}
+	
+	La visita costa sempre $O(n+m)$. L'unica limitazione è lo stack delle funzioni, che per grafi molto pieni potrebbe andare in \textit{recursion depth}.
+	
+	\begin{dimostrazione}{Correttezza della DFS ricorsiva}{}
+		\label{dim:funzionamento_dfs}
+		Dimostriamo ora che questo algoritmo funziona.
+		
+		Appuntiamo che se un nodo $y$ è raggiungibile a partire da $x$, allora esiste un cammino che collega $x \to y$ e dunque $\text{vis}[y] = 1$.
+		Se $y$ è raggiungibile da $x \implies \exists W = (v_0, v_1, \dots, v_k)$ cammino che collega $x$ ($v_0$) e $y$ ($v_k$).
+		
+		Per assurdo, assumiamo che $\text{vis}[y] = 0$.
+		Siccome $\text{vis}[x] = 1 \implies \exists$ un indice $i$ con $\text{vis}[v_i] = 1$ e $\text{vis}[v_{i+1}] = 0$.
+		Se $\text{vis}[v_i] = 1$ allora $v_i$ è stato visitato ed è stato inserito nello stack $S$.
+		Dato che l'algoritmo è terminato, significa che ad un certo punto $v_i$ è stato rimosso dallo stack.
+		
+		\textbf{Contraddizione}: se è stato rimosso, vuol dire che tutti gli adiacenti a $v_i$ erano a loro volta stati visitati. Tuttavia prima avevamo detto che $\text{vis}[v_{i+1}] = 0$, dunque abbiamo dimostrato per assurdo che l'algoritmo funziona.
+	\end{dimostrazione}
+	
+	\begin{proposizione}{Inesistenza dell'ordine topologico}{}
+		Se il \textbf{grafo orientato} $G$ definito dai processi \textbf{contiene un ciclo diretto}, allora \textbf{non esiste} alcun ordine topologico.
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:no_ord_top_aciclico}
+		Procediamo per assurdo. Assumiamo che esista un ciclo diretto formato dalla sequenza di vertici $(v_1, \dots, v_k)$ e che, contemporaneamente, esista un ordine topologico valido per il grafo.
+		
+		Se $v_i$ precede $v_{i+1}$ lungo il ciclo, allora per soddisfare la condizione di chiusura del ciclo deve esistere un arco che dal termine della sequenza ritorna all'inizio. Tuttavia, la presenza dell'arco $(v_i, v_{i+1})$ rende impossibile preservare l'ordinamento topologico lineare, poiché per definizione tutti gli archi orientati devono puntare coerentemente nella medesima direzione della sequenza (da destra verso sinistra nella notazione stabilita). Di conseguenza, almeno un arco lungo il ciclo violerà necessariamente la relazione d'ordine.
+	\end{dimostrazione}
+	
+	\begin{itemize}
+		\item \textbf{ARCHI IN AVANTI:} archi che vanno da un nodo ad un suo \textbf{discendente}.
+		\item \textbf{ARCHI ALL'INDIETRO:} archi che vanno da un nodo ad un suo \textbf{antenato}.
+		\item \textbf{ARCHI DI ATTRAVERSAMENTO:} archi che vanno da un nodo ad un suo \textbf{"cugino"}.
+	\end{itemize}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:tipologie_archi}
+		Per dimostrare che vale almeno una di queste proprietà, è necessario dimostrare che \textbf{non esiste} alcun caso in cui i due intervalli si sovrappongono parzialmente.
+		
+		\begin{center}
+			\begin{tikzpicture}[scale=1.2, every node/.style={font=\small}]
+				% Primo intervallo (u)
+				\draw[thick, |-|] (0, 0.6) -- (3, 0.6);
+				\node[above] at (0, 0.6) {$t(u)$};
+				\node[above] at (3, 0.6) {$T(u)$};
+				
+				% Secondo intervallo (v)
+				\draw[thick, |-|] (1.5, 0) -- (4.5, 0);
+				\node[below] at (1.5, 0) {$t(v)$};
+				\node[below] at (4.5, 0) {$T(v)$};
+			\end{tikzpicture}
+		\end{center}
+		
+		Cioè, una situazione in cui $t(u) < t(v) \le T(u) < T(v)$ è \textbf{impossibile}.
+		
+		Supponiamo che $u$ sia il nodo inserito per primo nello stack. Di conseguenza, deve valere necessariamente $t(u) < t(v)$, dato che $v$ viene visitato successivamente.
+		
+		Per la natura LIFO (Last In, First Out) dello stack, il nodo $v$ deve essere rimosso prima di $u$, poiché l'ultimo elemento a essere visitato deve essere anche il primo a essere rimosso. Siccome $v$ viene sicuramente rimosso prima di $u$, è \textbf{impossibile} che si verifichi $T(v) > T(u)$.
+	\end{dimostrazione}
+	
+	\begin{proposizione}{}{}
+		Dato un DFS su un grafo \textbf{non diretto}, se un arco $(u, v)$ non fa parte dell'\textbf{albero di visita} (ovvero è un arco all'indietro/back edge), allora è impossibile che si verifichi il caso \textbf{iii)} degli intervalli disgiunti.
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:unicità_archi}
+		Supponiamo per assurdo che gli intervalli siano disgiunti, ovvero che esista un arco $(u, v)$ tale che:
+		\[
+		I_u \cap I_v = \emptyset
+		\]
+		Sicuramente uno dei due nodi verrà visitato prima dell'altro; senza perdita di generalità, assumiamo che questo sia $u$, ovvero che $t(u) < t(v)$.
+		
+		Data questa assunzione e data la natura LIFO dello stack, è impossibile che $u$ venga rimosso dallo stack prima che inizi la visita di $v$, poiché l'esistenza dell'arco $(u, v)$ impone che $v$ venga scoperto prima della chiusura di $u$. Di conseguenza, deve valere:
+		\[
+		t(v) \le T(u)
+		\]
+		Il che dimostra che gli intervalli non sono disgiunti, giungendo a una contraddizione.
+	\end{dimostrazione}
+	
+	\begin{proposizione}{Caratterizzazione dei cicli in grafi orientati}{}
+		Dato un grafo orientato $G$:
+		\[
+		\exists \text{ un ciclo in } G \iff \exists \text{ un arco all'indietro per qualsiasi DFS nel grafo}
+		\]
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:cicli_e_archi_indietro}
+		Analizziamo le due direzioni della doppia implicazione:
+		\begin{itemize}
+			\item \textbf{Direzione} ``$\impliedby$'':\\
+			Supponiamo che esista un arco all'indietro $(u, v)$, il che implica che $u$ è un discendente di $v$ nell'albero DFS. Nell'albero delle visite esiste quindi un cammino diretto $v \to u$. L'unione di tale cammino con l'arco diretto $(u, v)$ costituisce un ciclo diretto nel grafo.
+			
+			\item \textbf{Direzione} ``$\implies$'':\\
+			Sia $C$ un ciclo nel grafo $G$ e sia $v$ il primo vertice di $C$ ad essere visitato dalla DFS. Di conseguenza, tutti gli altri vertici del ciclo $C$ verranno scoperti mentre $v$ è ancora attivo, diventando quindi discendenti di $v$ nell'albero DFS.
+			
+			Il vertice $v_k$ che completa il ciclo e si ricongiunge con $v$ darà origine a un arco $(v_k, v)$ che si configura come un arco all'indietro.
+			
+			Questo comportamento è garantito per tutti i nodi $u$ del ciclo visitati dopo $v$, in quanto, trovandosi all'interno del ciclo ed essendo stati scoperti dopo $v$, verranno terminati (e quindi rimossi dallo stack di ricorsione) prima di $v$. In termini di tempi di scoperta $t$ e fine visita $T$:
+			\[
+			t(v) < t(u) \land T(v) > T(u) \quad \forall u \in C \setminus \{v\}
+			\]
+		\end{itemize}
+	\end{dimostrazione}
+	
+	\begin{proposizione}{Caratterizzazione dei ponti in un albero DFS}{}
+		Sia $G$ un grafo connesso e $T$ un albero di ricerca DFS. Siano $xy \in E(T)$ con $y$ discendente di $x$.\\
+		Allora esiste un arco $(u, v) \in E(G)$ con $u \in T_y$ e $v$ antenato di $x$ $\iff (x, y)$ \textbf{non è un ponte}.
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:caratterizzazione_ponti}
+		$\implies$: Per quanto osservato in precedenza.\\
+		$\impliedby$: Se $xy$ non è un ponte, significa che esiste un ciclo $C$ che contiene $xy$. Avere un ciclo vuol dire che esiste un cammino $P$ da $x$ a $y$ che non usa l'arco $xy$. Banalmente, tale cammino risulta essere $P = C \setminus xy$.
+		
+		Ma intuitivamente, se parto dal vertice $y$ (che è un discendente di sé stesso) e in qualche modo arrivo ad $x$ (sicuramente posso arrivarci dato che c'era un ciclo), sicuramente ho usato un arco che mi porta da $T_y$ ad $x$ (o un suo antenato).
+		
+		Formalmente, $u \in T_y$ e $uv$ è un arco all'indietro, allora $v$ è anche un antenato di $y$. Inoltre è impossibile che $uv = xy$ dato che $uv \in P$ e $xy \notin P$.
+	\end{dimostrazione}
+	
+	Se esiste un ciclo $C$ diretto che contiene $x$ e $y$, ciò implica che $x$ e $y$ fanno parte della stessa componente fortemente connessa?
+	 
+	\begin{dimostrazione}{}{}
+		\label{dim:ciclo_componente_elementi_comuni}
+		Sia $H$ la componente che contiene $x$ e un ciclo $C$ che contiene $x, y$. 
+		Ne consegue che $H$ e $C$ hanno un vertice in comune, e l'unione $H \cup C$ è fortemente connessa. Dunque, per massimalità, $H \cup C$ è la componente finale a cui appartengono $x$ e $y$.
+	\end{dimostrazione}
+	
+	\begin{proposizione}{}{}
+		Sia $G$ un grafo diretto e $u \in V(G)$.
+		\[
+		G \text{ è fort. conn.} \iff \forall x \in V(G) \, \exists \text{ un cammino } x \to u \text{ e un cammino } u \to x
+		\]
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:caratterizzazione_grafo_fort_conn}
+		``$\implies$'': segue per la definizione di grafo fortemente connesso.\\
+		``$\impliedby$'': Sia $x, y \in V(G)$. Esiste un cammino $P$ da $x \to u$ e un cammino $Q$ da $u \to y$.
+		Dunque $P \cup Q$ è una passeggiata da $x \to y$ e dunque esiste anche un cammino.
+		Per simmetria, possiamo fare questo discorso anche da $y \to x$ passando per $u$.
+	\end{dimostrazione}
+	
+	\begin{proposizione}{Contrazione di un sottografo fortemente connesso}{}
+		Se $G$ è un grafo fortemente connesso e $H \subseteq G$ è un sottografo fortemente connesso, allora il grafo quoziente $G / V(H)$ ottenuto contraendo $H$ in un unico vertice è anch'esso fortemente connesso.
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:contrazione_grafo}
+		Per qualsiasi $y \in V(G / V(H))$ con $y \neq v_H$, sia $x \in H \subseteq G$ e sia $P$ un cammino da $y \to x$ in $G$.
+		
+		Sia $\bar{P}$ il pezzo del cammino $P$ da $y$ al primo vertice di $H$: allora $\bar{P}$ è un cammino in $G / V(H)$ da $y \to v_H$.
+		
+		Per lo stesso argomento, esiste un cammino da $v_H \to y$ e, per la proposizione precedente, $G / V(H)$ è fortemente connesso. Ciò è possibile ed ovvio dato che il grafo di partenza era fortemente connesso.
+	\end{dimostrazione}
+	
+	\begin{proposizione}{Proprietà delle $C$-radici}{}
+		Sia $u$ una $C$-radice all'interno di un'arborescenza DFS $T$. Allora valgono le seguenti proprietà:
+		\begin{enumerate}
+			\item $C(u) \subseteq T_u$, dove la notazione $C(u)$ indica l'intera componente fortemente connessa che contiene il vertice $u$.
+			\item Se $u_1, u_2, \dots, u_k$ sono tutte le $C$-radici contenute nel sottoalbero $T_u$, allora l'insieme dei vertici di $T_u$ è dato dall'unione disgiunta delle relative componenti fortemente connesse:
+			\[
+			V(T_u) = C(u_1) \cup C(u_2) \cup \dots \cup C(u_k)
+			\]
+		\end{enumerate}
+	\end{proposizione}
+	
+	
+	
+	\begin{dimostrazione}{Proprietà delle $C$-radici (Parte 1)}{dim_c_radici_1}
+		Ragioniamo per assurdo. Supponiamo che $C(u) \not\subseteq T_u$, il che implica che:
+		\[
+		\exists y \in C(u) \quad \text{con } y \notin T_u
+		\]
+		Dunque esiste un cammino orientato da $u$ ad un vertice esterno a $T_u$, e di conseguenza deve esistere almeno un arco lungo tale cammino che esce dal sottoalbero $T_u$.
+		
+		Sia $(x, y)$ questo arco, con $x \in T_u$ e $y \notin T_u$. Tale arco può essere unicamente:
+		\begin{itemize}
+			\item \textbf{Arco di attraversamento} (in quanto i due vertici non appartengono allo stesso ramo di discendenza diretta);
+			\item \textbf{Arco all'indietro}.
+		\end{itemize}
+		Si noti che non può trattarsi di un \textbf{arco in avanti}, altrimenti significherebbe che $y$ è un discendente di $x$, e quindi apparterrebbe a $T_u$.
+		
+		Analizziamo i due casi possibili:
+		\begin{itemize}
+			\item \textbf{Arco di attraversamento}: per la proposizione precedente, sappiamo che se esiste un arco di attraversamento, allora esiste anche un nodo $z$ antenato comune più vicino di $x$ e $y$. Sempre per tale proposizione, tutti i vertici del sottoalbero $T_z$ vengono visitati prima di tutti quelli di $T_u$. Ma ciò implica che $u$ non è stato il primo vertice visitato della componente, giungendo a una \textbf{contraddizione}, dato che avevamo definito $u$ come la $C$-radice.
+			
+			\item \textbf{Arco all'indietro}: se fosse un arco all'indietro, significherebbe che il vertice $y$ è stato scoperto prima di $u$, e dunque $u$ non può essere la $C$-radice della componente, ottenendo nuovamente una \textbf{contraddizione}.
+		\end{itemize}
+	\end{dimostrazione}
+	
+	\begin{dimostrazione}{Proprietà delle $C$-radici (Parte 2)}{dim_c_radici_2}
+		Per la proprietà (1) appena dimostrata, sappiamo che:
+		\[
+		C(u_i) \subseteq T_{u_i} \quad \text{per ogni $C$-radice } u_i
+		\]
+		Procediamo per assurdo supponendo che esista un nodo $w \in T_u$ la cui $C$-radice non appartiene a $T_u$:
+		\[
+		\exists w \in T_u \quad \text{tale che la $C(w)$-radice} \notin T_u
+		\]
+		Sia $z$ la radice di $C(w)$. Per il punto (1), $z$ è necessariamente un antenato di $w$. Essendo tuttavia $z \notin T_u$, ne consegue che $z$ deve essere anche un antenato di $u$ nell'albero di visita.
+		
+		Esistono quindi i seguenti cammini nel grafo:
+		\begin{itemize}
+			\item $w \leadsto z \in C(w)$
+			\item $z \leadsto u \in T$
+			\item $u \leadsto w \in T_u$
+		\end{itemize}
+		
+		Siccome tutti i nodi possono raggiungersi reciprocamente l'un l'altro, essi appartengono necessariamente alla stessa componente connessa. Tuttavia, essendo $z$ un antenato di $u$, si ha che:
+		\[
+		t(z) < t(u)
+		\]
+		e di conseguenza $u$ non può essere la radice della componente, pervenendo a una \textbf{contraddizione}.
+	\end{dimostrazione}
+	
+	\begin{proposizione}{Caratterizzazione di C-radice}{}
+		Un nodo $u$ non è una C-radice $\iff$ dalle chiamate ricorsive \texttt{DFS\_SCC} con radice $u$, viene attraversato un arco $(v, w)$ t.c. $w$ è stato già visitato ($t(w) < t(u)$) ma la componente di $w$ non è stato stabilito ($w \in \text{open}$, è ancora nello stack).
+	\end{proposizione}
+	
+	\begin{dimostrazione}{}{}
+		\label{dim:caratterizzazione_c_radice}
+		``$\implies$'': Supponiamo $u$ non sia C-rad. Allora sia $\alpha$ la vera C-rad che è ovviamente un antenato di $u$ ($\alpha \in \text{open}$).
+		
+		Siccome appartengono alla stessa comp., esiste un cammino da $u \to \alpha$. Sia $(v, w)$ il primo arco uscente da $T_u$.
+		
+		$\implies w \in \text{open}$, $(v, w)$ è di attr. o all'indietro e in ogni caso $t(w) < t(u)$.
+		
+		``$\impliedby$'': Supponiamo che $u$ è una C-rad (per ass.) ma che esista anche l'arco $(v, w)$ della proposizione.
+		
+		Sia $z$ la C-rad di $C(w)$. Abbiamo un arco da $v \to w \in C(w)$. Un cammino da $w \to z$. Un cammino da $z \to u$ dato che $z$ antenato di $u$. Un cammino da $u \to v \in T_u$. Siccome sono tutti connessi tra loro significa che sono tutti nella stessa componente e dunque $u$ non è C-radice.
+	\end{dimostrazione}
 	
 \end{document}
