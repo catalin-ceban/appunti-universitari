@@ -2336,4 +2336,514 @@
 		E' utile notare come, con questa tecnica del base \& bounds, far condividere un'area di memoria a due processi sia pressoché impossibile: dato che ad ogni processo è associata un'area di memoria, quando si prova ad accedere a qualcosa fuori da quello \textit{scope} risulta un errore. Non viene effettuato alcun controllo sulla natura dell'area di memoria, se questa sia condivisa o meno (pensiamo a quando creiamo un sottoprocesso con \texttt{fork()}: la sezione di memoria \texttt{code} è inizialmente condivisa tra i due processi, dunque questo con il base \& bounds classico non sarebbe possibile).
 	\end{osservazione}
 	
+	\section{La segmentazione}
+	Nella sezione precedente abbiamo discusso dei vantaggi di una tecnica come il Base \& Bounds, ma anche e soprattutto dei suoi svantaggi (o meglio, delle sue limitazioni). Tra queste, quella forse più evidente, è la \textit{frammentazione interna della memoria}, causata dal fatto che stiamo allocando un singolo blocco monolitico per tutto lo spazio di memoria virtuale riservato al processo.\\
+	L'idea della segmentazione nasce proprio per scollegarsi da quest'idea di mantenere un blocco unico per tutto il processo, e suddividere il tutto in regioni indipendenti, chiamate appunto \textbf{segmenti}. In riferimento all'organizzazione effettiva della memoria virtuale di un processo, avremo dunque \textbf{un segmento dati per la memoria heap}, \textbf{uno per lo stack} e \textbf{uno per il codice} (omettiamo per semplicità i segmenti dei dati, ma il concetto è uguale).\\
+	
+	Avendo dunque un segmento separato per ogni sezione di memoria, dovremo tenere traccia della lunghezza di questi segmenti: ognuno di questi dovrà avere un registro \textit{base} e un registro \textit{bounds}, il cui funzionamento è sempre lo stesso: mantenere l'indirizzo di memoria del segmento e la sua dimensione.
+	A tal proposito, per ogni processo non ci sarà più solo una coppia di registri, bensì dovremmo memorizzare per ogni segmento i valori dei suoi registri. Questo si ottiene grazie alla \textbf{Segment Table}, una tabella di valori memorizzata nel PCB del processo che contiene, per ogni entrata (che rappresenta un segmento), i dati relativi a quella singola area di memoria.
+	\begin{esempio}{Esempio di Segment Table}{}
+		\begin{tabella}{|c|c|c|c|}
+			Seg & Base & Bounds & Protection \\\hline
+			Code  & 32,768 & 2,048 & R-X \\\hline
+			Heap  & 36,864 & 3,072 & RW- \\\hline
+			Stack & 28,672 & 2,048 & RW- \\\hline
+		\end{tabella}
+		Per ogni segmento, vengono memorizzati il base, il bounds e il livello di accesso consentito.
+		\begin{itemize}
+			\item \textbf{Read (R)}: accesso consentito in lettura.
+			
+			\item \textbf{Write (W)}: accesso consentito in scrittura.
+			
+			\item \textbf{Execute (X)}: è possibile eseguire questo blocco.
+		\end{itemize}
+	\end{esempio}
+	Intuitivamente, come prima durante il context switch venivano copiati i valori dei due registri base e bounds, stavolta verrà copiata tutta la Segment Table.
+	
+	\begin{osservazione}{Condivisione di aree di memoria}{}
+		Siccome adesso non abbiamo più un unico blocco monolitico, bensì una sezione di memoria dedicata ad ogni singola area del processo, anche la condivisione del codice tra due processi sarà semplicissima. Supponiamo che il processo B abbia lo stesso codice del processo A: sarà sufficiente copiare i valori di base e bounds del segmento \texttt{code} di A all'interno del segmento \texttt{code} di B.
+	\end{osservazione}
+	
+	Questa tecnica risolve pienamente il problema della segmentazione interna: se con il base \& bounds classico avevamo un unico blocco allocato, e dunque il \textit{gap} tra heap e stack rimaneva di fatto memoria inutilizzata, stavolta abbiamo delle sezioni ad-hoc per queste aree, e dunque nessun problema di frammentazione interna.
+	
+	\subsection{Traduzione degli indirizzi con la segmentazione}
+	Quando un indirizzo virtuale viene generato all'interno del processo, ricordiamo appunto che questo è "locale" all'istanza del processo stesso, dunque dovrà essere tradotto in un apposito indirizzo fisico da riferire. Avendo adesso però segmenti diversi, bisogna capire \textbf{a quale segmento stiamo facendo riferimento} con quell'area di memoria.\\
+	La soluzione? Avendo 3 segmenti distinti, \textbf{utilizziamo i primi 2 bit più significativi dell'indirizzo} (per rappresentare il numero 3 in binario sono richiesti 2 bit) \textbf{per selezionare il segmento a cui ci stiamo riferendo}, e i seguenti bit saranno l'offset dell'effettivo indirizzo da memorizzare all'interno di quel segmento.
+	
+	\begin{esempio}{Traduzione degli indirizzi con segmentazione}{}
+		\begin{tikzpicture}
+			% Titolo sopra il diagramma
+			\node[anchor=west, font=\ttfamily\bfseries, inner sep=0pt] at (0, 0.6) {Indirizzo virtuale (14 bit):};
+			
+			% Box dei segmenti
+			\draw[thick] (0, 0) rectangle (2.2, -1.1);
+			\node[align=center, font=\ttfamily] at (1.1, -0.55) {Segmento\\2 bits};
+			
+			\draw[thick] (2.2, 0) rectangle (5.5, -1.1);
+			\node[align=center, font=\ttfamily] at (3.85, -0.55) {Offset\\12 bit};
+		\end{tikzpicture}
+		
+		\vspace{1em}
+		
+		\noindent{\ttfamily\bfseries Codifica dei segmenti:}\\
+		\begin{tabular}{@{\hspace{1.5em}}l@{\hspace{0.5em}}l}
+			\texttt{00} $\rightarrow$ & \texttt{Code segment} \\
+			\texttt{01} $\rightarrow$ & \texttt{Heap segment} \\
+			\texttt{11} $\rightarrow$ & \texttt{Stack segment} \\
+			\texttt{10} $\rightarrow$ & \texttt{(unused / invalid)}
+		\end{tabular}
+		\newline
+		(La codifica dei segmenti ovviamente è scelta da noi, non ci sono regole specifiche)
+		
+		\vspace{1em}
+		
+		\noindent{\ttfamily\bfseries Esempio: VA = 01000000001100 = 0x100C}\\
+		\hspace*{1.5em}\texttt{Bit identificanti il segmento = 01 $\rightarrow$ Heap}\\
+		\hspace*{1.5em}\texttt{Offset = 0x00C = 12}\\
+		\hspace*{1.5em}\texttt{$\rightarrow$ Andiamo alla base dello heap e aggiungiamo "offset" bytes}.
+	\end{esempio}
+	
+	\begin{osservazione}{Stack e segmentazione}{}
+		Ricordiamo, come già detto in precedenza, che la memoria stack cresce "verso il basso" (ossia non si muove verso indirizzi più grandi bensì verso quelli più piccoli). Dunque non possiamo applicare la regoletta classica del base \& bounds di sommare l'offset, bensì in questo caso dovremmo sottrarlo. Si tratta di una piccolezza, e a livello implementativo non è neanche così complesso, solo che sembrava corretto fare questo appunto.
+	\end{osservazione}
+	
+	\begin{esempio}{Algoritmo di traduzione VA -> PA}{}
+		\begin{lstlisting}[language=C]
+			function translate(VA, access_type):
+				seg    = extract_segment_bits(VA)
+				offset = extract_offset_bits(VA)
+				
+				entry = segment_table[seg]
+				
+				if entry.valid == 0:
+					raise SegmentNotPresentFault
+				
+				if entry.direction == NEGATIVE:
+					neg_offset = offset - max_segment_size
+					if abs(neg_offset) > entry.bounds:
+						raise SegmentBoundsFault
+					PA = entry.base + neg_offset
+				
+				else:  // Crescita positiva
+					if offset >= entry.bounds:
+						raise SegmentBoundsFault
+					PA = entry.base + offset
+				
+				if not check_protection(entry.prot, access_type):
+					raise ProtectionFault
+				
+				return PA
+		\end{lstlisting}
+	\end{esempio}
+	
+	\subsection{Doveri del SO con la segmentazione}
+	Con questo nuovo "metodo" di traduzione degli indirizzi, dobbiamo definire anche il comportamento del Sistema Operativo nei confronti di alcune operazioni fondamentali che riguardano il ciclo di vita di ogni processo.
+	
+	\begin{description}
+		\item [Context-Switch:] come accennato prima, stavolta non si hanno più un singolo registro base e un singolo registro bounds per ogni processo, bensì ognuno di essi ha una Segment Table. Dunque il PCB di ogni processo dovrà prevedere un campo \texttt{SegmentTable} all'interno del quale memorizzare i dati relativi ad ogni processo.
+		
+		\item[Gestire la crescita dei segmenti:] questo può verificarsi soprattutto con segmenti di memoria dinamici come lo heap. Quando un processo tenta di allocare memoria con \texttt{malloc()} ma lo heap è pieno, bisogna cercare in tutti i modi di allocare quella memoria. Il flusso che si segue è dunque questo.
+		\begin{enumerate}
+			\item Viene chiamata implicitamente la funzione \texttt{sbrk(increment)} che serve a richiedere un incremento di \texttt{increment} bytes alla memoria heap. Ovviamente sottobanco questa funzione nasconde una chiamata di sistema.
+			
+			\item Il SO controlla se esiste memoria adiacente alla fine corrente dello heap:
+			\begin{itemize}
+				\item Se si, espando lo heap e ho risolto la richiesta.
+				
+				\item Altrimenti, si deve cercare un blocco di memoria della dimensione \texttt{dim\_heap + incremento} (dato che siamo sempre sotto l'assunzione che i singoli segmenti debbano essere contigui in memoria). Se tale blocco viene trovato, lo spazio attualmente occupato dallo heap viene liberato e questo si sposta nella nuova area di memoria; se invece non viene trovato, viene lanciata un eccezione \texttt{OutOfMemory}.
+			\end{itemize}
+		\end{enumerate}
+	\end{description}
+	
+	\subsection{La frammentazione esterna}
+	Abbiamo discusso di come l'approccio tramite segmenti risolva il problema della segmentazione interna della memoria, eliminando il \textit{gap} inutilizzato tra memoria heap e memoria stack. Il problema rimane uno già discusso precedentemente: avendo aree di memoria \textbf{di dimensione variabile}, ci ritroveremo in una situazione come quella descritta nella figura sottostante, ovvero in cui \textbf{complessivamente} abbiamo molto spazio libero, ma è impossibile allocare un segmento in quanto quello spazio libero \textbf{non è contiguo}.
+	
+	\begin{figure}[H]
+		\centering
+		\begin{tikzpicture}[
+			font=\small\sffamily,
+			cell/.style={draw=black, thick, minimum height=1.2cm, align=center, inner sep=2pt},
+			lbl/.style={font=\footnotesize, inner sep=1pt}
+			]
+			% --- COORDINATE ORIZZONTALI DEI BLOCCHI ---
+			% Assegniamo larghezze adeguate a ciascun blocco per evitare che il testo tocchi i bordi
+			\def\xZero{0.0}
+			\def\xOne{1.3}   % OS (8 KB)
+			\def\xTwo{2.7}   % FREE (2 KB)
+			\def\xThree{4.1} % A (7 KB)
+			\def\xFour{5.5}  % FREE (3 KB)
+			\def\xFive{6.8}  % B (5 KB)
+			\def\xSix{8.3}   % FREE (8 KB)
+			\def\xSeven{9.6} % C (4 KB)
+			\def\xEight{11.0}% FREE (1 KB)
+			\def\xNine{12.3} % D (3 KB)
+			\def\xTen{15.0}  % FREE (23 KB)
+			
+			% --- DISEGNO DELLE CELLE (MEMORIA) ---
+			\node[cell, anchor=west, minimum width=\xOne cm - \xZero cm] (b1)  at (\xZero, 0)  {OS\\8 KB};
+			\node[cell, anchor=west, minimum width=\xTwo cm - \xOne cm]  (b2)  at (\xOne, 0)   {FREE\\2 KB};
+			\node[cell, anchor=west, minimum width=\xThree cm - \xTwo cm](b3)  at (\xTwo, 0)   {A\\7 KB};
+			\node[cell, anchor=west, minimum width=\xFour cm - \xThree cm](b4) at (\xThree, 0) {FREE\\3 KB};
+			\node[cell, anchor=west, minimum width=\xFive cm - \xFour cm](b5)  at (\xFour, 0)  {B\\5 KB};
+			\node[cell, anchor=west, minimum width=\xSix cm - \xFive cm] (b6)  at (\xFive, 0)  {FREE\\8 KB};
+			\node[cell, anchor=west, minimum width=\xSeven cm - \xSix cm](b7)  at (\xSix, 0)   {C\\4 KB};
+			\node[cell, anchor=west, minimum width=\xEight cm - \xSeven cm](b8)at (\xSeven, 0) {FREE\\1 KB};
+			\node[cell, anchor=west, minimum width=\xNine cm - \xEight cm](b9) at (\xEight, 0) {D\\3 KB};
+			\node[cell, anchor=west, minimum width=\xTen cm - \xNine cm] (b10) at (\xNine, 0)  {FREE\\23 KB};
+			
+			% --- ETICHETTE INDIRIZZI IN BASSO (KB) ---
+			\node[lbl, anchor=north] at (\xZero,  -0.65) {0};
+			\node[lbl, anchor=north] at (\xOne,   -0.65) {8};
+			\node[lbl, anchor=north] at (\xTwo,   -0.65) {10};
+			\node[lbl, anchor=north] at (\xThree, -0.65) {17};
+			\node[lbl, anchor=north] at (\xFour,  -0.65) {20};
+			\node[lbl, anchor=north] at (\xFive,  -0.65) {25};
+			\node[lbl, anchor=north] at (\xSix,   -0.65) {33};
+			\node[lbl, anchor=north] at (\xSeven, -0.65) {37};
+			\node[lbl, anchor=north] at (\xEight, -0.65) {38};
+			\node[lbl, anchor=north] at (\xNine,  -0.65) {41};
+			\node[lbl, anchor=north] at (\xTen,   -0.65) {64};
+			
+			% --- FRECCE E STAFFA PER I BLOCCHI "FREE" ---
+			% Coordinate centrali dei blocchi liberi
+			\pgfmathsetmacro{\cTwo}{(\xOne + \xTwo)/2}
+			\pgfmathsetmacro{\cFour}{(\xThree + \xFour)/2}
+			\pgfmathsetmacro{\cSix}{(\xFive + \xSix)/2}
+			\pgfmathsetmacro{\cEight}{(\xSeven + \xEight)/2}
+			\pgfmathsetmacro{\cTen}{(\xNine + \xTen)/2}
+			
+			\begin{scope}[thick, >=stealth]
+				% Barra orizzontale di collegamento
+				\draw (\cTwo, -1.5) -- (\cTen, -1.5);
+				
+				% Frecce verticali rivolte verso l'alto
+				\draw[->] (\cTwo,   -1.5) -- (\cTwo,   -1.15);
+				\draw[->] (\cFour,  -1.5) -- (\cFour,  -1.15);
+				\draw[->] (\cSix,   -1.5) -- (\cSix,   -1.15);
+				\draw[->] (\cEight, -1.5) -- (\cEight, -1.15);
+				\draw[->] (\cTen,   -1.5) -- (\cTen,   -1.15);
+			\end{scope}
+			
+			% Testo totale memoria libera
+			\node[font=\small\bfseries\sffamily, anchor=north] at ({(\cTwo + \cTen)/2}, -1.65) {37 KB LIBERI TOTALI};
+			
+		\end{tikzpicture}
+	\end{figure}
+	L'unica soluzione che il sistema operativo può attuare per garantire l'allocazione è la \textbf{compattazione} (o \textbf{deframmentazione}) della memoria, che consiste nel unire una dopo l'altra tutte le aree di memoria occupate e lasciare alla fine un unico blocco libero contiguo.
+	
+	\section{La paginazione della memoria (paging)}
+	Il problema della frammentazione esterna è dato da un semplice fatto: i segmenti di memoria relativi ad ogni area hanno dimensione diversa. Ed è \textbf{matematicamente impossibile} trovare una soluzione che non causi questi buchi in memoria, sotto queste circostanze. Bisogna dunque trovare una soluzione matematicamente compatibile: è così che nasce la tecnica del \textbf{paging}, cioè la suddivisione sia della memoria virtuale sia della memoria fisica in blocchi contigui detti \textbf{pagine} (per la memoria virtuale) oppure \textbf{frame} (per la memoria fisica), che avranno la stessa dimensione per permettere ad ogni pagina di finire dentro ogni frame.
+	
+	\begin{osservazione}{Perché questo risolve il problema?}{}
+		Suddividere la memoria virtuale e fisica in tante piccole pagine tutte della stessa dimensione garantisce che anche eventuali locazioni di memoria lasciate libere siano sempre della stessa dimensione delle pagine. La frammentazione esterna è così \textbf{impossibile}.
+	\end{osservazione}
+	
+	A questo punto, intuitivamente, nel PCB di ogni processo non sarà più necessario memorizzare una tabella contenente tutti i segmenti, bensì una tabella contenente tutte le pagine, appunto detta \textbf{Page Table}.\\
+	In particolare, ogni \textbf{pagina virtuale} è identificata da un \textbf{Virtual Page Number (VPN)}, mentre una \textbf{frame} da un \textbf{Physical Frame Number (PFN)}. In ogni entry della tabella viene dunque memorizzata la corrispondenza tra un VPN e il suo PFN.
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			font=\sffamily,
+			box/.style={draw=black, very thick, minimum height=0.8cm, inner sep=0pt}
+			]
+			
+			% Campo VPN
+			\node[box, anchor=west, minimum width=3.8cm] (vpn) at (0, 0) {VPN};
+			
+			% Campo OFFSET
+			\node[box, anchor=west, minimum width=2.6cm] (offset) at (vpn.east) {OFFSET};
+			
+		\end{tikzpicture}
+		\caption{Struttura di un indirizzo virtuale.}
+	\end{figure}
+	La figura rappresenta la struttura di un indirizzo virtuale (VA) secondo la tecnica del paging. Come si può vedere, questo è composto da due campi:
+	\begin{itemize}
+		\item La \textbf{VPN}, dunque l'\textbf{identificativo univoco della pagina in memoria virtuale}. Questo valore servirà come chiave per consultare la Page Table e ottenere il corrispondente frame associato in memoria fisica.
+		
+		\item Una volta trovata la corrispondente pagina in memoria, l'\textbf{indirizzo all'interno della pagina a cui il VA effettivamente punta} è dato dall'\textbf{offset}, ossia di quanto si deve spostare dall'inizio della pagina.
+	\end{itemize}
+	
+	\begin{esempio}{Esempio di traduzione VA -> PA}{}
+		Ad esempio, se avessimo \texttt{VPN = 1} e \texttt{offset = 10} dovremo:
+		\begin{enumerate}
+			\item Prendere in memoria il valore del frame associato a \texttt{PageTable[1]}.
+			
+			\item Una volta trovato tale frame, dobbiamo prendere l'indirizzo a cui questo inizia e aggiungere \texttt{offset}. Così avremo convertito completamente da indirizzo virtuale a fisico.
+		\end{enumerate}
+	\end{esempio}
+	
+	\begin{figure}[H]
+		\centering
+		\begin{tikzpicture}[
+			font=\small\ttfamily,
+			frameNode/.style={
+				draw=black, 
+				thick, 
+				minimum width=8.2cm,
+				text width=8.0cm,
+				align=center,
+				minimum height=0.65cm, 
+				inner sep=0pt
+			},
+			addrNode/.style={
+				font=\small\ttfamily, 
+				anchor=west
+			}
+			]
+			% Titolo sopra la memoria
+			\node[anchor=west, font=\small\ttfamily] at (0, 5.7) {Memoria fisica (128 byte, 8 frame):};
+			
+			% Blocchi dei Frame (dal Frame 0 al Frame 7)
+			\node[frameNode] (f0) at (4.1, 0.325) {Frame 0 \quad (16 bytes) \quad [Kernel SO]};
+			\node[frameNode] (f1) at (4.1, 0.975) {Frame 1 \quad (16 bytes) \quad [Page 1 of A]};
+			\node[frameNode] (f2) at (4.1, 1.625) {Frame 2 \quad (16 bytes) \quad [Page 0 of A]};
+			\node[frameNode] (f3) at (4.1, 2.275) {Frame 3 \quad (16 bytes) \quad [Page 2 of A]};
+			\node[frameNode] (f4) at (4.1, 2.925) {Frame 4 \quad (16 bytes) \quad [FREE]};
+			\node[frameNode] (f5) at (4.1, 3.575) {Frame 5 \quad (16 bytes) \quad [Page 3 of A]};
+			\node[frameNode] (f6) at (4.1, 4.225) {Frame 6 \quad (16 bytes) \quad [FREE]};
+			\node[frameNode] (f7) at (4.1, 4.875) {Frame 7 \quad (16 bytes) \quad [FREE]};
+			
+			% Indirizzi fisici sulla destra in corrispondenza delle divisioni
+			\node[addrNode] at (8.4, 0.00) {0};
+			\node[addrNode] at (8.4, 0.65) {16};
+			\node[addrNode] at (8.4, 1.30) {32};
+			\node[addrNode] at (8.4, 1.95) {48};
+			\node[addrNode] at (8.4, 2.60) {64};
+			\node[addrNode] at (8.4, 3.25) {80};
+			\node[addrNode] at (8.4, 3.90) {96};
+			\node[addrNode] at (8.4, 4.55) {112};
+			\node[addrNode] at (8.4, 5.20) {128};
+		\end{tikzpicture}
+		\caption{Struttura della memoria fisica suddivisa in frame.}
+	\end{figure}
+	
+	Come vediamo, non è neanche richiesta continuità in quanto i frame del processo A possono essere collocati in posizioni completamente staccate o disordinate l'uno dall'altro.
+	\begin{esempio}{Dimensione delle pagine}{}
+		Supponiamo di avere a disposizione 4GB di memoria RAM, che vogliamo suddividere in pagine da 4KB l'una.\\
+		Convertendo tutto in potenze di 2, abbiamo che:
+		\begin{itemize}
+			\item Capienza RAM: $2^32$ byte.
+			
+			\item Dimensione pagina: $2^12$ byte.
+		\end{itemize}
+		Per calcolare \textit{quante} pagine possiamo ottenere basta fare una semplice divisione: $2^{32} : 2^{12} = 2^{20}$. Ciò vuol dire che potremo avere fino a $2^{20}$ pagine distinte. E questo valore, o meglio l'esponente di questo valore (20) rappresenta la lunghezza del campo VPN del Virtual Address, in quanto dovremo garantire che ogni pagina sia univocamente identificata. Abbiamo inoltre già detto che ogni pagina deve essere di $2^{12}$ byte, e dunque avremo un totale di 32 byte di cui 20 riservati alla VPN e 12 all'offset.
+	\end{esempio}
+	
+	Per quanto questa tecnica sia rivoluzionaria sotto molti punti di vista rispetto alle precedenti bisogna premettere che, almeno per come l'abbiamo definita finora, non è esente da criticità:
+	\begin{enumerate}
+		\item L'esempio presentato poco fa ci mostra come anche con pagine di 4KB possiamo fare fino a $2^{20} \approx 1$ milione di pagine. Se ogni pagina è fatta da 32 bit questo vuol dire che la page table potrà costare un massimo di $2^{20} \cdot 2^2 = 2^{22} \approx 4$MB per ogni processo. Se andiamo a scalarlo per un largo numero di processi, questo numero si può alzare, ma se scegliamo pagine di 4KB è un valore anche ragionevole. Se invece fossimo in un sistema a 64 bit e volessimo mantenere comunque pagine da 4KB l'una, risulterebbe in circa 512GB per ogni processo, \textit{solo per la page table}! Ci rendiamo conto essere una cifra esorbitante ed irrealistica anche ad oggi.
+		
+		\item Per scrivere/leggere un indirizzo dalla memoria servono due accessi consecutivi a questa: uno per trovare il frame fisico associato alla pagina logica, l'altro per effettuare effettivamente l'operazione in memoria (lettura o scrittura che sia). Rispetto al base \& bounds o alla segmentazione, questo doppio accesso rappresenta un rallentamento di 2 volte rispetto a prima!
+	\end{enumerate}
+	
+	Per risolvere queste due criticità e costruire finalmente la versione definitiva della virtualizzazione della memoria, gli ingegneri del software hanno trovato due soluzioni di cui discutiamo separatamente nelle seguenti sezioni.
+	
+	\subsection{Il Translation Lookaside Buffer (TLB)}
+	Al fine di risolvere la prima criticità, legata al numero massivo di accessi in memoria, si è deciso di prendere una strada già vista in precedenza, che ha sempre dato soddisfazioni: aggiungere un componente hardware dedicato all'interno della MMU. In questo caso, tale componente è il \textbf{Translation Lookaside Buffer (TLB)}, che non è altro che una memoria cache il cui obiettivo è memorizzare tutte le conversioni recenti VPN -> PFN.
+	\smallbreak
+	
+	Essendo una memoria cache, il TLB può contenere solitamente poche entrate, ma l'accesso in scrittura e lettura sarà praticamente immediato.\\
+	Ogni volta che viene utilizzata una nuova pagina dalla memoria, la coppia VPN -> PFN, assieme ad altri valori, viene inserita all'interno della TLB.\\
+	Alla richiesta di un frame di memoria, questo viene prima cercato nella TLB:
+	\begin{itemize}
+		\item Se tale frame viene trovato, allora si procede con l'operazione da eseguire in memoria.
+		
+		\item Altrimenti, è necessario cercare tale frame nella memoria RAM, che come sappiamo richiederà un tempo più lungo. Tuttavia, una volta trovato questo frame, potremo memorizzare la corrispondenza all'interno della cache.
+	\end{itemize}
+	\begin{proposizione}{Address Space Identifier (ASID)}{}
+		All'interno di una TLB Entry vengono memorizzati vari dati, oltre alla corrispondenza tra pagina virtuale e frame fisico. Uno di questi dati è il cosiddetto \textbf{Address Space Identifier (ASID)}, che serve ad identificare quella pagina a quale processo appartiene.\\
+		Questo parametro risulta particolarmente utile perché in questo modo durante il context switch non ci sarà bisogno di cancellare tutte le entry della TLB, bensì di mantenerle tutte e controllare solo quelle il cui ASID è uguale all'ASID del processo corrente.
+	\end{proposizione}
+	
+	La soluzione mediante TLB è \textbf{estremamente efficiente}, in quanto risulta quasi sempre in un hit e quasi mai in un miss. Vediamo con il seguente esempio come questi concetti si legano al principio della località temporale visto nel primo capitolo.
+	\begin{esempio}{Tasso di hit del TLB}{}
+		
+		\begin{lstlisting}[language=C, style=stile-listings]
+			int sum = 0;
+			for (int i = 0; i < 1000; i++) {
+				sum += array[i];    // sum si trova sullo stack, sempre nella stessa pagina
+			}
+		\end{lstlisting}
+		
+		\begin{itemize}
+			\item Variabile \texttt{sum}: sullo stack, vi si accede 1000 volte $\rightarrow$ stesso VPN $\rightarrow$ caricata nel TLB una volta, 999 hit.
+			
+			\item \texttt{i}: stessa pagina dello stack $\rightarrow$ hit a ogni iterazione dopo il primo miss.
+			
+			\item \texttt{array[i]}: località spaziale --- 1000 interi occupano 1-2 pagine $\rightarrow$ solo 1-2 miss del TLB per 1000 accessi.
+		\end{itemize}
+		
+		Miss totali per questo ciclo: 3-4 (2 miss per lo stack + 1-2 miss per l'array).
+		
+		Accessi totali: $\sim$3000 (fetch delle istruzioni + accessi ai dati), per dunque un Hit rate > 99.9\%.
+	\end{esempio}
+	
+	Per sapere quanti dati relativi ad un processo un TLB può effettivamente mantenere, è sufficiente applicare la seguente formula:
+	\[
+		\text{copertura\_totale\_TLB} = \text{numero\_entrate\_TLB} \times \text{dimensione\_singola\_pagina}
+	\]
+	Se ci manteniamo sulle precedenti pagine da 4KB e supponiamo di avere un TLB da massimo 64 entrate, avremo un working set di circa 256KB, che di solito è abbastanza per contenere tutti i dati di un programma medio-piccolo, e dunque si avranno pochi TLB Miss.\\
+	Tuttavia, se provassimo ad accedere ad un numero di pagine \textit{maggiore} alla capienza massima del TLB, avremo un costante TLB Miss, dato che le pagine verrebbero periodicamente sostituite (dopo aver caricato 64 pagine, se vogliamo metterne un'altra dobbiamo rimuovere la prima). Per risolvere tale fenomeno, chiamato \textbf{TLB Trashing} una soluzione è quella di aumentare la dimensione della singola pagina: attenzione però al fatto che le pagine devono essere contigue in memoria, e dunque pagine più grandi significa anche possibilità di frammentazione interna maggiore.
+	\smallbreak
+	
+	Una formula utile per alcuni esercizi può essere quella per il calcolo dell'\textbf{Effective Memory Access Time}, che indica qual'è il tempo effettivo di accesso alla memoria in base ai parametri della cache TLB.
+	\[
+		\text{EMAT} = h \cdot (T_{\text{TLB}} + T_{\text{mem}}) + (1 - h) \cdot (T_{\text{TLB}} + T_{\text{PT}} + T_{\text{mem}}) 
+	\]
+	dove:
+	\begin{itemize}
+		\item $T_{\text{TLB}}$ rappresenta il tempo necessario ad \textbf{accedere al TLB}.
+		
+		\item $T_{\text{PT}}$ indica il tempo necessario ad \textbf{accedere la pagina nella Page Table in memoria RAM}.
+		
+		\item $T_{\text{mem}}$ indica il tempo di \textbf{accesso dell'effettivo indirizzo in RAM}.
+		
+		\item $h$ rappresenta il \textbf{TLB hit-rate} (dunque un valore compreso tra 0.0 e 1.0).
+	\end{itemize}
+	
+	\subsection{Multi-Level Page Tables}
+	Per risolvere il secondo problema, quello del massivo numero di pagine ottenute a causa dello spazio virtuale praticamente infinito (agli occhi del singolo processo), si può operare stavolta a livello logico, modificando l'implementazione della Page Table.\\
+	Prima di procedere con la spiegazione, vediamo però un esempio:
+	\begin{osservazione}{Spreco di memoria per le pagine di un proceso}{}
+		Processo a 32-bit, pagine da 4 KB $\rightarrow 2^{20} =$ 1.048.576 voci PTE.\\
+		Ogni PTE = 4 byte $\rightarrow$ Page table = 4 MB
+		
+		Ma quante pagine usa effettivamente un processo tipico?
+		
+		\begin{tabular}{@{\hspace{1.5em}}l@{\quad}l@{\quad}l}
+			Code:  & $\sim$500 KB & $\rightarrow \quad \sim$125 pagine \\
+			Data:  & $\sim$100 KB & $\rightarrow \quad \sim$25 pagine \\
+			Heap:  & $\sim$1 MB   & $\rightarrow \quad \sim$256 pagine \\
+			Stack: & $\sim$64 KB  & $\rightarrow \quad \sim$16 pagine \\
+			TOTALE: & \multicolumn{2}{l}{$\sim$422 pagine utilizzate attivamente}
+		\end{tabular}
+		
+		\vspace{0.5em}
+		La tabella delle pagine piatta alloca 1.048.576 voci a fronte di sole 422 pagine utilizzate.
+		Il 99.96\% delle voci della tabella delle pagine risulta NON VALIDO (valid bit = 0).
+		Il 99.96\% di 4 MB sprecati per PTE non valide.
+	\end{osservazione}
+	
+	L'idea di fondo per risolvere questo problema è quella di \textbf{allocare solo le pagine che ci servono davvero}.\\
+	Nel pratico, questo viene fatto nel seguente modo:
+	\begin{enumerate}
+		\item Per ogni processo, si definisce un Array chiamato \textbf{Page Directory}.
+		
+		\item Ogni elemento di questo Array è detto \textbf{Page Directory Entry (PDE)}. Ad ogni PDE è associata \textbf{una e una sola Page Table}, che contiene le pagine di quel processo contenute in un certo range.
+		
+		\item Se il valore associato ad una PDE viene marcato come \textit{non valido}, ci basta \textbf{non allocare le pagine di quel range}, e avremo risparmiato moltissima memoria!
+	\end{enumerate}
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			>=stealth,
+			thick,
+			font=\small\ttfamily,
+			box/.style={draw=black, thick, align=center, inner sep=4pt},
+			tablebox/.style={draw=black, thick, minimum width=3.4cm, minimum height=2.0cm, align=center, inner sep=6pt}
+			]
+			% --- INDIRIZZO VIRTUALE (senza la scritta VA) ---
+			\node[box, minimum width=2.4cm, minimum height=1.1cm] (vpn1) at (0, 0) {VPN1\\(10 bit)};
+			\node[box, minimum width=2.4cm, minimum height=1.1cm, anchor=west] (vpn2) at (vpn1.east) {VPN2\\(10 bit)};
+			\node[box, minimum width=2.8cm, minimum height=1.1cm, anchor=west] (offset) at (vpn2.east) {Offset\\(12 bit)};
+			
+			% --- TABELLE INFERIORI ---
+			% Page Directory: allineata direttamente sotto vpn1
+			\node[tablebox, anchor=north] (pdir) at (vpn1.center |- 0, -1.8) {Page Dir\\(1024 PDE)\\[1.5ex] \textbf{PDE[VPN1]}};
+			
+			% Inner Page Table: posizionata a destra della Page Directory
+			\node[tablebox, anchor=west] (ptable) at ([xshift=1.8cm]pdir.east) {Inner PT\\(1024 PTE)\\[1.5ex] \textbf{PTE[VPN2]}};
+			
+			% --- COLLEGAMENTI E FRECCE ---
+			% Freccia verticale dritta da VPN1 alla testa della Page Dir
+			\draw[->] (vpn1.south) -- (pdir.north);
+			
+			% Freccia a gomito pulita da VPN2 al lato sinistro dell'Inner PT
+			\draw[->] (vpn2.south) |- ([yshift=0.45cm]ptable.west);
+			
+			% Freccia orizzontale perfettamente dritta dalla riga PDE[VPN1] a PTE[VPN2]
+			\draw[->] ([yshift=-0.55cm]pdir.east) -- ([yshift=-0.55cm]ptable.west);
+			
+		\end{tikzpicture}
+		\caption{Traduzione dell'indirizzo con tabella delle pagine a due livelli.}
+	\end{figure}
+	
+	Dato un indirizzo virtuale a 32 bit suddiviso in:
+	\begin{center}
+		\texttt{[ PDI (10 bit) | PTI (10 bit) | Offset (12 bit) ]}
+	\end{center}
+	
+	Il meccanismo di traduzione hardware (MMU) si divide ora nei seguenti passi:
+	\begin{enumerate}
+		\item \textbf{Accesso alla Page Directory (1° Livello):}
+		\begin{itemize}
+			\item La MMU estrae i primi 10 bit più significativi dell'indirizzo virtuale, che rappresentano l'indice della PDE che punta alla Page Table in cui è contenuta la pagina puntata dall'indirizzo.
+			
+			\item Calcola l'indirizzo della voce corrispondente:
+			$$\text{Indirizzo PDE} = \text{Indirizzo di base PageDirectory} + (\text{Indice Pagina} \times 4\text{ byte})$$
+			\item Legge la \textbf{PDE}:
+			\begin{itemize}
+				\item Se il bit di validità è $0$, la tabella di secondo livello non esiste in memoria $\rightarrow$ viene sollevata un'eccezione hardware (\textbf{Page Fault} / \textit{Segmentation Fault}).
+				\item Se il bit di validità è $1$, la PDE contiene il PFN (\textit{Page Frame Number}) in cui risiede la Page Table di secondo livello.
+			\end{itemize}
+		\end{itemize}
+		
+		\item \textbf{Accesso alla Page Table (2° Livello):}
+		\begin{itemize}
+			\item La MMU estrae i successivi 10 bit dell'indirizzo virtuale.
+			
+			\item Calcola l'indirizzo della \textbf{PTE} (\textit{Page Table Entry}) all'interno della Page Table individuata al passo 1:
+			$$\text{Indirizzo PTE} = \text{Base Page Table} + (\text{PTI} \times 4\text{ byte})$$
+			\item Legge la \textbf{PTE}:
+			\begin{itemize}
+				\item Se il bit di presenza/validità è $0$, la pagina dati non è caricata in RAM $\rightarrow$ scatta un \textbf{Page Fault} (il kernel caricherà la pagina dal disco).
+				\item Se il bit è $1$, si verificano i permessi di accesso (R/W/X). Se validi, si estrae il PFN del frame fisico contenente i dati.
+			\end{itemize}
+		\end{itemize}
+		
+		\item \textbf{Calcolo dell'Indirizzo Fisico Effettivo:}
+		\begin{itemize}
+			\item La MMU combina il \textbf{PFN} estratto al passo 2 con i 12 bit di \textbf{Offset} originali (invariati rispetto all'indirizzo virtuale).
+			
+			\item La CPU esegue la lettura o scrittura sul frame di memoria fisica.
+		\end{itemize}
+	\end{enumerate}
+	
+	In realtà, questa stessa codifica mediante soli 2 livelli risulta ancora non essere abbastanza per eliminare gli sprechi di memoria nei sistemi a 64 bit. Difatti, l'implementazione per tali architetture si basa sull'utilizzo di 4 livelli.
+	
+	\vspace{1em}
+	\begin{figure}[H]
+		\centering
+		\begin{tikzpicture}[
+			font=\small\ttfamily,
+			box/.style={
+				draw=black,
+				thick,
+				minimum height=1.1cm,
+				align=center,
+				inner sep=6pt
+			}
+			]
+			% Box dei singoli campi con larghezze dedicate
+			\node[box, minimum width=2.4cm] (pml4)   at (0, 0)   {PML4\\(9 bit)};
+			\node[box, minimum width=2.4cm, anchor=west] (pdpt)   at (pml4.east)   {PDPT\\(9 bit)};
+			\node[box, minimum width=2.4cm, anchor=west] (pd)     at (pdpt.east)   {PD\\(9 bit)};
+			\node[box, minimum width=2.4cm, anchor=west] (pt)     at (pd.east)     {PT\\(9 bit)};
+			\node[box, minimum width=2.8cm, anchor=west] (offset) at (pt.east)     {Offset\\(12 bit)};
+		\end{tikzpicture}
+		\caption{Esempio grafico dell'organizzazione del paging in sistemi a 64 bit.}
+	\end{figure}
+	In sistemi che usano Multi-Paging a 4 livelli, abbiamo i seguenti oggetti:
+	\begin{itemize}
+		\item Page Map Level 4, la radice degli indirizzi associati ad un processo.
+		
+		\item Page Directory Pointer Table, che punta alla page directory in cui si trova l'indirizzo.
+		
+		\item Page Directory, il secondo livello che infatti assume lo stesso ruolo di prima.
+		
+		\item Page Table, che contiene l'effettiva corrispondenza.
+	\end{itemize}
+	
 \end{document}
