@@ -2533,7 +2533,7 @@
 	A tal proposito, introduciamo l'operatore di \textbf{ridenominazione}, che è l'unico che agisce sullo schema della relazione. Il punto di questo operatore è proprio modificare il nome della relazione e degli attributi al suo interno, proprio per evitare casi del genere in cui vi è presente un attributo che nelle relazioni di partenza ha lo stesso nome.\\
 	L'operazione di ridenominazione ha la seguente sintassi:
 	\[
-		\text{NuovoNomeRelazione} = \rho_{\text{NuovoNome1, NuovoNome2, \dots <- Nome1, Nome2, \dots (R)}}
+		\text{NuovoNomeRelazione} = \rho_{\text{NuovoNome1, NuovoNome2, \dots $\leftarrow$ Nome1, Nome2, \dots (R)}}
 	\]
 	dove "NuovoNome$(i)$" indica il nuovo nome che si vuole dare agli attributi nella nuova relazione.
 	\smallbreak
@@ -2617,6 +2617,86 @@
 	\[
 		r_1 \bowtie_{A\theta B} r_2 := \sigma_{A \theta B}(r_1 \times r_2)
 	\]
+	
+	\section{Quantificatori unari e globali}
+	Finora tutte le operazioni di interrogazione che abbiamo definito e svolto sulle nostre relazioni si sono basate su delle richieste molto simili: \textit{trovare tutte le istanze di ... tali che esiste almeno un ...}\\
+	Detto così è un po' astratto, però con un esempio forse si chiarirà il concetto: \textit{trovare tutti gli studenti che hanno superato almeno un esame}. Come vediamo, ci viene chiesto SE ESISTONO gli studenti con almeno un esame, e memorizzarli in una relazione. Dunque sappiamo come operare: scorriamo tutte le tuple di una relazione e appena troviamo una tupla con \texttt{Superato = True}, allora prendiamo codice e nome di quello studente e li inseriamo come tupla nella nuova relazione.
+	
+	Insomma, finora tutte le nostre interrogazioni si sono basate sulla costante logica di \textbf{scansionare una per una le tuple e decidere lì sul momento se quella tupla fosse compatibile o meno}. Matematicamente, questo equivale al quantificatore essenziale $\exists$.
+	\smallbreak
+	
+	Vogliamo ora spostare il nostro ragionamento: e se ci fosse stato chiesto \textit{tutti gli studenti che non hanno partecipato all'esame}? Oppure gli studenti \textit{che non l'hanno mai superato?} Come vediamo, la situazione diventa diversa:
+	\begin{itemize}
+		\item Nel primo esempio, se non vedo uno studente fino alla penultima riga non posso dare per scontato che non si sia presentato a quell'esame, dato che potrebbe essere presente come ultima tupla della relazione.
+		
+		\item Nel secondo esempio, invece, se leggo che lo studente con codice 003 non ha superato l'esame in una tupla, non posso decretare direttamente che non lo abbia mai superato e dunque inserirlo nella relazione di destinazione, in quanto potrebbe esserci una tupla successiva in cui viene invece detto che lo studente ha superato tale esame.
+	\end{itemize}
+	Per questo tipo di interrogazioni, dobbiamo cambiare il modo di ragionare: non più con il quantificatore $\exists$, bensì con il quantificatore $\forall$ oppure $\nexists$.\\
+	
+	Ragionare secondo quantificatori globali, che dunque prendono in esempio tanti elementi insieme, è sempre più difficile. Potremmo dunque ragionare al contrario, \textbf{negando} il quantificatore globale per ottenerne uno unario.
+	\begin{definizione}{Negazione di $\forall$}{}
+		Data una proposizione del tipo "$\forall$ oggetti VALE condizione", la sua \textbf{negazione} sarà la proposizione "$\mathbf{\exists}$ \textbf{oggetto per cui NON VALE CONDIZIONE}".
+		\smallbreak
+		
+		Facciamo un esempio pratico: la negazione della frase "Tutti i miei amici si chiamano Francesco" è "Ho ALMENO UN amico che non si chiama Francesco". Come vediamo, siamo riusciti a trasformare un quantificatore globale in uno unario semplicemente negando la proposizione.
+	\end{definizione}
+	
+	Per testarne il funzionamento, proviamolo su una richiesta vera.
+	\begin{esempio}{Interrogaione con negazione di quantificatori globali}{}
+		Supponiamo la richiesta sia "\textit{Trovare tutti gli studenti che hanno superato tutti gli esami a cui hanno partecipato}".\\
+		Se fossimo rimasti con la mentalità precedente, sarebbe stato un disastro: per ogni studente avremmo dovuto memorizzare se ha passato un esame e solo se tutti fossero stati veri avremmo potuto metterlo nella nuova relazione.
+		\smallbreak
+		
+		Adesso sappiamo però che la negazione ci è amica, e dunque la richiesta risulta esser equivalente a "\textit{Studenti che NON SONO MAI STATI BOCCIATI}". E qui la soluzione diventa banale: prendiamo la relazione ottenuta dalla Theta Join tra \texttt{Studenti} ed \texttt{Esami} e verifichiamo l'esito dell'esame per ogni tupla: se leggiamo \texttt{Esito = "Bocciato"}, allora questa tupla \textbf{non deve stare nella relazione richiesta}. Tuttavia, dato che stiamo ragionando al \textbf{complemento}, dovremo memorizzare questa tupla in una \textbf{relazione contenente solo gli studenti che non rispettano la condizione di partenza}.\\
+		A quel punto, scansionate tutte le tuple, prendiamo la \textbf{relazione studenti di partenza e applichiamo la differenza con la relazione degli studenti bocciati almeno una volta}: il risultato di tale operazione insiemistica sarà anche la risposta alla nostra query.
+	\end{esempio}
+	
+	In altri casi, a seconda di come è stata costruita la base di dati, potremmo ritrovarci che le informazioni per una query siano tutte nella stessa tabella, però appartenenti a tuple diverse che devono essere collegate l'un l'altra. Di seguito si presenta un esempio.
+	\begin{esempio}{Interrogazione con Auto-Join}{}
+		Supponiamo di avere una relazione \texttt{Impiegato} con il seguente schema \texttt{(Codice (PK), Cognome, Stipendio, CodCapo (FK))} e di voler ottenere \textit{tutti gli impiegati che hanno uno stipendio maggiore di quello del loro capo}. All'interno della relazione \texttt{Impiegato} sono infatti memorizzati anche i capi.
+		\smallbreak
+		
+		Il fatto che le informazioni siano tutte nella stessa relazione non deve spaventarci, in quanto possiamo ragionare in maniera quasi completamente uguale a quando usavamo due relazioni: facciamo la Join tra le due relazioni ed estraiamo le informazioni.\\
+		L'unico cambiamento nei casi delle Auto-Join risiede nel fatto che, essendo la stessa tabella, avremo i campi \textit{tutti con lo stesso nome}, e dunque molto probabilmente si verificheranno problemi di correttezza dei dati. La soluzione è quindi rinominare una delle due tabelle e i suoi campi.
+		\begin{enumerate}
+			\item Creiamo una copia ridenominata per la tabella contenente tutti i capi.
+			\[
+				\text{Capi} = \rho_{\text{CodC, CognC, StipC, CC} \leftarrow \text{Codice, Cognome, Stipendio, CodCapo}}(\text{Impiegato})
+			\]
+			
+			\item Eseguiamo il Theta-Join tra la relazione \texttt{Impiegati} e la nuova relazione \texttt{Capi}.
+			\[
+				R_1 = \text{Impiegati} \bowtie_{\text{CodCapo} = \text{CodC} \land \text{Stipendio} > \text{StipC}} \text{Capi}
+			\]
+			
+			\item Solo per un output più carino, eseguiamo una proiezione per estrarre solo codice e cognome di tale impiegato
+			\[
+				R_{\text{finale}} = \pi_{\text{Codice, Cognome}}(\text{R}_1)
+			\]
+		\end{enumerate}
+	\end{esempio}
+	
+	\begin{esempio}{Query complessa con Auto-Join}{}
+		Se invece, sempre in riferimento allo schema di relazione precedente, volessimo ottenere \textit{codice e cognome dei capi che guadagnano più di tutti i loro dipendenti}, dovremmo usare la struttura a doppia negazione.
+		
+		\begin{enumerate}
+			\item Otteniamo la tabella di tutti i capi. Supponiamo di avere la relazione \texttt{Capi} definita come prima, e anche la relazione $R_1$ definita come Theta-Join tra impiegati e i loro capi. Per estrarre adesso solo i capi, cioè nome e cognome di ogni capo, ci basta fare una proiezione su questa relazione:
+			\[
+				\text{TuttiCapi} = \pi_{\text{CodC, CognC}}(\text{R}_1)
+			\]
+			Ci servirà per l'ultimo passaggio.
+			
+			\item Adesso dobbiamo ottenere tutti i capi che guadagnano più di \textit{tutti} i propri dipendenti. Questo si ottiene negando la proposizione, e dunque equivale a trovare \textbf{almeno un capo che guadagna meno di un suo dipendente}.
+			\[
+				\text{CapiScartati} = \text{Impiegato} \bowtie_{\text{CodCapo} = \text{CodC} \land \text{Stipendio} >= \text{StipC}}(\text{Capo})
+			\]
+			
+			\item Adesso, dall'insieme di tutti i capi che abbiamo trovato nel primo passaggio, possiamo rimuovere quelli che non rispettano la richiesta iniziale, semplicemente con l'operatore di differenza.
+			\[
+				R_{\text{finale}} = \text{Capi} - \text{CapiScartati}
+			\]
+		\end{enumerate}
+	\end{esempio}
 	
 	\chapter{Il linguaggio SQL}
 	Al fine di creare i database, le tabelle, stabilire i vincoli tra queste ed effettuare operazioni di interrogazione sui dati era necessario un apposito linguaggio con cui fare tutto questo.\\
@@ -2963,5 +3043,69 @@
 	
 	\subsubsection*{L'operatore \texttt{DISTINCT}}
 	Se volessimo replicare esattamente il comportamento dell'operatore di proiezione nell'algebra relazionale, dovremmo usare l'operatore \texttt{DISTINCT}, che ci permette di filtrare i valori \textbf{univoci} per una certa colonna. Se ad esempio scriviamo \texttt{SELECT DISTINCT(Nome)}, nella tabella risultante non avremo mai due persone con lo stesso nome.
+	
+	\section{Interrogazione su più tabelle}
+	Come abbiamo già visto con gli operatori dell'algebra relazionale, è possibile effettuare il \textit{prodotto cartesiano} tra due o più relazioni per ottenere tutte le possibili combinazioni di tuple tra queste. In particolare, abbiamo utilizzato il prodotto cartesiano per farci strada verso l'operazione di \textbf{join}, che ci permette ci collegare due o più relazioni in base ad attributi all'interno di queste che condividono lo stesso dominio (e, per ottenere risultati coerenti, anche lo stesso \textit{scope informativo}).
+	Nell'algebra relazionale ciò era molto semplice:
+	\begin{itemize}
+		\item In caso gli attributi delle relazioni coinvolte abbiano lo stesso nome, è sufficiente applicare l'operatore di \textbf{Natural Join} $(\bowtie)$ tra le due relazioni. Il risultato sarà una selezione delle righe del prodotto cartesiano in cui i due attributi con dominio comune hanno valore uguale.
+		
+		\item In caso i due attributi non abbiano lo stesso nome, si può procedere con la ridenominazione di questi oppure con l'operazione di \textbf{Theta Join}, che è quella più comunemente utilizzata nel linguaggio SQL. Tale operazione ci permette di esprimere esplicitamente i due attributi interessati e l'operatore di confronto tra questi.
+	\end{itemize}
+	
+	\begin{osservazione}{Prodotto cartesiano in SQL}{}
+		E' molto importante sapere che se nella clausola \texttt{FROM} di un'interrogazione coinvolgiamo più tabelle e non esplicitiamo alcun controllo o alcuna intenzione di effettuare una Join, il linguaggio SQL effettuerà il prodotto cartesiano tra quelle due tabelle.
+	\end{osservazione}
+	
+	Nel linguaggio SQL, ottenere queste due operazioni è altrettanto semplice, e dunque si presenta di seguito la sintassi.
+	
+	\begin{definizione}{Natural Join in SQL}{}
+		Si ottiene inserendo tra una coppia di tabelle nella clausola \texttt{FROM} dell'interrogazione la clausola \texttt{NATURAL JOIN}. Ad esempio:
+		\begin{lstlisting}[language=SQL]
+			SELECT *
+			FROM Studenti NATURAL JOIN Corsi;
+		\end{lstlisting}
+		
+		Analogamente, si può ottenere anche non utilizzando la clausola \texttt{NATURAL JOIN} ma esplicitando il controllo di uguaglianza sugli attributi nella clausola \texttt{WHERE}.
+		\begin{lstlisting}[language=SQL]
+			SELECT *
+			FROM Studenti, Corsi
+			WHERE Studenti.CodCorso = Corsi.CodCorso;
+		\end{lstlisting}
+		Questa soluzione è completamente uguale, solo che non stiamo utilizzando il costrutto nativo del linguaggio ma stiamo esplicitando l'operazione da eseguire. Risulta in qualche modo più simile ad una Theta Join.\\ 
+		Nota inoltre che è necessario in questo caso anteporre il nome della tabella all'attributo per evitare conflitti di nome.
+	\end{definizione}
+	
+	\begin{definizione}{Theta Join in SQL}{}
+		L'operazione di Theta Join prevede invece la scrittura manuale della condizione, come visto nell'esempio precedente della Natural Join.
+		\begin{lstlisting}[language=SQL]
+			SELECT *
+			FROM Studenti, Corsi
+			WHERE Studenti.CorsoFrequentato = Corso.CodCorso;
+		\end{lstlisting}
+		In questo caso stiamo esplicitando noi stessi il controllo. Per questo esempio non sarebbe stato necessario anteporre il nome delle tabelle, ma si è deciso di farlo per indicare al lettore quale attributo proviene da quale tabella.\\
+		A partire dallo standard SQL-92 è stato introdotto un ulteriore modo per effettuare la Theta Join, definendo una clausola simile a quella per il Natural Join:
+		\begin{lstlisting}[language=SQL]
+			SELECT *
+			FROM Studenti JOIN Corsi ON CorsoFrequentato = CodCorso;
+		\end{lstlisting}
+		Come si può vedere, la clausola prende la seguente sintassi \texttt{Tabella1 JOIN Tabella2 ON CondizioneDiJoin}.
+		Questa particolare sintassi permette di mantenere le condizioni di join separate da eventuali condizioni filtranti il risultato dell'interrogazione.
+	\end{definizione}
+	
+	\section{Ordinamento del risultato}
+	Fatta un'interrogazione, otterremo come risultato di fatto una nuova tabella (come nelle operazioni dell'algebra relazionale ottenevamo una nuova relazione) che conterrà gli attributi richiesti nella \texttt{SELECT}, presi dalle tabelle coinvolte nella \texttt{FROM} dalle tuple che rispettavano la condizione scritta nella \texttt{WHERE}.\\
+	Potremmo però decidere voler ordinare i risultati di questa tabella in ordine crescente o decrescente in base ad un determinato attributo. A proposito, SQL ci mette a disposizione la clausola \texttt{ORDER BY Attributo1 [ASC/DESC], Attributo2 [ASC/DESC], ...}.\\
+	Il funzionamento di questa clausola è il seguente, e opera secondo il seguente flusso:
+	\begin{enumerate}
+		\item Inizialmente, confronta due tuple della tabella secondo il rispettivo valore dell'attributo \texttt{Attributo1}.
+		\begin{itemize}
+			\item Se si riesce a stabilire un confronto netto (>, <) allora si procede alla seguente coppia di tuple.
+			
+			\item Altrimenti, si procede a cascata, confrontando le tuple secondo il valore dell'attributo \texttt{Attributo2} e così via...
+		\end{itemize}
+		
+		\item Il confronto fra le tuple viene fatto in base a cosa è stato specificato come ordinamento per quelle tuple: se abbiamo scritto \texttt{ASC} vogliamo ordinare le tuple in modo \textbf{crescente} per quell'attributo (numeri: da 0 -> 9, lettere: da A -> Z); scrivendo \texttt{DESC} stiamo invece operando un ordinamento decrescente (numeri: da 9 -> 0, lettere: da Z -> A).
+	\end{enumerate}
 	
 \end{document}

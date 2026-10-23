@@ -2846,4 +2846,99 @@
 		\item Page Table, che contiene l'effettiva corrispondenza.
 	\end{itemize}
 	
+	\subsection{Le Page Faults}
+	Come suggerisce il nome, una \textbf{Page Fault} è un'eccezione hardware generata dalla MMU quando la CPU tenta di accedere ad una pagina virtuale che non è stata ancora mappata ad un frame fisico in memoria. Quando la CPU tenta di accedere ad una pagina, ne controlla tutti i bit di stato: se il \textit{valid bit} è pari a 0, vuol dire che la pagina non ha ancora una corrispondenza in memoria e dunque deve essere memorizzata (ad esempio nella TLB, come abbiamo già visto).\\
+	Quando si scatena una Page Fault:
+	\begin{enumerate}
+		\item La CPU blocca l'esecuzione corrente, va in Kernel Mode e invoca l'apposito \textit{Page Fault Handler}.
+		
+		\item Se l'accesso è lecito (dunque non è un problema di allocazione ma di permessi) si procede a cercare un'area di memoria libera in cui mappare la pagina.
+		
+		\item Si carica la pagina in memoria e si continua l'esecuzione del processo. Durante le precedenti fasi di aggiornamento delle pagine, questo verrà messo in stato \texttt{WAITING}.
+	\end{enumerate}
+	
+	\section{Lo Swapping}
+	Abbiamo costruito un sistema della gestione della memoria impeccabile, grazie all'intuizione matematica di suddividerla in blocchi di uguale ampiezza detti \textit{pagine} o \textit{frame}. Tuttavia, abbiamo sempre lavorato sotto una potentissima assunzione: che la memoria centrale sia abbastanza grande per contenere tutte le pagine di tutti i processi in esecuzione al momento. Quest'assunzione è tanto forte quanto falsa, in quanto ad oggi gli spazi virtuali hanno dimensioni pari all'architettura della macchina (circa $2^{48}$ byte di indirizzamento) mentre le memorie RAM non sono affatto così capienti.\\
+	Anche se più processi venissero eseguiti "simultaneamente", cosa succederebbe se ne subentrasse uno più pesante degli altri? Per come siamo rimasti ora, il SO dovrebbe rifiutare nuovi processi oppure uccidere quelli già esistenti. Ma non si starebbe risolvendo il problema, bensì solo evitando.
+	\smallbreak
+	
+	La soluzione è dunque la seguente: si crea uno spazio in memoria di massa chiamato \textbf{Swap Space}, ovvero un'area del disco in cui vengono memorizzate le pagine di un processo che non hanno spazio per stare in memoria RAM. Nello Swap Space, le pagine possono entrare dopo che la RAM è piena, oppure quando deve essere effettuato uno \textit{scambio (swap)} tra una pagina attualmente inutilizzata in memoria RAM e una richiesta in memoria di massa.\\
+	Lo Swap Space è suddiviso in blocchi, ognuno uguale alla dimensione di una pagina, in modo che si possa stabilire anche qui una corrispondenza biunivoca tra il VPN e il blocco di Swap in tale pagina è contenuta.
+	\smallbreak
+	
+	Al fine di controllare dove si trovi la pagina in memoria, deve essere aggiunto un altro bit ad ogni Page Table Entry (PTE): il \textbf{Present bit} viene messo ad 1 se la pagina si trova in memoria RAM, a 0 se si trova nello Swap.
+	\begin{osservazione}{Ruolo del valid bit}{}
+		Ricordiamo che nella PTE è presente anche un valid bit, che indica se la pagina è stata mai allocata. La presenza di questo valid bit è fondamentale, in quanto se la pagina non fosse \textbf{mai} stata allocata in memoria, verrebbe lanciata un'eccezione e l'OS handler delle Page Fault si occuperebbe di allocarla in qualche modo. Dunque se questo bit vale 1, vuol dire che necessariamente si trova in RAM oppure nello Swap.
+	\end{osservazione}
+	
+	\begin{osservazione}{Pagina memorizzata in Swap}{}
+		Quando una pagina viene memorizzata nello Swap, sarà inutile mantenere all'interno della sua PTE l'indirizzo del frame fisico associato. Per questo motivo, quando una pagina viene spostata dalla RAM allo Swap quella sequenza di bit riservata al PFN viene sostituita con l'identificativo del blocco dello Swap in cui verrà messa (\textbf{Swap Entry}).
+	\end{osservazione}
+	
+	\subsection{Da disco a RAM}
+	Quando una pagina virtuale deve essere caricata in memoria RAM per poter accedere ai suoi dati, il SO procede nel seguente modo:
+	\begin{enumerate}
+		\item Si controlla il present bit della pagina: se questo è 0, vuol dire che si deve andare a cercarla nello Swap.
+		
+		\item All'interno dello Swap si cerca il blocco associato alla pagina (valore recuperato dalla PTE) e si fa il fetch di tale pagina.
+		
+		\item Si cerca ora un frame libero in RAM su cui memorizzare la pagina.
+		
+		\item Nel frattempo, dato che in fin dei conti il caricamento di una pagina da memoria fisica è un'operazione di I/O, il processo viene messo in stato di \texttt{WAITING}.
+	\end{enumerate}
+	
+	\begin{osservazione}{Ottimizzazione con il dirty bit}{}
+		Un ulteriore bit presente all'interno di una PTE è il cosiddetto dirty bit, che indica se quella pagina di memoria sia mai stata modificata o meno. Per ottimizzare il processo di "sfrattamento" di una pagina da RAM a Swap, si preferisce sempre sfrattare pagine con dirty bit = 0.\\
+		La ragione per ciò sta nel fatto che le pagine che sono state modificate potrebbero esserlo nuovamente, e dunque eventuali cambiamenti devono essere salvati in memoria. Swappare una pagina \textit{dirty} costa una scrittura in memoria. Per le pagine \textit{clean} invece non è così: se una pagina non è mai stata modificata, probabilmente è \textit{read-only}, e dunque non c'è bisogno di prevedere o memorizzare alcun cambiamento. Swappando una pagina \textit{clean} si risparmia il tempo di una scrittura in memoria, che ricordiamo essere un'operazione piuttosto onerosa, soprattutto in termini di cicli di clock CPU.
+	\end{osservazione}
+	
+	\begin{definizione}{Tipologie di Page Fault}{}
+		Il sistema operativo distingue in due classi di Page Fault: \textbf{minor fault} e \textbf{major fault}. La sostanziale differenza è che le \textit{minor faults} si verificano su pagine che sono già presenti in memoria RAM, e devono essere caricate. Le \textit{major faults}, al contrario, sono quegli errori scatenati da pagine che si trovano nella memoria di Swap e devono essere riportate in RAM.
+		\smallbreak
+		
+		Come ci si può aspettare, le \textit{major faults} sono più dispendiose (in quanto richiedono un accesso in memoria di massa), e dunque un buon sistema operativo deve minimizzare l'occorrenza di tali eventi con appositi algoritmi.
+	\end{definizione}
+	
+	\subsection{Politiche di rimpiazzo pagina}
+	Avendo predisposto un'area di memoria fisica in cui memorizzare tutte le pagine che non entrano in memoria RAM, dobbiamo adesso decidere \textit{quali pagine muovere da RAM a disco}.\\
+	Quando prendiamo una pagina dalla sua Page Table, significa che ci serve \textit{ora}. Se nella RAM non c'è spazio, dobbiamo in qualche modo decidere quale pagina spostare dalla memoria centrale alla memoria di massa.
+	\begin{osservazione}{Ottimizzazione sui rimpiazzi}{}
+		E' necessario trovare una buona politica di rimpiazzo per evitare frequenti accessi in memoria di massa, che rallenterebbero di molto l'esecuzione di ogni processo.
+	\end{osservazione}
+	
+	\subsubsection*{The Optimal Policy (OPT)}
+	Una prima soluzione viene fornita dall'algoritmo \textbf{Optimal replacement policy}, il cui concetto è estremamente semplice: \textbf{rimpiazzare sempre la pagina che verrà utilizzata per ultima rispetto alle altre}. Supponendo di avere la sequenza delle pagine richieste "\texttt{7 0 1 2 0 3 0 4 2 3}" e un massimo di 3 frame in memoria, allo step 4 dovrà essere liberato un frame tra i 3 già allocati (\texttt{7 0 1}). Come decidiamo quale frame rimuovere dalla memoria? Semplicemente guardando in avanti e vedendo quali verranno utilizzati e quando:
+	\begin{itemize}
+		\item Lo 0 verrà utilizzato a breve e più di una volta, quindi sarebbe uno spreco liberarlo.
+		
+		\item I frame 7 e 1 non verranno più utilizzati in futuro, dunque possiamo scegliere tra uno dei due.
+	\end{itemize}
+	Chiaramente, questo approccio si fonda su un'assunzione potentissima: sapere a priori quali frame verranno utilizzati e quando. Ecco perché questo approccio risulta essere puramente teorico e funge solo come base per lo studio di approcci futuri e più concreti.
+	
+	\subsubsection*{Politica FIFO}
+	Come sempre, il primo approccio che si tenta ogni volta è quello \textbf{FIFO}: il SO tiene una coda in cui memorizzare passo passo le pagine richieste, e \textbf{quando la coda è piena si prende la pagina in testa e si memorizza in memoria di Swap}. Successivamente si carica in RAM la nuova pagina e si inserisce all'interno della coda. E via così...\\
+	Tuttavia, come accade quasi sempre con il metodo FIFO, per quanto intuitivo non è quasi mai la scelta migliore: non tenendo traccia di nulla ma solo di quando una pagina è entrata, non sappiamo se sia una pagina richiesta frequentemente (come ad esempio il codice eseguibile di un processo) oppure una pagina utilizzata una-tantum. Rischiamo dunque di generare tanti \textit{major faults} che sarebbero altrimenti evitabili.
+	
+	\subsubsection*{Least Recently Used (LRU)}
+	La formalizzazione pratica della Optimal Policy è l'algoritmo \textbf{Least Recently Used (LRU)} che, come suggerisce il nome, decide di \textbf{\textit{sfrattare} la pagina che non viene utilizzata da più tempo}. Il principio su cui si fonda l'intuizione alla base di questo algoritmo è quello di \textit{località temporale} di cui abbiamo discusso nei primi capitoli: una pagina acceduta a $t=99$ è molto più probabile che sia acceduta nuovamente a $t=100$ al posto di una acceduta inizialmente a $t=1$. Un sistema (così come noi umani) non è in grado di prevedere il futuro per determinare quale pagina verrà utilizzata e quando. Tuttavia è pienamente in grado di analizzare comportamenti passati e tracciare statistiche per formulare previsioni.
+	\smallbreak
+	
+	Questo approccio è più pragmatico e meno utopistico della OPT, tuttavia presente alcune criticità legate all'implementazione hardware: per tale approccio, dovremmo memorizzare per ogni pagina il timestamp in cui è stata acceduta e poi quando la memoria risulta piena sfrattare la pagina con il timestamp più alto. Questo si traduce nell'associare ad ogni pagina un valore e dover scorrere ogni volta tale lista di valori, rimuovere il minimo e inserire un nuovo valore in cima: un classico approccio risolvibile in tempo $O(n)$ che però risulta in uno spreco di memoria sostanzioso.
+	
+	\subsubsection*{Clock algorithm}
+	Il \textbf{Clock algorithm} nasce per essere una versione più realistica dell'algoritmo LRU.\\
+	Il trucco sta nel memorizzare i frame della RAM all'interno di un'Array circolare, che si comporterà esattamente come un orologio. Si sfrutta poi l'\textit{Accessed bit}, ovvero un bit presente nella PTE di ogni pagina, per determinare quale di queste dovrà essere sfrattata:
+	\begin{itemize}
+		\item Appena una pagina viene acceduta, viene impostato l'Accessed bit = 1.
+		
+		\item Quando si incontra una pagina con Accessed bit = 1, le si da una "\textit{seconda possibilità}", non scartandola subito bensì impostando tale bit a 0.
+		
+		\item Quando si trova una pagina con bit = 0, quella viene \textbf{subito scartata} per fare spazio alla nuova pagina da caricare in memoria.
+	\end{itemize}
+	E' necessario fare un'annotazione importante: ogni volta che una pagina viene inserita/rimossa da questo Array circolare lo scorrimento della struttura dati non riprende da capo bensì dall'ultimo frame appena visitato. Le uniche informazioni di cui tenere traccia sono dunque un Array delle pagine (implementato in maniera diversa, ma pur sempre un array è) e un indice indicante la pagina corrente.
+	
+	\subsection{Criticità su sistemi reali}
+	Tenendo a mente gli algoritmi visti finora, sorgono delle criticità che un bravo ingegnere del software deve prevedere e risolvere nel modo migliore possibile. Un problema può essere quello del \textbf{trashing}: quando ci sono \textbf{troppe pagine rispetto alla dimensione della RAM}. Abbiamo già visto che il tutto viene risolto tramite la memoria Swap. Ma mettiamoci nel caso in cui un processo A vada a \textit{sfrattare una pagina riservata al processo B}. E il processo B faccia lo stesso con il processo C.\\
+	Una soluzione a tale problema sarebbe attribuire ad ogni processo un numero massimo di pagine utilizzabili. Ma qui si torna al problema di spreco di memoria: e \textbf{se attribuissimo 20 pagine ad un processo che ne usa solo 5}? Bisogna scegliere accuratamente tale valore, ma come si può immaginare non è una semplice impresa.
+	
 \end{document}
