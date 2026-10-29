@@ -3108,4 +3108,243 @@
 		\item Il confronto fra le tuple viene fatto in base a cosa è stato specificato come ordinamento per quelle tuple: se abbiamo scritto \texttt{ASC} vogliamo ordinare le tuple in modo \textbf{crescente} per quell'attributo (numeri: da 0 -> 9, lettere: da A -> Z); scrivendo \texttt{DESC} stiamo invece operando un ordinamento decrescente (numeri: da 9 -> 0, lettere: da Z -> A).
 	\end{enumerate}
 	
+	\section{Operatori aggregati}
+	Una vasta gamma di operatori messi a disposizione dal linguaggio SQL rispetto a quelli dell'algebra relazionale sono i cosiddetti \textbf{operatori aggregati}. Come suggerisce il nome, si tratta di una famiglia di operatori che agiscono su più tuple contemporaneamente.\\
+	Ad esempio, se ci venisse chiesto di determinare \textbf{quante} tuple soddisfano una determinata condizione, con i costrutti dell'algebra relazionale ciò sarebbe impossibile: non abbiamo operatori dediti a ciò. Questa, e tante altre operazioni, vengono implementate nel linguaggio SQL per soddisfare richieste quotidiane.\\
+	\begin{proposizione}{Esecuzione di query con operatori aggregati}{}
+		Gli operatori aggregati vengono gestiti come un'estensione delle normali interrogazioni. Prima vengono eseguite solo le parti \texttt{FROM} e \texttt{WHERE}, per ottenere la relazione risultante, e solo in seguito su tale relazione viene applicato l'operatore di aggregazione. Sarà più chiaro con i seguenti esempi, ma si è ritenuto giusto fare una tale premessa.
+	\end{proposizione}
+	
+	\subsection{\texttt{COUNT}}
+	L'operatore \texttt{COUNT} serve, intuitivamente, a contare il numero di righe della relazione su cui sono state applicate eventuali restrizioni date dalla clausola \texttt{WHERE}.\\
+	Assieme al \texttt{COUNT} è possibile specificare alcune parole chiave in modo da ottenere risultati diversi:
+	\begin{itemize}
+		\item \texttt{COUNT(DISTINCT ListaAttributi)} ci permette di contare tutte le occorrenze \textbf{diverse} dei valori per gli attributi specificati in \texttt{ListaAttributi}.
+		
+		\item \texttt{COUNT(ALL ListaAttributi)} conta tutte le occorrenze per i valori in \texttt{ListaAttributi}, considerando valori duplicati ma \textbf{non valori nulli}.
+		
+		\item \texttt{COUNT(*)} l'opzione base, ci permette di contare tutte le righe della relazione risultante con duplicati e valori nulli.
+	\end{itemize}
+	
+	\begin{osservazione}{Varianti di \texttt{COUNT}}{}
+		Se si specifica unicamente \texttt{COUNT(ListaAttributi)}, si assume come keyword di default \texttt{ALL}, dunque non si considerano valori nulli.
+	\end{osservazione}
+	
+	\begin{esempio}{Esempio di query con \texttt{COUNT()}}{}
+		\textit{Estrarre il numero di impiegati che appartengono al dipartimento di Produzione}.
+		\begin{lstlisting}[language=SQL]
+			SELECT COUNT(*) AS NumeroImpiegati
+			FROM Impiegati
+			WHERE Dipartimento = "Produzione";
+		\end{lstlisting}
+	\end{esempio}
+	
+	\subsection{\texttt{SUM}}
+	L'operatore \texttt{SUM(Attributo)} si occupa di restituire la somma di tutti i valori \textbf{non nulli} per l'attributo specificato.
+	\begin{esempio}{Esempio di query con \texttt{SUM()}}{}
+		\textit{Estrarre la somma degli stipendi degli impiegati del dipartimento di Produzione}
+		\begin{lstlisting}[language=SQL]
+			SELECT SUM(Stipendio) AS SommaStipendi
+			FROM Impiegati
+			WHERE Dipartimento = "Produzione";
+		\end{lstlisting}
+	\end{esempio}
+	
+	\subsection{\texttt{MAX} e \texttt{MIN}}
+	Con gli operatori \texttt{MAX(Attributo)} e \texttt{MIN(Attributo)} il linguaggio SQL ci restituisce rispettivamente il valore massimo e minimo di tutti i valori della relazione per l'attributo specificato.\\
+	Importante nota è che questi operatori funzionano anche per attributi di tipo testuale, dunque se usati su dei \texttt{CHAR} o \texttt{VARCHAR} ci restituiranno l'ultima/prima stringa basandosi sull'ordine alfabetico.
+	
+	\begin{esempio}{Esempio di query con \texttt{MIN()}}{}
+		\textit{Estrarre lo stipendio minimo degli impiegati del dipartimento di Produzione}
+		\begin{lstlisting}[language=SQL]
+			SELECT MIN(Stipendio) AS StipendioMinimo
+			FROM Impiegati
+			WHERE Dipartimento = "Produzione";
+		\end{lstlisting}
+	\end{esempio}
+	
+	\begin{esempio}{Esempio di query con \texttt{MAX()}}{}
+		\textit{Estrarre lo stipendio massimo degli impiegati del dipartimento di Produzione}
+		\begin{lstlisting}[language=SQL]
+			SELECT MAX(Stipendio) AS StipendioMassimo
+			FROM Impiegati
+			WHERE Dipartimento = "Produzione";
+		\end{lstlisting}
+	\end{esempio}
+	
+	\subsection{\texttt{AVG}}
+	Infine, l'operatore \texttt{AVG(Attributo)} ci permette di ottenere la \textbf{media aritmetica} dei valori presenti per l'attributo specificato. Come si può immaginare, questo operatore esegue inizialmente una \texttt{SUM} dei valori di quell'attributo, e poi divide tale risultato per il \texttt{COUNT} di tali righe.
+	
+	\begin{esempio}{Esempio di query con \texttt{AVG()}}{}
+		\textit{Estrarre lo stipendio medio degli impiegati del dipartimento di Produzione}
+		\begin{lstlisting}[language=SQL]
+			SELECT AVG(Stipendio) AS StipendioMedio
+			FROM Impiegati
+			WHERE Dipartimento = "Produzione";
+		\end{lstlisting}
+	\end{esempio}
+	
+	\begin{osservazione}{Ridenominazione con \texttt{AS}}{}
+		In tutti i precedenti esempi si è ridenominato il campo relativo all'operatore aggregato mediante la clausola \texttt{AS}. Tale scelta \textbf{non è obbligatoria}, ma si è soliti farlo per generare maggiore chiarezza nei confronti di chi legge la nostra interrogazione.
+	\end{osservazione}
+	
+	\begin{osservazione}{Interrogazioni errate con operatori di aggregazione}{}
+		Data la seguente interrogazione scritta in linguaggio SQL
+		\begin{lstlisting}[language=SQL]
+			SELECT Nome, MAX(Stipendio) AS StipendioMassimo
+			FROM Impiegati
+			WHERE Dipartimento = "Produzione";
+		\end{lstlisting}
+		si noti come tale interrogazione produca un risultato \textbf{errato}, o molto probabilmente \textbf{non voluto}.\\
+		Si potrebbe pensare che l'operazione restituisca il nome e cognome dell'impiegato con stipendio massimo, bensì il risultato sarà \textit{una relazione in cui per ogni riga verrà associato il nome di un impiegato e lo stipendio massimo del suo dipartimento}. E' dunque \textit{molto probabile} che a fianco di molti impiegati non vi sia scritto il loro vero stipendio bensì quello massimo, calcolato infatti in modo aggregato rispetto alla relazione ottenuta dalla query senza aggregazione.
+	\end{osservazione}
+	
+	\subsection{\texttt{GROUP BY}}
+	Per risolvere problemi di natura simile a quelli presentati nell'osservazione precedente, il linguaggio SQL ci mette a disposizione una potentissima clausola, utile ad applicare l'operatore aggregato \textbf{separatamente a sottoinsiemi di righe}. Questo è possibile grazie alla clausola \texttt{GROUP BY ListaAttributi}.\\
+	Tale operatore ci permette di \textit{dividere la tabella in sottoinsiemi, raggruppati in base agli stessi valori per gli attributi specificati in \texttt{ListaAttributi}}, e su ogni sottoinsieme \textit{eseguire l'operazione di aggregazione specificata}. Nuovamente, ciò sarà più chiaro con l'esempio di seguito, tuttavia si noti come la suddivisione della tabella in base agli attributi specificati crei una \textbf{partizione della tabella di partenza}.
+	
+	\begin{esempio}{Uso dell'operatore \texttt{GROUP BY}}{}
+		Supponiamo di avere la seguente tabella \texttt{Impiegati}.
+		
+		\begin{tabella}{|c|c|c|}
+			Cognome & Dipartimento & Stipendio \\\hline
+			Rossi   & Vendite      & 1800      \\
+			Bianchi & Produzione   & 1500      \\
+			Ferrari & Marketing    & 1900      \\
+			Esposito& Vendite      & 1750      \\
+			Ricci   & Produzione   & 1600      \\
+			Marino  & Marketing    & 2100      \\
+			Greco   & Produzione   & 1550      \\
+		\end{tabella}
+		
+		E di voler ricavare lo stipendio medio per ogni dipartimento.\\
+		Dobbiamo chiaramente raggruppare per ogni singolo dipartimento presente e poi calcolare la media per quel dipartimento. La query che risolve tale problema è la seguente:
+		\begin{lstlisting}[language=SQL]
+			SELECT Dipartimento, AVG(Stipendio)
+			FROM Impiegati
+			GROUP BY Dipartimento;
+		\end{lstlisting}
+	\end{esempio}
+	Il funzionamento dell'operatore \texttt{GROUP BY} si articola dunque nei seguenti passaggi:
+	\begin{enumerate}
+		\item Viene eseguita la query \textbf{senza operazioni di aggregazione}.
+		
+		\item Si raggruppa (partiziona) la tabella risultante in base agli attributi specificati nella clausola \texttt{GROUP BY}. Nel pratico, ciò viene fatto scansionando ogni riga della tabella e accorpando nello stesso gruppo righe che hanno gli stessi valori per gli attributi scritti.
+		
+		\item Si esegue l'operatore di aggregazione su ogni raggruppamento effettuato.
+	\end{enumerate}
+	
+	\subsection{\texttt{HAVING}}
+	Parliamo infine dell'ultimo operatore: \texttt{HAVING}. Fondamentale per quando si vogliono \textbf{effettuare controlli riguardo a valori prodotti da operatori di aggregazione}.\\
+	Come abbiamo già visto, infatti, tali operatori di aggregazione vengono eseguiti solo \textit{dopo} la clausola \texttt{WHERE}, e dunque scrivere lì un controllo non avrebbe senso. E' stata predisposta la clausola \texttt{HAVING} che risolve proprio questo problema.
+	\begin{esempio}{Esempio di uso di \texttt{HAVING}}{}
+		\textit{Estrarre il nome dei dipartimenti che hanno stipendio medio superiore a 2000}.
+		\begin{lstlisting}[language=SQL]
+			SELECT Dipartimento, AVG(Stipendio)
+			FROM Impiegati
+			GROUP BY Dipartimento
+			HAVING AVG(Stipendio) > 2000;
+		\end{lstlisting}
+	\end{esempio}
+	
+	Avendo presentato tutte le clausole fondamentali di una query, si lascia di seguito la generica struttura compatibile con la sintassi del linguaggio SQL:
+	\begin{lstlisting}[language=SQL]
+		SELECT ListaAttributi
+		FROM ListaTabelle
+		[ WHERE Condizioni ]
+		[ GROUP BY ListaAttributiRaggruppamento ]
+		[ HAVING CondizioneSuAggregazione ]
+		[ ORDER BY ListaAttributiOrdinamento ]
+	\end{lstlisting}
+	
+	\newpage
+	\section{Operatori insiemistici}
+	Come per l'algebra relazionale, anche il linguaggio SQL mette a disposizione le operazioni di unione, differenza ed intersezione tra più tabelle. Le vediamo di seguito più nel dettaglio.
+	
+	\begin{osservazione}{Compatibilità delle operazioni}{}
+		Il requisito affinché le operazioni sopra citate siano ben definite è lo stesso dell'algebra relazionale: le tabelle devono essere \textbf{union compatibili}.
+	\end{osservazione}
+	
+	Non verrà spiegato nuovamente il significato delle varie operazioni, bensì verranno forniti semplicemente degli esempi su tabelle concrete.
+	
+	\subsection{\texttt{UNION}}
+	\begin{esempio}{Esempio di uso di \texttt{UNION}}{}
+		\textit{Estrarre i nomi e i cognomi degli impiegati}
+		\begin{lstlisting}[language=SQL]
+			SELECT Nome
+			FROM Impiegati
+			UNION
+			SELECT Cognome
+			FROM Impiegati;
+		\end{lstlisting}
+	\end{esempio}
+	Nota che l'operazione di unione sarebbe possibile anche se stessimo unendo, ad esempio, una tabella che ha un campo \texttt{Nome}, definito come stringa, con un campo \texttt{TitoloLibro}, sempre definito come stringa. Le due tabelle \textbf{sono union compatibili}, ma il risultato \textit{manca di senso}.
+	
+	\subsection{\texttt{EXCEPT}}
+	La clausola \texttt{EXCEPT} corrisponde alla \textit{differenza insiemistica}.
+	\begin{esempio}{Esempio di uso di \texttt{EXCEPT}}{}
+		\textit{Estrarre i nomi degli impiegati che non sono anche cognome di qualcun altro}.
+		\begin{lstlisting}[language=SQL]
+			SELECT Nome
+			FROM Impiegato
+			EXCEPT
+			SELECT Cognome
+			FROM Impiegato;
+		\end{lstlisting}
+	\end{esempio}
+	
+	\subsection{\texttt{INTERSECT}}
+	\begin{esempio}{Esempio di uso di \texttt{INTERSECT}}{}
+		\textit{Estrarre i nomi degli impiegati che sono anche cognome di qualcun altro}
+		\begin{lstlisting}[language=SQL]
+			SELECT Nome
+			FROM Impiegato
+			INTERSECT
+			SELECT Cognome
+			FROM Impiegato;
+		\end{lstlisting}
+	\end{esempio}
+	
+	\section{Interrogazioni nidificate}
+	Finora abbiamo visto solo interrogazioni in cui le condizioni espresse nella clausola \texttt{WHERE} erano relativamente semplici. Tuttavia, in caso di interrogazioni più complesse, è possibile anche scrivere intere \textit{sotto-interrogazioni} il cui risultato verrà usato come valore di confronto nella clausola \texttt{WHERE}: si parla in questo caso di \textbf{interrogazioni nidificate}.\\
+	Supponiamo di voler \textit{estrarre i dati degli impiegati che hanno completato almeno un progetto}. Senza entrare nei dettagli delle singole tabelle, supponiamo di avere le tabelle \texttt{Impiegati, Progetti, ImpiegatiProgetti}. Seppur questo esempio è risolvibile anche in altri modi, si presenta quello utilizzante interrogazioni nidificate.\\
+	Innanzitutto bisogna chiedersi: cosa significa che ha completato almeno un progetto? Significa che \textit{è presente nella tabella \texttt{ImpiegatiProgetti}}. E come facciamo a controllare la presenza insiemistica di una tupla in una tabella? Il linguaggio SQL ci mette a disposizione vari strumenti.
+	
+	\subsection{La clausola \texttt{ANY}}
+	La clausola \texttt{ANY} ci permette di confrontare un valore in modo che rispetti la condizione con \textbf{almeno uno} dei valori risultanti dall'interrogazione nidificata. Intuitivamente, si può vedere come quest'operatore assomigli all'operatore di \textbf{appartenenza insiemistica}. Difatti, per risolvere l'interrogazione presentata sopra, è possibile operare nel seguente modo:
+	\begin{lstlisting}[language=SQL]
+		SELECT Cognome, Stipendio
+		FROM Impiegati
+		WHERE Cognome = ANY (
+			SELECT Cognome
+			FROM ImpiegatiProgetti
+		);
+	\end{lstlisting}
+	Come vediamo, nella \texttt{WHERE} non stiamo facendo un controllo tra un attributo della tabella \texttt{Impiegati} e un valore singolo, bensì dal risultato di una sotto-query.\\
+	L'ordine di esecuzione delle operazioni è il seguente:
+	\begin{enumerate}
+		\item Viene eseguita la query più esterna, senza prestare attenzione alla clausola \texttt{WHERE}. In questo modo abbiamo il cognome dell'impiegato, che sarà l'attributo da controllare.
+		
+		\item Avendo adesso il valore dell'attributo su cui operare il controllo, viene eseguita la query interna, che produrrà una lista di valori.
+		
+		\item Si effettua il controllo tra il valore nella query esterna con la lista di valori prodotti dalla query interna.
+		
+		\item Si continua così per tutte le righe degli impiegati...
+	\end{enumerate}
+	Un modo alternativo per implementare questa logica è l'utilizzo dell'operatore \texttt{IN}, che può essere direttamente sostituito a \texttt{= ANY} in quanto significa la stessa cosa (forse è anche più intuitivo, in quanto significa letteralmente "\textit{contenere}").
+	
+	\subsection{La clausola ALL}
+	Se invece ci venisse chiesto: \textit{estrarre i dati di tutti gli impiegati che non hanno completato alcun progetto}. In questo caso, non possiamo cavarcela né con una join ne con una condizione semplice. Il fatto che un impiegato non abbia completato alcun progetto vuol dire che tale impiegato \textbf{non è presente} nella tabella \texttt{ImpiegatiProgetti}. Dobbiamo dunque verificare una \textit{non appartenenza insiemistica}. L'interrogazione presentata si può dunque risolvere come segue:
+	\begin{lstlisting}[language=SQL]
+		SELECT Cognome, Stipendio
+		FROM Impiegati
+		WHERE Cognome != ALL (
+			SELECT Cognome
+			FROM ImpiegatiProgetti
+		);
+	\end{lstlisting}
+	In questo caso stiamo usando la clausola \texttt{ALL}, che confronta l'attributo specificato con \textbf{tutti} gli elementi della lista prodotta come risultato. Restituisce \textbf{True} sse. la condizione è verificata per tutte le occorrenze; \textbf{False} se anche solo per un elemento della lista di confronto tale condizione non viene rispettata.\\
+	Nel nostro caso, per esprimere una \textit{non appartenenza} insiemistica, stiamo chiedendo che un cognome sia diverso da tutti i cognomi che hanno completato progetti. E' un po' come la differenza, in un certo senso.\\
+	Anche qui abbiamo un'alternativa sintattica più intuitiva: la clausola \texttt{NOT IN}, che sostituisce perfettamente \texttt{!= ALL} controllando se tale valore di attributo non è presente nella lista di confronto.
+	
 \end{document}
