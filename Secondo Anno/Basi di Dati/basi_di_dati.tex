@@ -164,6 +164,7 @@
 	
 	\newpage
 	\section{Le transazioni}
+	\label{sec:transazioni}
 	Un buon DBMS deve inoltre gestire anche una serie di operazioni sensibili di inserimento, modifica e cancellazione di dati, in modo che queste vengano effettuate senza contrattempi o errori.
 	\begin{definizione}{Transazione}{}
 		Una \textbf{transazione} è una sequenza di operazioni di lettura e scrittura in memoria che deve rispettare le seguenti proprietà \textbf{ACID}:
@@ -2715,7 +2716,7 @@
 		\end{itemize}
 	\end{definizione}
 	
-	\section{Il linguaggio di definizione dati: DDL}
+	\section{Il linguaggio di definizione dei dati: DDL}
 	Nella seguente sezione andremo ad analizzare tutte le operazioni fondamentali che riguardano il linguaggio DDL per la creazione, modifica, cancellazione di tabelle, definizioni di dati e domini, creazione di vincoli intra e inter-relazionali.
 	
 	\subsection{Domini di dati}
@@ -3044,7 +3045,7 @@
 	\subsubsection*{L'operatore \texttt{DISTINCT}}
 	Se volessimo replicare esattamente il comportamento dell'operatore di proiezione nell'algebra relazionale, dovremmo usare l'operatore \texttt{DISTINCT}, che ci permette di filtrare i valori \textbf{univoci} per una certa colonna. Se ad esempio scriviamo \texttt{SELECT DISTINCT(Nome)}, nella tabella risultante non avremo mai due persone con lo stesso nome.
 	
-	\section{Interrogazione su più tabelle}
+	\subsection{Interrogazione su più tabelle}
 	Come abbiamo già visto con gli operatori dell'algebra relazionale, è possibile effettuare il \textit{prodotto cartesiano} tra due o più relazioni per ottenere tutte le possibili combinazioni di tuple tra queste. In particolare, abbiamo utilizzato il prodotto cartesiano per farci strada verso l'operazione di \textbf{join}, che ci permette ci collegare due o più relazioni in base ad attributi all'interno di queste che condividono lo stesso dominio (e, per ottenere risultati coerenti, anche lo stesso \textit{scope informativo}).
 	Nell'algebra relazionale ciò era molto semplice:
 	\begin{itemize}
@@ -3093,7 +3094,7 @@
 		Questa particolare sintassi permette di mantenere le condizioni di join separate da eventuali condizioni filtranti il risultato dell'interrogazione.
 	\end{definizione}
 	
-	\section{Ordinamento del risultato}
+	\subsection{Ordinamento del risultato}
 	Fatta un'interrogazione, otterremo come risultato di fatto una nuova tabella (come nelle operazioni dell'algebra relazionale ottenevamo una nuova relazione) che conterrà gli attributi richiesti nella \texttt{SELECT}, presi dalle tabelle coinvolte nella \texttt{FROM} dalle tuple che rispettavano la condizione scritta nella \texttt{WHERE}.\\
 	Potremmo però decidere voler ordinare i risultati di questa tabella in ordine crescente o decrescente in base ad un determinato attributo. A proposito, SQL ci mette a disposizione la clausola \texttt{ORDER BY Attributo1 [ASC/DESC], Attributo2 [ASC/DESC], ...}.\\
 	Il funzionamento di questa clausola è il seguente, e opera secondo il seguente flusso:
@@ -3108,14 +3109,14 @@
 		\item Il confronto fra le tuple viene fatto in base a cosa è stato specificato come ordinamento per quelle tuple: se abbiamo scritto \texttt{ASC} vogliamo ordinare le tuple in modo \textbf{crescente} per quell'attributo (numeri: da 0 -> 9, lettere: da A -> Z); scrivendo \texttt{DESC} stiamo invece operando un ordinamento decrescente (numeri: da 9 -> 0, lettere: da Z -> A).
 	\end{enumerate}
 	
-	\section{Operatori aggregati}
+	\subsection{Operatori aggregati}
 	Una vasta gamma di operatori messi a disposizione dal linguaggio SQL rispetto a quelli dell'algebra relazionale sono i cosiddetti \textbf{operatori aggregati}. Come suggerisce il nome, si tratta di una famiglia di operatori che agiscono su più tuple contemporaneamente.\\
 	Ad esempio, se ci venisse chiesto di determinare \textbf{quante} tuple soddisfano una determinata condizione, con i costrutti dell'algebra relazionale ciò sarebbe impossibile: non abbiamo operatori dediti a ciò. Questa, e tante altre operazioni, vengono implementate nel linguaggio SQL per soddisfare richieste quotidiane.\\
 	\begin{proposizione}{Esecuzione di query con operatori aggregati}{}
 		Gli operatori aggregati vengono gestiti come un'estensione delle normali interrogazioni. Prima vengono eseguite solo le parti \texttt{FROM} e \texttt{WHERE}, per ottenere la relazione risultante, e solo in seguito su tale relazione viene applicato l'operatore di aggregazione. Sarà più chiaro con i seguenti esempi, ma si è ritenuto giusto fare una tale premessa.
 	\end{proposizione}
 	
-	\subsection{\texttt{COUNT}}
+	\subsubsection*{\texttt{COUNT}}
 	L'operatore \texttt{COUNT} serve, intuitivamente, a contare il numero di righe della relazione su cui sono state applicate eventuali restrizioni date dalla clausola \texttt{WHERE}.\\
 	Assieme al \texttt{COUNT} è possibile specificare alcune parole chiave in modo da ottenere risultati diversi:
 	\begin{itemize}
@@ -3139,7 +3140,7 @@
 		\end{lstlisting}
 	\end{esempio}
 	
-	\subsection{\texttt{SUM}}
+	\subsubsection*{\texttt{SUM}}
 	L'operatore \texttt{SUM(Attributo)} si occupa di restituire la somma di tutti i valori \textbf{non nulli} per l'attributo specificato.
 	\begin{esempio}{Esempio di query con \texttt{SUM()}}{}
 		\textit{Estrarre la somma degli stipendi degli impiegati del dipartimento di Produzione}
@@ -3150,7 +3151,7 @@
 		\end{lstlisting}
 	\end{esempio}
 	
-	\subsection{\texttt{MAX} e \texttt{MIN}}
+	\subsubsection*{\texttt{MAX} e \texttt{MIN}}
 	Con gli operatori \texttt{MAX(Attributo)} e \texttt{MIN(Attributo)} il linguaggio SQL ci restituisce rispettivamente il valore massimo e minimo di tutti i valori della relazione per l'attributo specificato.\\
 	Importante nota è che questi operatori funzionano anche per attributi di tipo testuale, dunque se usati su dei \texttt{CHAR} o \texttt{VARCHAR} ci restituiranno l'ultima/prima stringa basandosi sull'ordine alfabetico.
 	
@@ -3172,7 +3173,7 @@
 		\end{lstlisting}
 	\end{esempio}
 	
-	\subsection{\texttt{AVG}}
+	\subsubsection*{\texttt{AVG}}
 	Infine, l'operatore \texttt{AVG(Attributo)} ci permette di ottenere la \textbf{media aritmetica} dei valori presenti per l'attributo specificato. Come si può immaginare, questo operatore esegue inizialmente una \texttt{SUM} dei valori di quell'attributo, e poi divide tale risultato per il \texttt{COUNT} di tali righe.
 	
 	\begin{esempio}{Esempio di query con \texttt{AVG()}}{}
@@ -3199,7 +3200,7 @@
 		Si potrebbe pensare che l'operazione restituisca il nome e cognome dell'impiegato con stipendio massimo, bensì il risultato sarà \textit{una relazione in cui per ogni riga verrà associato il nome di un impiegato e lo stipendio massimo del suo dipartimento}. E' dunque \textit{molto probabile} che a fianco di molti impiegati non vi sia scritto il loro vero stipendio bensì quello massimo, calcolato infatti in modo aggregato rispetto alla relazione ottenuta dalla query senza aggregazione.
 	\end{osservazione}
 	
-	\subsection{\texttt{GROUP BY}}
+	\subsubsection*{\texttt{GROUP BY}}
 	Per risolvere problemi di natura simile a quelli presentati nell'osservazione precedente, il linguaggio SQL ci mette a disposizione una potentissima clausola, utile ad applicare l'operatore aggregato \textbf{separatamente a sottoinsiemi di righe}. Questo è possibile grazie alla clausola \texttt{GROUP BY ListaAttributi}.\\
 	Tale operatore ci permette di \textit{dividere la tabella in sottoinsiemi, raggruppati in base agli stessi valori per gli attributi specificati in \texttt{ListaAttributi}}, e su ogni sottoinsieme \textit{eseguire l'operazione di aggregazione specificata}. Nuovamente, ciò sarà più chiaro con l'esempio di seguito, tuttavia si noti come la suddivisione della tabella in base agli attributi specificati crei una \textbf{partizione della tabella di partenza}.
 	
@@ -3234,7 +3235,7 @@
 		\item Si esegue l'operatore di aggregazione su ogni raggruppamento effettuato.
 	\end{enumerate}
 	
-	\subsection{\texttt{HAVING}}
+	\subsubsection*{\texttt{HAVING}}
 	Parliamo infine dell'ultimo operatore: \texttt{HAVING}. Fondamentale per quando si vogliono \textbf{effettuare controlli riguardo a valori prodotti da operatori di aggregazione}.\\
 	Come abbiamo già visto, infatti, tali operatori di aggregazione vengono eseguiti solo \textit{dopo} la clausola \texttt{WHERE}, e dunque scrivere lì un controllo non avrebbe senso. E' stata predisposta la clausola \texttt{HAVING} che risolve proprio questo problema.
 	\begin{esempio}{Esempio di uso di \texttt{HAVING}}{}
@@ -3258,7 +3259,7 @@
 	\end{lstlisting}
 	
 	\newpage
-	\section{Operatori insiemistici}
+	\subsection{Operatori insiemistici}
 	Come per l'algebra relazionale, anche il linguaggio SQL mette a disposizione le operazioni di unione, differenza ed intersezione tra più tabelle. Le vediamo di seguito più nel dettaglio.
 	
 	\begin{osservazione}{Compatibilità delle operazioni}{}
@@ -3267,7 +3268,7 @@
 	
 	Non verrà spiegato nuovamente il significato delle varie operazioni, bensì verranno forniti semplicemente degli esempi su tabelle concrete.
 	
-	\subsection{\texttt{UNION}}
+	\subsubsection*{\texttt{UNION}}
 	\begin{esempio}{Esempio di uso di \texttt{UNION}}{}
 		\textit{Estrarre i nomi e i cognomi degli impiegati}
 		\begin{lstlisting}[language=SQL]
@@ -3280,7 +3281,7 @@
 	\end{esempio}
 	Nota che l'operazione di unione sarebbe possibile anche se stessimo unendo, ad esempio, una tabella che ha un campo \texttt{Nome}, definito come stringa, con un campo \texttt{TitoloLibro}, sempre definito come stringa. Le due tabelle \textbf{sono union compatibili}, ma il risultato \textit{manca di senso}.
 	
-	\subsection{\texttt{EXCEPT}}
+	\subsubsection*{\texttt{EXCEPT}}
 	La clausola \texttt{EXCEPT} corrisponde alla \textit{differenza insiemistica}.
 	\begin{esempio}{Esempio di uso di \texttt{EXCEPT}}{}
 		\textit{Estrarre i nomi degli impiegati che non sono anche cognome di qualcun altro}.
@@ -3293,7 +3294,7 @@
 		\end{lstlisting}
 	\end{esempio}
 	
-	\subsection{\texttt{INTERSECT}}
+	\subsubsection*{\texttt{INTERSECT}}
 	\begin{esempio}{Esempio di uso di \texttt{INTERSECT}}{}
 		\textit{Estrarre i nomi degli impiegati che sono anche cognome di qualcun altro}
 		\begin{lstlisting}[language=SQL]
@@ -3305,12 +3306,12 @@
 		\end{lstlisting}
 	\end{esempio}
 	
-	\section{Interrogazioni nidificate}
+	\subsection{Interrogazioni nidificate}
 	Finora abbiamo visto solo interrogazioni in cui le condizioni espresse nella clausola \texttt{WHERE} erano relativamente semplici. Tuttavia, in caso di interrogazioni più complesse, è possibile anche scrivere intere \textit{sotto-interrogazioni} il cui risultato verrà usato come valore di confronto nella clausola \texttt{WHERE}: si parla in questo caso di \textbf{interrogazioni nidificate}.\\
 	Supponiamo di voler \textit{estrarre i dati degli impiegati che hanno completato almeno un progetto}. Senza entrare nei dettagli delle singole tabelle, supponiamo di avere le tabelle \texttt{Impiegati, Progetti, ImpiegatiProgetti}. Seppur questo esempio è risolvibile anche in altri modi, si presenta quello utilizzante interrogazioni nidificate.\\
 	Innanzitutto bisogna chiedersi: cosa significa che ha completato almeno un progetto? Significa che \textit{è presente nella tabella \texttt{ImpiegatiProgetti}}. E come facciamo a controllare la presenza insiemistica di una tupla in una tabella? Il linguaggio SQL ci mette a disposizione vari strumenti.
 	
-	\subsection{La clausola \texttt{ANY}}
+	\subsubsection*{La clausola \texttt{ANY}}
 	La clausola \texttt{ANY} ci permette di confrontare un valore in modo che rispetti la condizione con \textbf{almeno uno} dei valori risultanti dall'interrogazione nidificata. Intuitivamente, si può vedere come quest'operatore assomigli all'operatore di \textbf{appartenenza insiemistica}. Difatti, per risolvere l'interrogazione presentata sopra, è possibile operare nel seguente modo:
 	\begin{lstlisting}[language=SQL]
 		SELECT Cognome, Stipendio
@@ -3333,7 +3334,7 @@
 	\end{enumerate}
 	Un modo alternativo per implementare questa logica è l'utilizzo dell'operatore \texttt{IN}, che può essere direttamente sostituito a \texttt{= ANY} in quanto significa la stessa cosa (forse è anche più intuitivo, in quanto significa letteralmente "\textit{contenere}").
 	
-	\subsection{La clausola ALL}
+	\subsubsection*{La clausola ALL}
 	Se invece ci venisse chiesto: \textit{estrarre i dati di tutti gli impiegati che non hanno completato alcun progetto}. In questo caso, non possiamo cavarcela né con una join ne con una condizione semplice. Il fatto che un impiegato non abbia completato alcun progetto vuol dire che tale impiegato \textbf{non è presente} nella tabella \texttt{ImpiegatiProgetti}. Dobbiamo dunque verificare una \textit{non appartenenza insiemistica}. L'interrogazione presentata si può dunque risolvere come segue:
 	\begin{lstlisting}[language=SQL]
 		SELECT Cognome, Stipendio
@@ -3346,5 +3347,235 @@
 	In questo caso stiamo usando la clausola \texttt{ALL}, che confronta l'attributo specificato con \textbf{tutti} gli elementi della lista prodotta come risultato. Restituisce \textbf{True} sse. la condizione è verificata per tutte le occorrenze; \textbf{False} se anche solo per un elemento della lista di confronto tale condizione non viene rispettata.\\
 	Nel nostro caso, per esprimere una \textit{non appartenenza} insiemistica, stiamo chiedendo che un cognome sia diverso da tutti i cognomi che hanno completato progetti. E' un po' come la differenza, in un certo senso.\\
 	Anche qui abbiamo un'alternativa sintattica più intuitiva: la clausola \texttt{NOT IN}, che sostituisce perfettamente \texttt{!= ALL} controllando se tale valore di attributo non è presente nella lista di confronto.
+	
+	\section{Il linguaggio di manipolazione dei dati: DML}
+	Andiamo adesso a vedere tutti i comandi relativi al sotto-linguaggio di SQL che ci permette di inserire, modificare ed eliminare valori all'interno delle nostre tabelle.
+	
+	\subsection{L'inserimento di dati}
+	L'inserimento di dati all'interno di una relazione viene effettuato attraverso la clausola \texttt{INSERT}, che prevede la seguente sintassi:
+	\begin{lstlisting}[language=SQL]
+		INSERT INTO NomeTabella (ListaAttributi)
+		VALUES (ListaValori);
+	\end{lstlisting}
+	Nonostante la sintassi sia abbastanza esplicativa, è giusto fare delle osservazioni:
+	\begin{itemize}
+		\item Nella \texttt{ListaAttributi} specificata dobbiamo inserire il nome degli attributi (le colonne) della tabella nella quale vogliamo inserire i dati. Questi \textbf{non devono necessariamente essere tutti gli attributi della tabella}.
+		
+		\item In caso venga omesso uno degli attributi definiti nella creazione della tabella, ci sono due possibilità riguardo al valore che il sistema assegnerà alle colonne mancanti:
+		\begin{enumerate}
+			\item Se nella creazione della tabella è stato definito un valore di \texttt{DEFAULT} per quel campo, verrà impostato quel valore.
+			
+			\item Se invece non è stato definito alcun \texttt{DEFAULT}, il sistema imposterà di base \texttt{NULL}.
+		\end{enumerate}
+		
+		\item Nonostante gli attributi in \texttt{ListaAttributi} non devono essere necessariamente tutti quelli della tabella originale e \textbf{non conti l'ordine}, è invece fondamentale mantenere l'ordine quando si scrivono i valori in \texttt{ListaValori}. Dunque ad un attributo attributo$_i$ deve corrispondere un valore$_i$, che deve essere compatibile di dominio e significato all'attributo per il quale viene valorizzato.
+	\end{itemize}
+	
+	Una variante all'operazione di inserimento consiste nel non specificare la lista di attributi. In questo caso, il linguaggio SQL supporrà che si vorranno inserire tutti gli attributi definiti nello schema della tabella, che dovranno essere dunque inseriti anche nell'ordine di definizione.\\
+	Si può anche avere una sintassi del seguente tipo:
+	\begin{lstlisting}[language=SQL]
+		INSERT INTO NomeTabella (ListaAttributi)
+		SELECT ListaAttributiCompatibili
+		FROM ListaTabelle
+		...
+	\end{lstlisting}
+	All'interno della tabella \texttt{NomeTabella} verranno inserite tutte le tuple risultanti dalla query scritta. Questo ovviamente salvo errori dovuti da incompatibilità di domini oppure violazioni dei vincoli di eventuali vincoli di integrità.
+	
+	\begin{esempio}{Esempio di inserimento in una tabella}{}
+		Vediamo di seguito esempi concreti di inserimento dati all'interno di una tabella con il seguente schema: \texttt{Persona(CF, Cognome, DataNascita)}.
+		
+		\begin{lstlisting}[language=Python, caption={Inserimento specificando la lista degli attributi.}]
+			INSERT INTO Persona (CF, Cognome)
+			VALUES (RSSMTT, Rossi);
+		\end{lstlisting}
+		\textbf{NOTA}: se presente già una tupla in cui \texttt{CF = RSSMTT}, l'inserimento restituirà un errore di duplicazione della chiave primaria.
+		
+		\begin{lstlisting}[language=Python, caption={Inserimento senza specificare la lista degli attributi.}]
+			INSERT INTO Persona
+			VALUES (RSSMTT, Rossi, "1980-06-24");
+		\end{lstlisting}
+		
+		\begin{lstlisting}[language=Python, caption={Inserimento a partire da query.}]
+			INSERT INTO Lavoratori
+			SELECT CF, Cognome, DataNascita
+			FROM Persona
+			WHERE DataNascita < "1990-01-01";
+		\end{lstlisting}
+		In questo ultimo inserimento stiamo inserendo nella tabella \texttt{Lavoratori} (che assumiamo per semplicità avere lo stesso schema di \texttt{Persona}) tutte le persone nate prima del 1990.
+	\end{esempio}
+	
+	\subsection{La cancellazione dei dati}
+	La cancellazione dei dati da una tabella viene fatto mediante il comando \texttt{DELETE}, che segue la seguente sintassi:
+	\begin{lstlisting}[language=SQL]
+		DELETE FROM NomeTabella
+		[ WHERE Condizione ]
+	\end{lstlisting}
+	Si tratta, ovviamente, di un comando \textbf{molto} delicato, che rischia di commettere errori gravissimi. In particolare, se si omette la condizione di cancellazione (in quanto essa è opzionale) si eliminano tutte le tuple dalla tabella indicata.
+	\begin{esempio}{Esempio di cancellazione da una tabella}{}
+		Sempre sfruttando la tabella \texttt{Persona} dell'esempio precedente, supponiamo di voler eliminare dalla tabella tutte le persone il cui cognome è "Rossi".
+		
+		\begin{lstlisting}[language=SQL]
+			DELETE FROM Persona
+			WHERE Cognome = "Rossi";
+		\end{lstlisting}
+		
+		Oppure supponiamo anche di voler fare tabula rasa della tabella: in tal caso sarà molto semplice.
+		\begin{lstlisting}[language=SQL]
+			DELETE FROM Persona;
+		\end{lstlisting}
+	\end{esempio}
+	
+	\subsection{La modifica dei dati}
+	Per modificare il valore di un attributo in una o più tuple si può usare il costrutto \texttt{UPDATE}, che gode della seguente sintassi:
+	\begin{lstlisting}[language=SQL]
+		UPDATE NomeTabella
+		SET Attributo = Espressione
+		[ WHERE Condizione ]
+	\end{lstlisting}
+	
+	Anche qui la condizione è opzionale: se omessa, tutte le tuple della tabella assumeranno il valore specificato nell'espressione.
+	\begin{osservazione}{Utilizzo di query per l'aggiornamento}{}
+		Come per la clausola \texttt{INSERT}, è possibile modificare un valore in una o più tuple in base al risultato di una query. Ovviamente tale query deve \textbf{restituire una sola tupla con un solo attributo}, altrimenti la clausola \texttt{UPDATE} non saprebbe da quale tupla e/o attributo andare a prendere il nuovo valore. Per completezza, presentiamo la sintassi:
+		\begin{lstlisting}[language=SQL]
+			UPDATE NomeTabella
+			SET Attributo = (
+				SELECT Attributo
+				FROM ListaTabelle
+				[ WHERE Condizione ]
+			)
+			[ WHERE Condizione ]
+		\end{lstlisting}
+	\end{osservazione}
+	
+	\begin{osservazione}{Aggiornamento dei vincoli di integrità referenziale}{}
+		Nella definizione dei vincoli di integrità referenziale abbiamo visto due particolari costrutti: \texttt{ON UPDATE ...} e \texttt{ON DELETE ...}. Ovviamente l'esecuzione di tali costrutti entra in gioco ora, con l'esecuzione di una delle due operazioni di modifica o cancellazione.
+	\end{osservazione}
+	
+	\section{Il linguaggio per il controllo degli accessi: DCL}
+	Come abbiamo già detto introducendo il linguaggio SQL è anche possibile, tramite appositi comandi, definire quali utenti hanno quali privilegi (cioè a quali tabelle/singole righe possono accedere).\\
+	Un privilegio è formalmente definito da 5 componenti principali:
+	\begin{itemize}
+		\item \textbf{La risorsa a cui si riferisce}, dunque ad esempio la tabella, la vista, il dominio o le singole colonne/righe oggetto dell'autorizzazione.
+		
+		\item \textbf{L'utente che concede il privilegio (grantor)}, tipicamente l'admin della base di dati.
+		
+		\item \textbf{L'utente che riceve il privilegio (grantee)}.
+		
+		\item \textbf{L'azione elementare consentita dal privilegio}.
+		
+		\item \textbf{La trasmissibilità del permesso}, ovvero la facoltà o meno del grantee di trasmettere il privilegio che gli è appena stato concesso.
+	\end{itemize}
+	
+	Le azioni concesse sulla risorsa descritta dal privilegio sono:
+	\begin{itemize}
+		\item \texttt{SELECT}, consente la lettura dei dati da quella risorsa.
+		
+		\item \texttt{INSERT}, autorizza l'inserimento di tuple nella risorsa.
+		
+		\item \texttt{UPDATE}, permette di modificare il contenuto di tuple esistenti.
+		
+		\item \texttt{DELETE}, permette di eliminare tuple dalla risorsa.
+		
+		\item \texttt{REFERENCES}, consente di definire vincoli di chiavi esterna sulla risorsa.
+		
+		\item \texttt{USAGE}, più sottile delle altre opzioni perché consente l'uso di una risorsa che non è necessariamente una tabella (può essere un dominio).
+	\end{itemize}
+	
+	\subsection{La concessione dei privilegi}
+	La concessione dei privilegi utenti avviene mediante il comando \texttt{GRANT}, che rispetta la seguente sintassi:
+	\begin{lstlisting}[language=SQL]
+		GRANT ListaPrivilegi [ListaColonne]
+		ON Risorsa
+		TO ListaUtenti
+		[ WITH GRANT OPTION ]
+	\end{lstlisting}
+	Analizziamo il funzionamento di questo comando:
+	\begin{enumerate}
+		\item La \texttt{ListaPrivilegi} può contenere una o più delle azioni descritte sopra.
+		
+		\item Al posto di \texttt{ListaColonne} bisogna inserire tutte le colonne della risorsa oggetto della restrizione.
+		
+		\item In \texttt{ListaUtenti} si indica il nome effettivo degli utenti della base di dati a cui si vogliono dare tali privilegi. Un'opzione alternativa è \texttt{PUBLIC}, che permette in un colpo solo di attribuire i privilegi a \textbf{tutti gli utenti della base di dati}.
+		
+		\item La clausola \texttt{WITH GRANT OPTION} è opzionale e indica la possibilità degli utenti in \texttt{ListaUtenti} di passare questo privilegio ad altri utenti sempre mediante il comando \texttt{GRANT} con questa sintassi.
+	\end{enumerate}
+	
+	\begin{esempio}{Esempio di uso di \texttt{GRANT}}{}
+		Forniamo all'utente 'Mario' la possibilità di effettuare interrogazioni sulla sola tabella \texttt{Impiegati}
+		\begin{lstlisting}[language=SQL]
+			GRANT SELECT
+			ON Impiegati
+			TO Mario;
+		\end{lstlisting}
+		
+		Forniamo all'utente 'Mario' la possibilità di effettuare interrogazioni sulla sola tabella \texttt{Impiegati} e di modificare il solo campo \texttt{Stipendio}.
+		\begin{lstlisting}[language=SQL]
+			GRANT SELECT, UPDATE (Stipendio)
+			ON Impiegati
+			TO Mario;
+		\end{lstlisting}
+		
+		Si potrebbero fare tanti, tantissimi altri esempi, ma si lascia al lettore la creatività.
+	\end{esempio}
+	
+	\subsection{La revoca dei privilegi}
+	La revoca di un privilegio avviene grazie al comando \texttt{REVOKE}, che segue la seguente sintassi:
+	\begin{lstlisting}[language=SQL]
+		REVOKE [ GRANT OPTION FOR ] Privilegi
+		ON Risorsa
+		FROM ListaUtenti
+		[ RESTRICT | CASCADE ]
+	\end{lstlisting}
+	Andiamo a discutere i costrutti univoci di questo comando:
+	\begin{itemize}
+		\item Specificando \texttt{GRANT OPTION FOR} non stiamo revocando agli utenti di \texttt{ListaUtenti} i loro privilegi, bensì solo il privilegio di attribuire \textit{quello specifico privilegio descritto di seguito}.
+		
+		\item Similmente a come avevamo fatto per le chiavi esterne, anche qui possiamo specificare cosa deve succedere agli utenti che hanno propagato il loro privilegio ad altri utenti:
+		\begin{itemize}
+			\item Con \texttt{RESTRICT} ci viene impedito di rimuovere il privilegio ad utenti che l'hanno propagato, impedendoci di lasciare utenti orfani.
+			
+			\item Con \texttt{CASCADE}, viene tolto il privilegio ad ogni utente di \texttt{ListaUtenti} e da tutti coloro a cui era stato propagato.
+		\end{itemize}
+	\end{itemize}
+	
+	Gli esempi di sintassi sono molto simili a quelli per il comando \texttt{GRANT}, e dunque verranno omessi: si faccia riferimento alla sintassi generica descritta sopra.
+	
+	\subsection{Le transazioni in SQL}
+	Come già discusso nella Sezione \ref{sec:transazioni}, le transazioni rappresentano un'unità atomica di istruzioni, che devono portare modifiche consistenti e durevoli alla base di dati.\\
+	La definizione di una transazione nel linguaggio SQL avviene grazie a 3 comandi principali:
+	\begin{description}
+		\item [\texttt{BEGIN TRANSACTION}:] si occupa di iniziare una transazione. Tutte le operazioni specificate dopo questo comando dovranno essere eseguite di fila, senza interruzioni.
+		
+		\item[\texttt{COMMIT WORK}:] si occupa di chiudere la transazione, far eseguire effettivamente le modifiche apportate dai comandi che precedono il \texttt{COMMIT} e seguono il \texttt{BEGIN} e apportare permanentemente le modifiche alla base di dati.
+		
+		\item[\texttt{ROLLBACK WORK}:] annulla tutte le modifiche avvenute sulla base di dati in seguito all'ultimo commit avvenuto da parte di una transazione. Sostanzialmente si usa per riportare la base di dati ad uno stato precedente e consistente, in seguito magari a qualche errore.
+	\end{description}
+	
+	\begin{esempio}{Uso di transazioni}{}
+		Supponiamo di voler simulare lo scambio di 1000 euro da un conto corrente ad un altro. Come abbiamo già visto, per evitare \textit{race condition} dobbiamo fare in modo che tutte le operazioni di aggiornamento avvengano in modo contemporaneo.
+		
+		\begin{lstlisting}[language=SQL]
+			BEGIN TRANSACTION;
+			
+			UPDATE ContoCorrente
+			SET Saldo = Saldo - 1000
+			WHERE NumeroConto = 12345;
+			
+			UPDATE ContoCorrente
+			SET Saldo = Saldo + 1000
+			WHERE NumeroConto = 55555;
+			
+			COMMIT WORK;
+		\end{lstlisting}
+		
+		Supponiamo adesso che un utente malintenzionato (?) voglia aggiungere 2000 euro al conto corrente \texttt{12345}. Essendo sbadato e forse non a conoscenza delle transazioni, scrive un semplice
+		\begin{lstlisting}[language=SQL]
+			UPDATE ContoCorrente
+			SET Saldo = Saldo + 2000
+			WHERE NumeroConto = 12345;
+		\end{lstlisting}
+		
+		In seguito, gli amministratori della base di dati si renderanno conto dell'errore e decideranno di riportare la situazione ad uno stato corretto. Potranno farlo con un semplice \texttt{ROLLBACK WORK;} che riporterà lo stato della base di dati all'ultimo \texttt{COMMIT WORK} incontrato, che nel nostro esempio sarà il completamento del trasferimento dei 1000 euro dai due conti correnti.
+	\end{esempio}
 	
 \end{document}
