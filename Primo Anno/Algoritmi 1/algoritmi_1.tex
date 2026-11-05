@@ -211,7 +211,7 @@
     		if A[mid] == target:
     			return mid
     		elif A[mid] < target:
-    			return ricerca_binaria(A, target mid + 1, fine)
+    			return ricerca_binaria(A, target, mid + 1, fine)
     		else:
     			return ricerca_binaria(A, target, inizio, mid - 1)
     \end{lstlisting}

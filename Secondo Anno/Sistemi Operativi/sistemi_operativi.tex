@@ -2941,4 +2941,494 @@
 	Tenendo a mente gli algoritmi visti finora, sorgono delle criticità che un bravo ingegnere del software deve prevedere e risolvere nel modo migliore possibile. Un problema può essere quello del \textbf{trashing}: quando ci sono \textbf{troppe pagine rispetto alla dimensione della RAM}. Abbiamo già visto che il tutto viene risolto tramite la memoria Swap. Ma mettiamoci nel caso in cui un processo A vada a \textit{sfrattare una pagina riservata al processo B}. E il processo B faccia lo stesso con il processo C.\\
 	Una soluzione a tale problema sarebbe attribuire ad ogni processo un numero massimo di pagine utilizzabili. Ma qui si torna al problema di spreco di memoria: e \textbf{se attribuissimo 20 pagine ad un processo che ne usa solo 5}? Bisogna scegliere accuratamente tale valore, ma come si può immaginare non è una semplice impresa.
 	
+	\chapter{La concorrenza}
+	In questo capitolo caleremo un'altra semplificazione con la quale abbiamo lavorato finora: ogni singolo processo non sarà più una singola unità elaborativa, bensì un insieme di "unità lavorative" che ne condivideranno le risorse e opereranno in modo da rendere l'esecuzione del processo padre più veloce di quanto non possa essere quella sequenziale. Introduciamo così il concetto di \textbf{Thread}.
+	
+	\section{I thread}
+	Anche se anticipato dall'introduzione di questo capitolo, diamo di seguito una definizione più formale di thread.
+	\begin{definizione}{Thread}{}
+		Un \textbf{thread} è l'unità di esecuzione più piccola possibile schedulabile dal Sistema Operativo. Un thread può esistere \textbf{solo e soltando} in funzione di un processo da cui origina (detto \textit{processo padre} o \textit{main thread}), e per questo ne condivide le risorse fondamentali come lo spazio di memoria riservato al codice eseguibile, le pagine e le variabili globali; possiede invece un proprio stack privato e i propri valori dei registri.
+	\end{definizione}
+	Avendo definito il concetto di thread, sorge spontanea una domanda: era davvero necessario? Dopotutto siamo già in grado di creare processi figli a partire da un processo padre con \texttt{fork()}, e siamo in grado di far eseguire al processo figlio un'altra porzione di codice con \texttt{execvp()}. A che pro dunque definiamo un'altra unità schedulabile?\\
+	Diamo adesso una risposta a tutte queste domande:
+	\begin{enumerate}
+		\item La creazione di un processo figlio è un'operazione estremamente onerosa dal punto di vista computazionale e di memoria, in quanto si deve creare un nuovo PCB per il processo figlio, e si dovranno allocare aree di memoria \textit{ex-novo} riservate al processo figlio.
+		
+		\item I thread, per loro natura, condividono la maggior parte delle aree di memoria con il processo padre. Dunque l'operazione di \textit{context-switch} tra due thread dello stesso processo padre risulta molto semplice in quanto bisognerà modificare un numero limitato di dati.
+	\end{enumerate}
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			font=\small\sffamily,
+			thick,
+			% Stili per i riquadri con bordi neri e sfondo neutro
+			boxProc/.style={
+				draw=black,
+				thick,
+				rounded corners=4pt,
+				fill=white,
+				inner sep=0pt
+			},
+			segBox/.style={
+				draw=black,
+				minimum width=2.4cm,
+				minimum height=0.6cm,
+				fill=white,
+				align=center,
+				font=\small\sffamily
+			},
+			sharedBox/.style={
+				draw=black,
+				thick,
+				minimum width=7.2cm,
+				minimum height=1.3cm,
+				fill=white,
+				align=center
+			},
+			threadBox/.style={
+				draw=black,
+				thick,
+				minimum width=2.34cm,
+				minimum height=1.4cm,
+				fill=white,
+				align=center
+			}
+			]
+			
+			% ========================================================
+			% SEZIONE SINISTRA: DUE PROCESSI ISOLATI
+			% ========================================================
+			\node[font=\bfseries, align=center] at (3.2, 4.0) {Due processi: isolati};
+			
+			% Processo A
+			\node[boxProc, minimum width=2.8cm, minimum height=3.9cm] (procA) at (1.4, 1.65) {};
+			\node[font=\bfseries] at (1.4, 3.25) {Processo A};
+			\node[segBox] at (1.4, 2.5) {Code};
+			\node[segBox] at (1.4, 1.8) {Data};
+			\node[segBox] at (1.4, 1.1) {Heap};
+			\node[segBox] at (1.4, 0.4) {Stack};
+			
+			% Separatore a forma di X
+			\node[font=\Large\bfseries] at (3.2, 1.65) {$\times$};
+			
+			% Processo B
+			\node[boxProc, minimum width=2.8cm, minimum height=3.9cm] (procB) at (5.0, 1.65) {};
+			\node[font=\bfseries] at (5.0, 3.25) {Processo B};
+			\node[segBox] at (5.0, 2.5) {Code};
+			\node[segBox] at (5.0, 1.8) {Data};
+			\node[segBox] at (5.0, 1.1) {Heap};
+			\node[segBox] at (5.0, 0.4) {Stack};
+			
+			% ========================================================
+			% SEPARATORE VERTICALE TRATTEGGIATO
+			% ========================================================
+			\draw[dashed, gray] (6.8, -0.6) -- (6.8, 4.0);
+			
+			% ========================================================
+			% SEZIONE DESTRA: UN PROCESSO, TRE THREAD
+			% ========================================================
+			\node[font=\bfseries, align=center] at (11.0, 4.0) {Un processo, tre thread};
+			
+			% Box contenitore del processo unico
+			\node[boxProc, minimum width=7.8cm, minimum height=3.9cm] (procSingle) at (11.0, 1.65) {};
+			
+			% Risorse condivise (spostato leggermente più in alto a y=2.75)
+			\node[sharedBox] at (11.0, 2.75) {
+				\textbf{Condivisi: code, dati globali, heap}\\[0.3ex]
+				\footnotesize unico spazio di indirizzamento, unica page table
+			};
+			
+			% Singoli Thread (spostati a y=0.95 per creare uno stacco verticale netto)
+			\node[threadBox] at (8.57, 0.95) {
+				\textbf{Thread 1}\\[0.2ex]
+				\scriptsize Stack, PC,\\
+				\scriptsize registri
+			};
+			
+			\node[threadBox] at (11.0, 0.95) {
+				\textbf{Thread 2}\\[0.2ex]
+				\scriptsize Stack, PC,\\
+				\scriptsize registri
+			};
+			
+			\node[threadBox] at (13.43, 0.95) {
+				\textbf{Thread 3}\\[0.2ex]
+				\scriptsize Stack, PC,\\
+				\scriptsize registri
+			};
+			
+		\end{tikzpicture}
+	\end{figure}
+	
+	A questo punto, con l'introduzione dei thread, lo scheduler del SO non si occuperà più di schedulare interi processi bensì i singoli thread dei processi originali. Tuttavia, tutti i discorsi fatti finora sugli algoritmi di scheduling rimangono, cambia solo l'unità di lavoro che viene schedulata.\\
+	Come ricordiamo, per i processi avevamo definito i PCB (Processo Control Block), ovvero una struttura contenente tutti i dati utili a ripristinare lo stato di un processo dopo un cambio di contesto. Per i thread definiamo una struttura simile, chiamata però Thread Control Block (TCB), che avrà esattamente la stessa funzione ma conterrà dati leggermente diversi:
+	\begin{itemize}
+		\item Un identificatore univoco del thread, il \textbf{Thread ID (tid)}.
+		
+		\item Lo stato del thread (esattamente come lo stato di un processo: \texttt{READY, RUN, BLOCKED}).
+		
+		\item I valori dei registri privati del thread, dunque il proprio \textbf{stack pointer}, il \textbf{base pointer}, il proprio \textbf{program counter} e tutti gli altri registri di calcolo \textit{general purpose}.
+		
+		\item Importantissimo, ogni thread contiene all'interno del suo TCB un puntatore alla struttura PCB del processo padre, in modo da poter accedere ai dati contenuti in quelle aree di memoria condivise tra i singoli thread e definite per il processo main.
+	\end{itemize}
+	
+	\begin{osservazione}{Esistenza del PCB}{}
+		Una domanda arguta potrebbe essere: che senso ha mantenere la struttura PCB per ogni processo se ormai vogliamo suddividerli in sotto-processi schedulabili in modo indipendente?\\
+		La risposta si articola in 3 punti:
+		\begin{enumerate}
+			\item Dobbiamo ancora considerare la situazione di un processo magari molto breve che non è possibile suddividere in thread. A quel punto non staremmo lavorando con un thread bensì con un "classico" processo.
+			
+			\item Il concetto di thread nasce proprio come \textit{sotto-unità di esecuzione} di un processo padre. Dunque, se non esistesse un riferimento a questo processo padre (il PCB per l'appunto), non avrebbe neanche senso parlare di thread.
+			
+			\item Un thread può essere creato solo a partire dall'\textit{entry point} di un processo padre (es: la funzione \texttt{main()} per quanto riguarda il linguaggio C). Ciò vuol dire che non avremo \textbf{mai} un thread che definisce delle variabili globali, poiché è impossibile dal punto di vista strutturale dato che queste vengono definite \textit{prima} della funzione \texttt{main()}.
+		\end{enumerate}
+	\end{osservazione}
+	
+	\subsection{La libreria \texttt{pthread}}
+	Il linguaggio C mette a disposizione la libreria \texttt{pthread} utile per la creazione e la gestione dei thread a partire da un processo. Vediamo di seguito le varie operazioni messe a disposizione da questa libreria.
+	
+	\subsubsection{Creazione di un thread}
+	La creazione di un thread è possibile grazie alla funzione \texttt{pthread\_create}. Questa funzione prende in ingresso diversi parametri, alcuni dei quali fondamentali per la definizione del thread:
+	\begin{itemize}
+		\item Il thread ID, a cui dovremo passare l'indirizzo di una variabile di tipo compatibile in cui verrà memorizzato il valore del \texttt{tid} attribuito dal SO al thread.
+		
+		\item La \textbf{start\_routine}, ovvero la funzione che il thread deve eseguire appena verrà schedulato.
+		
+		\item Separatamente, vengono passati anche eventuali \textbf{argomenti della funzione start\_routine}.
+	\end{itemize}
+	Una nota importante: al termine dell'esecuzione della funzione \texttt{create} il thread appena creato verrà subito messo in stato di \texttt{READY}, dunque pronto per essere eseguito. L'effettivo momento di esecuzione (\texttt{RUN}) dipenderà poi dallo scheduler.
+	
+	\begin{esempio}{Esempio di creazione di un thread in C}{}
+		\begin{lstlisting}[language=C]
+			#include <stdio.h>
+			#include <pthread.h>
+			
+			void *thread_function(void *arg) {
+				int id = *(int *)arg;
+				printf("Thread \%d: hello from a new thread!\\n", id);
+				return NULL;
+			}
+			
+			int main(void) {
+				pthread_t tid;
+				int arg = 1;
+				
+				pthread_create(&tid, NULL, thread_function, &arg);
+				
+				printf("Main thread: created thread \%lu\\n", (unsigned long)tid);
+				
+				printf("Main thread: thread has finished.\\n");
+				return 0;
+			}
+		\end{lstlisting}
+	\end{esempio}
+	
+	Visto l'esempio precedente e facendone una rapida analisi, si può notare un problema riscontrato anche nella creazione dei processi con \texttt{fork()}: l'output \textbf{non è deterministico}. Non sappiamo quale thread, se il main o il nuovo appena creato, verrà eseguito prima, e dunque non possiamo prevedere l'ordine delle istruzioni.\\
+	Tendenzialmente, queste situazioni sono preferibilmente evitabili nella scrittura di un programma, ed è proprio per questo che la libreria \texttt{pthread} ci mette a disposizione anche uno strumento per il controllo di queste situazioni.
+	
+	\subsubsection{Attesa della fine di un thread}
+	Per risolvere problemi di natura simile a quelli visti sopra, la libreria ci mette a disposizione la funzione \texttt{pthread\_join()}, che prende come argomento il \textbf{tid del thread di cui vogliamo aspettare la fine} e \textbf{blocca l'esecuzione del thread che ha chiamato questa funzione fino a quando non sarà terminato il thread specificato}. Questa funzione è molto simile a \texttt{waitpid()}, che avevamo visto essere utile per attendere la terminazione di un processo dato il suo Process ID.
+	
+	\begin{esempio}{Esempio di attesa della fine di un thread}{}
+		\begin{lstlisting}[language=C]
+			#include <stdio.h>
+			#include <pthread.h>
+			
+			void *thread_function(void *arg) {
+				int id = *(int *)arg;
+				printf("Thread \%d: hello from a new thread!\\n", id);
+				return NULL;
+			}
+			
+			int main(void) {
+				pthread_t tid;
+				int arg = 1;
+				
+				pthread_create(&tid, NULL, thread_function, &arg);
+				
+				printf("Main thread: created thread \%lu\\n", (unsigned long)tid);
+				
+				pthread_join(tid, NULL);
+				
+				printf("Main thread: thread has finished.\\n");
+				return 0;
+			}
+		\end{lstlisting}
+		Abbiamo creato il thread all'interno del \textit{flusso principale del programma} (detto anche \textit{main thread}) e dopo di ciò vogliamo attendere che questofinisca prima di riprendere l'esecuzione del main. Otteniamo questo risultando posizionandoci nel flusso che deve aspettare (in questo caso il main) e chiamando la funzione \texttt{pthread\_join()}.
+	\end{esempio}
+	
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			font=\small\sffamily,
+			thick,
+			% Stile per le fasi di esecuzione normale
+			boxRun/.style={
+				draw=black,
+				thick,
+				minimum height=1.0cm,
+				align=center,
+				inner sep=0pt
+			},
+			% Stile per la fase di blocco (tratteggiata)
+			boxBlock/.style={
+				draw=black,
+				thick,
+				dashed,
+				minimum height=1.0cm,
+				align=center,
+				inner sep=0pt
+			}
+			]
+			% --- ETICHETTE A SINISTRA ---
+			\node[font=\bfseries, anchor=east] at (-0.3, 0) {main};
+			\node[font=\bfseries, anchor=east] at (-0.3, -2.0) {thread};
+			
+			% --- TIMELINE DEL THREAD PRINCIPALE (MAIN) ---
+			\node[boxRun, minimum width=3.0cm, anchor=west] (m1) at (0, 0) {esecuzione};
+			\node[boxRun, minimum width=3.6cm, anchor=west] (m2) at (m1.east) {prosegue};
+			\node[boxBlock, minimum width=3.4cm, anchor=west] (m3) at (m2.east) {in attesa};
+			\node[boxRun, minimum width=2.6cm, anchor=west] (m4) at (m3.east) {riprende};
+			
+			% --- TIMELINE DEL NUOVO THREAD ---
+			% Posizionato sotto m2 ed m3
+			\node[boxRun, minimum width=7.0cm, anchor=north west] (t1) at ([yshift=-1.5cm]m1.south east) {esegue start\_routine(arg), poi termina};
+			
+			% --- FRECCE DI SINCRONIZZAZIONE ---
+			% Freccia diagonale: creazione del thread
+			\draw[->, >=stealth, very thick] (m1.south east) -- (t1.north west)
+			node[midway, left=4pt, font=\footnotesize\ttfamily] {pthread\_create()};
+			
+			% Freccia verticale: terminazione del thread e sblocco della join
+			\draw[->, >=stealth, very thick] (t1.north east) -- (m3.south east)
+			node[midway, right=4pt, font=\footnotesize, align=left] {il thread termina:\\la join ritorna};
+			
+		\end{tikzpicture}
+	\end{figure}
+	
+	\section{La condivisione della memoria}
+	Purtroppo l'utilizzo dei thread non è tutto fiori e acqua di rose: si creano dei grandi problemi quando più thread tentano di accedere ad una variabile globale e modificarne il valore.\\
+	Prendiamo in esempio il seguente programma:
+	
+	\begin{lstlisting}[language=C, style=stile-listings]
+		#include <stdio.h>
+		#include <pthread.h>
+		int counter = 0;
+		
+		void *increment(void *arg) {
+			for (int i = 0; i < 1000000; i++) {
+				counter++;
+			}
+			return NULL;
+		}
+		
+		int main(void) {
+			pthread_t t1, t2;
+			pthread_create(&t1, NULL, increment, NULL);
+			pthread_create(&t2, NULL, increment, NULL);
+			pthread_join(t1, NULL);
+			pthread_join(t2, NULL);
+			printf("Valore finale del counter: \%d\n", counter);
+		}
+	\end{lstlisting}
+	
+	Ci aspetteremmo come risultato di counter 2000000, dato che abbiamo due thread ognuno dei quali incrementa di un milione. La realtà dei fatti è però deludente: il risultato sperato non viene raggiunto \textit{quasi mai}.
+	\smallbreak
+	
+	Analizziamo però il \textit{perché} di questo comportamento.\\
+	Anche un'operazione apparentemente semplice, come un incremento unario di una variabile, si scompone in 3 istruzioni in linguaggio macchina:
+	\begin{lstlisting}[language=C]
+		mov eax, counter
+		add eax, 1
+		mov counter, eax
+	\end{lstlisting}
+	Queste istruzioni si occupano rispettivamente di:
+	\begin{enumerate}
+		\item Copiare il valore della variabile \texttt{counter} all'interno del registro \texttt{eax}.
+		
+		\item Incrementare il valore \textbf{nel registro} di 1.
+		
+		\item Copiare il valore del registro nella variabile \texttt{counter}.
+	\end{enumerate}
+	Supponiamo ora che il \textit{time-slice} di un thread si esaurisca in mezzo alle ultime due operazioni. In che situazione ci troveremmo: il registro conterrebbe un valore \textbf{aggiornato} della variabile, mentre la variabile stessa conterrebbe \textbf{il valore vecchio, non aggiornato}. Questo disallineamento dei valori avviene in quanto l'operazione \textit{non è atomica}. Un'operazione si definisce \textbf{atomica} quando può essere eseguita consecutivamente senza interruzioni.\\
+	Questo disallineamento dei valori, che accade per un singolo thread e dunque fa propagare l'errore anche al processo generale, viene definito come un problema di \textbf{race condition}, ovvero una condizione in cui più thread vanno a modificare la stessa variabile globale ottenendo un risultato \textbf{non deterministico, bensì dipendente da quale thread verrà schedulato prima e da quando terminerà il time-slice di un singolo thread}.
+	
+	\begin{definizione}{Sezione critica}{}
+		La parte di codice che può creare disallineamenti delle risorse in thread diversi è detta \textbf{sezione critica}.\\
+		Per garantire una corretta gestione della sezione critica, e dunque prevenire problemi di race condition, si devono garantire:
+		\begin{itemize}
+			\item \textbf{Esecuzione atomica}, dunque quando un thread entra per eseguire la sezione critica, deve eseguirla \textbf{tutta}.
+			
+			\item \textbf{Mutua esclusione}: se un thread$_i$ sta accedendo alla sezione critica, \textbf{nessun altro thread deve essere in grado di accedervi}.
+			
+			\item \textbf{Progresso}: non si può risolvere il problema tagliando la testa al toro e impedendo ad ogni thread di accedere. Staremo garantendo i due punti precedenti, ma staremo anche bloccando permanentemente l'esecuzione del processo.
+		\end{itemize}
+	\end{definizione}
+	
+	\begin{osservazione}{Natura della sezione critica}{}
+		Per il principio della mutua esclusione, alla sezione critica può accedere un singolo thread alla volta. Questo vale \textbf{anche quando quel thread viene deschedulato}: se per qualche ragione il \textit{time-slice} terminasse all'interno della sezione critica e venisse schedulato un altro thread dello stesso processo, bisognerebbe impedire che quel nuovo thread eseguisse la sezione critica anche se il precedente è stato deschedulato.\\
+		Per questa ragione, è molto importante che la sezione critica sia \textbf{il più breve possibile}, in quanto bisogna minimizzare il fatto che i processi vadano in \texttt{BUSY WAITING}, ossia quando sono formalmente in stato di \texttt{READY} bensì stanno solo attendendo di poter eseguire la loro parte di codice.
+	\end{osservazione}
+	
+	\subsection{I lock}
+	Per ovviare questo problema, è stato definito il concetto di \textbf{lock}: un \textbf{lock} è una variabile condivisa tra thread dello stesso processo, per la quale però solo un thread alla volta avrà "\textit{la chiave per aprirlo}": una volta aperto, il lucchetto sarà chiuso per gli altri ma aperto per il thread che ha usato la chiave. Si tratta ovviamente solo di un concetto astratto, che è stato però implementato in modo concreto dalla libreria \texttt{pthread} mediante il tipo di dato \texttt{pthread\_mutex\_t}.\\
+	Vediamo di seguito il codice precedente in cui però la sezione critica viene corretta mediante l'uso dei lock:
+	\begin{lstlisting}[language=C, style=stile-listings]
+		#include <stdio.h>
+		#include <pthread.h>
+		
+		int counter = 0;
+		pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+		
+		void *increment(void *arg) {
+			for (int i = 0; i < 1000000; i++) {
+				pthread_mutex_lock(&lock);
+				counter++;
+				pthread_mutex_unlock(&lock);
+			}
+			return NULL;
+		}
+		
+		int main(void) {
+			pthread_t t1, t2;
+			pthread_create(&t1, NULL, increment, NULL);
+			pthread_create(&t2, NULL, increment, NULL);
+			pthread_join(t1, NULL);
+			pthread_join(t2, NULL);
+			printf("Valore finale del counter: \%d\n", counter);
+		}
+	\end{lstlisting}
+	Come vediamo, la soluzione risulta molto semplice ed altrettanto efficace:
+	\begin{enumerate}
+		\item Come primissima cosa, dobbiamo definire il nostro lock: usiamo il costrutto \texttt{PTHREAD\_MUTEX\_INITIALIZER}, una costante della libreria.
+		
+		\item Individuiamo la sezione critica (nel nostro caso solo \texttt{counter++}) e la rinchiudiamo nei due costrutti astratti definiti prima: il thread che arriva prende la chiave e chiude il lucchetto (\texttt{pthread\_mutex\_lock(\&lock)}), esegue \textbf{tutto} il codice della sezione critica e poi sblocca il lucchetto per permettere ad altri thread di eseguire la sezione critica (\texttt{pthread\_mutex\_unlock(\&lock)}).
+	\end{enumerate}
+	
+	\begin{osservazione}{Ordine di esecuzione dei thread}{}
+		Supponiamo che un thread$_i$ prenda per primo il lock e blocchi la sezione critica per gli altri. Una volta liberato questo lock, la "chiave" del lucchetto verrà attribuita al primo thread che ha provato ad accedere alla risorsa dopo il thread$_i$. Insomma, la gestione dell'ordine per l'accesso dei thread alla risorsa viene fatta mediante una logica FIFO.
+	\end{osservazione}
+	
+	Negli esempi precedenti abbiamo visto come l'utilizzo di un lock risulti la soluzione corretta al problema della race condition. Non abbiamo però analizzato \textit{come} costruire un lock: cosa c'è dietro alle istruzioni di \texttt{lock()} e \texttt{unlock()} che abbiamo utilizzato? Come può un Sistema Operativo implementare un lock in modo corretto ed efficiente? Vediamo di seguito l'evoluzione delle linee di pensiero che hanno poi portato alla gestione corrente nei sistemi moderni.
+	
+	\paragraph{Disabilitazione degli interrupt}
+	La prima e più banale idea per creare un lock è disattivare i segnali di interrupt del processore quando un thread entra nella sezione critica e riattivarli quando questo vi esce.\\
+	Per quanto semplice, questa soluzione nasconde delle insidie potentissime:
+	\begin{enumerate}
+		\item Viene dato \textit{troppo} potere al codice utente: la disabilitazione dei segnali è chiaramente un'operazione riservata alla \textit{Kernel mode}. Disabilitando i segnali di interruzione stiamo lasciando che il singolo thread \textbf{monopolizzi la CPU} finché non verrà terminata la sezione critica. I problemi? Il thread potrebbe bloccarsi e dunque bloccare totalmente la CPU, più non è mai una buona soluzione far monopolizzare la CPU da un processo, qualunque che esso sia.
+		
+		\item In un'architettura multicore, a bloccarsi sarebbe il singolo core all'interno del quale il primo thread stava lavorando, ma ciò non impedisce affatto a thread in esecuzione su altri core di entrare nella sezione critica.
+	\end{enumerate}
+	Come vediamo, dunque, questa non è certo la soluzione che cerchiamo.
+	
+	\subsubsection*{Tentativi puramente software}
+	Si potrebbe pensare di utilizzare una variabile globale che agisce da flag condiviso tra i vari thread: il thread che accede la sezione critica imposta il flag a 1 e tutti gli altri verranno bloccati da un \texttt{while (flag == 1) {}}, un ciclo while apparentemente infinito utile solo a bloccare i vari thread dal proseguimento del codice.\\
+	Vediamo però una somiglianza tra questa soluzione e il problema della variabile \texttt{counter} precedentemente analizzato: chi ci garantisce che nell'istante preciso in un thread imposta il flag a 1 nessun altro thread lo stia già facendo? E che tale operazione non possa essere \textit{logicamente} interrotta dal time-slice dello scheduler?\\
+	Come si è già visto più volte in questo corso, la soluzione spesso risiede nell'utilizzo di componenti hardware dedicate. In particolare, questa volta vogliamo trovare un modo per ottenere un'\textbf{operazione di lettura e scrittura che venga interpretata dalla CPU come atomica}, dunque eseguibile in un blocco solo. Queste istruzioni vengono dette \textbf{Read-Modify-Write (RMW)}, sono fornite dall'hardware e possono essere programmate in diversi modi che vediamo di seguito.
+	
+	\subsubsection*{Test-and-Set (TAS)}
+	L'implementazione della logica \textbf{Test-and-Set} avviene nel seguente modo:
+	\begin{lstlisting}[language=C]
+		int TestAndSet(int* ptr, int nuovo_valore) {
+			int vecchio = *ptr;
+			*ptr = nuovo_valore;
+			return vecchio;
+		}
+	\end{lstlisting}
+	Questo algoritmo si occupa di scrivere \textit{incondizionatamente} un nuovo valore all'interno dell'indirizzo di memoria fornito (\texttt{int* ptr} in questo caso) e di restituire il vecchio valore presente. E come può una strategia così semplice funzionare?\\
+	Supponiamo di impostare \texttt{flag = 0} per un lock libero e \texttt{flag = 1} per il lock occupato. Quando un thread inizialmente arriva e prende il lock, il nuovo valore del flag sarà chiaramente 1. Tuttavia la funzione restituirà 0, che era il valore precedente. Vedendo come valore di ritorno 0, il thread capisce che ha acquisito il lock e può eseguire la funzione critica. Qualsiasi altro thread che proverà a prendere il lock dovrà dunque eseguire la funzione \texttt{TestAndSet()} in loop, che continuerà ad impostare continuamente il valore ad 1 ma, finché il thread vedrà come valore restituito dalla funzione 1, capirà che anche precedentemente al suo arrivo il lock era già stato ottenuto e dunque non può procedere con la sezione critica.
+	
+	Questa soluzione garantisce la \textbf{correttezza} del lock, bensì \textbf{non l'equità}, in quanto non viene memorizzata alcuna coda dei thread in ordine di come hanno richiesto il lock, e dunque la scelta del prossimo thread da eseguire è totalmente casuale (problema della \textbf{starvation}). Si tratta inoltre di un algoritmo oneroso anche dal punto di vista computazionale, in quanto i thread inattivi eseguono costantemente la funzione \texttt{TestAndSet()} fino all'arrivo del loro turno: ciò implica una lettura e una scrittura per ogni tick di esecuzione del thread, portando così ad un innecessario traffico dei bus di sistema per aggiornare la cache.
+	
+	\subsubsection*{Compare-and-Swap (CAS)}
+	Un'alternativa all'algoritmo TAS, che scrive costantemente il nuovo valore all'interno della variabile, è presentata dall'algoritmo \textbf{Compare-and-Swap (CAS)}, che aggiorna il valore del lock solo se questo corrisponde al valore atteso passato dal thread in esecuzione.
+	\begin{lstlisting}[language=C]
+		int CompareAndSwap(int* ptr, int valore_atteso, int nuovo_valore) {
+			if (*ptr == valore_atteso) {
+				*ptr = nuovo_valore;
+				return 1; // SUCCESSO
+			}
+			
+			return 0; // FALLIMENTO
+		}
+	\end{lstlisting}
+	Molto banalmente, il funzionamento di CAS è il seguente:
+	\begin{enumerate}
+		\item Il thread chiamante vuole modificare una variabile, supponiamo incrementandola di una sola unità. Dato che l'incremento di una variabile condivisa da parte di più thread abbiamo visto essere un'operazione delicata, il thread chiama la funzione CAS con la seguente firma: \texttt{CompareAndSwap(\&variabile, valore\_vecchio, valore\_vecchio + 1)}. Questo perché il singolo thread, non avendo modificato il valore della variabile nel mentre, si aspetta di trovare \texttt{valore\_atteso = valore\_vecchio}.
+		
+		\item Nella realtà dei fatti, come abbiamo visto, non sempre questo accade: se si verificasse che un thread ha modificato la variabile condivisa, avremmo un disallineamento tra i due valori. A quel punto il controllo della funzione CAS fallirebbe e dunque il thread dovrà riprovare e aggiornare il valore della variabile da lui letto, ri-eseguendo il CAS: solo una volta che il controllo andrà a buon fine il thread potrà procedere.
+	\end{enumerate}
+	Questo algoritmo è apparentemente ottimo, e permette di definire algoritmi potenti privi di lock (\textit{lock-free}), tuttavia soffre dello stesso problema di consumo delle risorse del TAS (chiamate continue alla funzione di aggiornamento) e del cosiddetto \textbf{problema ABA}: se un valore cambia da A a B e poi ritorna ad A prima che il thread completi il CAS, questo non si accorge minimamente della manipolazione della variabile, portando potenzialmente a gravi bug come la corruzione della memoria.
+	
+	\subsubsection*{Fetch-and-Add (FAA) e Ticket-Lock}
+	L'algoritmo \textbf{Fetch-and-Add (FAA)} si occupa di incrementare la variabile condivisa di un dato valore \texttt{d} (tipicamente 1) e restituisce il vecchio valore. Il principio è simile ai due algoritmi precedenti, ma questo viene spesso accoppiato all'algoritmo \textbf{Ticket-Lock}, che prevede l'assegnazione di un \textit{biglietto d'ingresso} ad ogni thread che prova ad accedere alla variabile. In particolare, il funzionamento di questo algoritmo è il seguente:
+	\begin{enumerate}
+		\item Vengono inizializzati due contatori condivisi tra i thread: \texttt{ticket}, che indica il \textbf{numero del prossimo biglietto da consegnare}; \texttt{turn}, che indica il numero del biglietto che può accedere alla risorsa in quel momento.
+		
+		\item Quando il Thread A prova ad accedere alla risorsa condivisa, chiama la funzione \texttt{FetchAndAdd(\&ticket, 1)}: riceve il biglietto con valore 0 e la variabile \texttt{ticket} avanza ad 1. Immediatamente dopo, il Thread B fa lo stesso: avendo incrementato i due contatori, stavolta B riceve il biglietto con valore 1 e il valore globale di \texttt{ticket} avanza a 2.
+		
+		\item A questo punto entra in gioco il contatore \texttt{turn}: all'entrata della sezione critica viene posizionato un classico loop che mantiene i thread bloccati. La condizione di questo loop è \texttt{turn != thread\_ticket}, dunque \textbf{blocca tutti i thread di cui non è il turno}. Il thread che riesce a superare questo ciclo può eseguire la sezione critica e, alla fine di questa, dovrà essere incrementato il valore di \texttt{turn} in modo atomico con \texttt{FetchAndAdd(\&turn, 1)} per permettere al prossimo thread in coda di essere eseguito.
+	\end{enumerate}
+	Con l'algoritmo Ticket-Lock viene implementata anche una specie di coda che tiene traccia dell'ordine dei thread che hanno richiesto la risorsa, in modo da prevenire completamente il problema della starvation (prima o poi tutti i thread accederanno alla risorsa, in un tempo abbastanza ragionevole).
+	
+	\begin{osservazione}{Le operazioni atomiche}{}
+		Avendo letto questi algoritmi si potrebbe pensare: ok, ma le operazioni di incremento delle variabili non sono soggette agli stessi problemi di esaurimento del time-slice che abbiamo discusso nel primo esempio di \texttt{counter}?\\
+		Per quanto le due situazioni sembrano simili, vengono separate da un'importante differenza: gli algoritmi descritti sopra prevedono l'implementazione di tali operazioni \textbf{a livello hardware}, dunque vengono codificate proprio dal produttore dell'elaboratore e rappresentano dunque per il sistema un'operazione unica, un unico comando.
+		\smallbreak
+		
+		Ad esempio, per le architetture x86-64, i comandi che descrivono le varie operazioni sono i seguenti:
+		\begin{itemize}
+			\item TAS: comando \texttt{xchg}.
+			
+			\item CAS: comando \texttt{cmpxchg}.
+			
+			\item FAA: comando \texttt{lock xadd}.
+		\end{itemize}
+	\end{osservazione}
+	
+	\subsubsection*{Thread in attesa}
+	Quando un Thread A acquisisce con successo un lock, vengono messi in attesa tutti i thread che provano ad accedere alla risorsa. Questi hanno dunque due opzioni:
+	\begin{itemize}
+		\item \textbf{Spinning}: continuare a girare a vuoto nel loop che blocca l'accesso alla risorsa in attesa che questa venga liberata. Questo comportamento viene detto di \texttt{BUSY WAITING}. E' particolarmente efficace quando la sezione critica è molto corta, e dunque l'overhead del context-switch sarebbe troppo costoso rispetto alla semplice attesa.
+		
+		\item \textbf{Sleeping}: i thread che attendono il rilascio del lock vengono "messi a dormire", duqnue fatti passare dallo stato \texttt{RUNNING} a \texttt{BLOCKED}, venendo liberati solo al rilascio della risorsa. Si tratta di un'alternativa particolarmente efficace quando la sezione critica è molto lunga, in quanto altrimenti si sarebbe sprecato lavoro di CPU inutile per il singolo thread, magari fondamentale per altri processi.
+	\end{itemize}
+	
+	La prima opzione è molto semplice, e non richiede particolari approfondimenti. Per quanto riguarda invece la seconda, è buono spenderci un paio di parole.\\
+	Il tutto viene realizzato secondo una logica ben precisa:
+	\begin{enumerate}
+		\item Il Thread A acquisisce per primo il lock, dovendo dunque effettuare una chiamata di sistema per gestire in modo corretto l'operazione di acquisizione del lock in modo che questa risulti atomica.
+		
+		\item Quando un thread trova il lock già acquisito, è pronto per \textit{mettersi a dormire}: innanzitutto viene aggiunto alla coda dei thread in attesa (\texttt{wait\_queue}), in modo da prevenire la starvation e conservare un ordine tra i thread richiedenti; poi viene effettuata una chiamata di sistema mediante la funzione \texttt{park()}, che comunicherà allo scheduler di mettere in stato \texttt{BLOCKED} il thread corrente.\\
+		\textbf{NOTA}: La funzione \texttt{park()} è diversa dalla funzione \texttt{sleep()} che abbiamo già visto, in quanto il processo viene messo in \texttt{BLOCKED} per un tempo indeterminato.
+		
+		\item Una volta che il Thread A avrà completato la sezione critica, dovrà rilasciare anche il lock. L'operazione di rilascio del lock avviene assieme ad altre due operazioni:
+		\begin{enumerate}
+			\item Viene prelevato dalla \texttt{wait\_queue} il prossimo thread da eseguire.
+			
+			\item Viene svegliato tale thread mediante la funzione \texttt{unpark()}, che anch'essa nasconde una chiamata di sistema, e che si occupa di far passare il thread dallo stato \texttt{BLOCKED} a \texttt{READY}, in modo che possa essere schedulato.
+		\end{enumerate}
+	\end{enumerate}
+	
+	Un modo estremamente efficiente di gestire i lock viene fatto (ovviamente) dal sistema operativo Linux mediante i \textbf{Fast Userspace Mutex (futex)}. Questa strategia permette di ridurre al minimo le chiamate di sistema, onerosissime e caratteristiche dello sleeping dei thread descritto poco fa, e di effettuarle solo quando veramente necessario, ovvero quando ci sono dei thread in coda ad attendere l'accesso alla risorsa. Questo poiché nelle situazioni reali un thread trova il lock aperto il 90-95\% delle volte, proprio per la necessità della sezione critica di essere il più breve possibile. Non avrebbe senso dunque effettuare chiamate di sistema costanti anche quando non necessarie.\\
+	Il funzionamento del futex è il seguente:
+	\begin{enumerate}
+		\item Il Thread A arriva per primo alla risorsa, trova il lock a 0 e lo acquisisce, impostandolo poi ad 1.
+		
+		\item Se non arriva nessun thread nel frattempo, non viene effettuata nessuna chiamata di sistema.
+		
+		\item Se invece arriva un nuovo thread, imposterà il valore del lock a 2, indicando dunque che c'è qualcuno in coda. A quel punto il thread andrà a dormire e verrà messo in una speciale coda di sistema. La corrispondente operazione è \texttt{futex(\&lock\_state, FUTEX\_WAIT, 2)}.
+		
+		\item Quando il Thread A avrà finito, controllerà il valore del lock: se questo sarà impostato a 2, significa che è arrivato un altro thread a richiedere la risorsa. Dunque il Thread A dovrà notificare il SO di aver terminato l'esecuzione della sezione critica, re-impostando il lock e facendo svegliare il primo thread arrivato. Questo viene fatto con la chiamata \texttt{futex(\&lock\_state, FUTEX\_WAKE, 1)}.
+	\end{enumerate}
+	
+	\subsubsection*{Lock a due fasi}
+	Come sempre, la soluzione più geniale consiste nell'implementare entrambi i comportamenti:
+	\begin{itemize}
+		\item \textbf{Spinning per un breve periodo di tempo}, in modo che se la sezione critica risulti essere abbastanza breve, il thread potrà venir mandato subito in esecuzione senza l'overhead caratteristico del context-switch.
+		
+		\item Se durante lo spinning il thread non è riuscito ad acquisire il lock, significa che la \textbf{sezione critica è abbastanza lunga}, e dunque \textbf{il thread viene mandato in \texttt{BLOCKED}}, per evitare di consumare inutilmente cicli di CPU.
+	\end{itemize}
+	
 \end{document}
