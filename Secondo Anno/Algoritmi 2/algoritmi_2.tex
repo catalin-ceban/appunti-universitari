@@ -2513,275 +2513,322 @@
 		In base alla proprietà precedentemente enunciata, un nodo è una $C$-radice se e solo se è il primo vertice della componente connessa ad essere scoperto durante la visita DFS. Da tale vertice in avanti esisteranno esclusivamente archi discendenti nell'arborescenza di visita. Per tale motivo, la soluzione si basa sulla medesima strategia di tracciamento del valore \texttt{back} impiegata per la ricerca dei ponti.
 	\end{osservazione}
 	
-	\chapter{Appendice delle dimostrazioni}
-	Al fine di non appesantire eccessivamente la lettura teorica della dispensa, si è deciso di lasciare questo capitolo appendice alla fine della dispensa in cui sono contenute tutte le proposizioni a cui è stata data una dimostrazione formale. Navigando nelle pagine teoriche, tuttavia, verrà lasciato un riferimento alla dimostrazione per ogni proposizione, in caso si fosse curiosi di leggerla.
+	\section{BFS - Breadth-First-Search}
 	
-	\begin{corollario}{}{}
-		Esiste una passeggiata da $x$ a $y$ $\iff$ esiste un cammino da $x$ a $y$.
-	\end{corollario}
+	Consideriamo il seguente problema: dato un grafo non orientato $G = (V, E)$, si vuole trovare la \textbf{distanza} da un vertice sorgente $x$ a un vertice $y$.
 	
-	\begin{dimostrazione}{}{}
-		\label{dim:cammino_sse_passeggiata}
-		Chiaramente, se esiste un cammino allora sicuramente esiste anche una passeggiata, dato che ogni cammino è un particolare tipo di passeggiata. Abbiamo così dimostrato la prima implicazione ($\Rightarrow$).\\
-		\smallbreak
-		Viceversa, supponiamo di avere una passeggiata $W = (v_0, v_1, \dots, v_K)$. Abbiamo due possibilità:
-		\begin{enumerate}
-			\item Se tutti i vertici sono distinti, allora la passeggiata è già un cammino.
-			\item Se invece abbiamo almeno un indice ripetuto, cioè esistono $i, j$ tali che $v_i = v_j$ con $i < j$.
-		\end{enumerate}
-		Questo significa che all'interno della passeggiata è presente un sottociclo:
-		\[
-		W_1 = (v_i, v_{i+1}, \dots, v_{j-1}, v_j)
-		\]
-		ma sapendo che $v_i = v_j$, la struttura si chiude. Possiamo eliminare $W_1$ dalla passeggiata iniziale mantenendo però il nodo in cui parte la diramazione (in questo caso $v_i$). La passeggiata iniziale può essere dunque riscritta come:
-		\[
-		W = (v_1, \dots, v_i, \underbrace{v_{i+1}, \dots, v_{j-1}, v_j}_{W_1}, v_{j+1}, \dots, v_K)
-		\]
-		Eliminando $W_1$ otteniamo un cammino più corto, e reiterando il procedimento rimuoviamo tutti i cicli ottenendo infine un cammino semplice.
-	\end{dimostrazione}
+	\begin{definizione}{Distanza tra due vertici}{}
+		La \textbf{distanza} $\operatorname{dist}(x, y)$ tra due vertici $x$ e $y$ è definita come la \textbf{lunghezza del minimo cammino} da $x$ a $y$.
+	\end{definizione}
 	
-	\begin{lstlisting}[language=Python]
-		def dfs(G, x):
-		vis = [0] * n
-		return dfs_ric(G, x, vis)
-		
-		def dfs_ric(G, x, vis):
-		vis[x] = 1
-		for v in x.neighbr:
-		if vis[v] == 0:
-		dfs_ric(G, v, vis)
-	\end{lstlisting}
+	\begin{osservazione}{Lunghezza di un cammino}{}
+		La \textbf{lunghezza} è il numero di archi presenti nel cammino da $x$ a $y$.
+	\end{osservazione}
 	
-	La visita costa sempre $O(n+m)$. L'unica limitazione è lo stack delle funzioni, che per grafi molto pieni potrebbe andare in \textit{recursion depth}.
+	Risolvere questo problema per una singola coppia equivale a risolvere un problema più generale: trovare $\operatorname{dist}(x, z)$ per ogni $z \in V(G)$.
 	
-	\begin{dimostrazione}{Correttezza della DFS ricorsiva}{}
-		\label{dim:funzionamento_dfs}
-		Dimostriamo ora che questo algoritmo funziona.
-		
-		Appuntiamo che se un nodo $y$ è raggiungibile a partire da $x$, allora esiste un cammino che collega $x \to y$ e dunque $\text{vis}[y] = 1$.
-		Se $y$ è raggiungibile da $x \implies \exists W = (v_0, v_1, \dots, v_k)$ cammino che collega $x$ ($v_0$) e $y$ ($v_k$).
-		
-		Per assurdo, assumiamo che $\text{vis}[y] = 0$.
-		Siccome $\text{vis}[x] = 1 \implies \exists$ un indice $i$ con $\text{vis}[v_i] = 1$ e $\text{vis}[v_{i+1}] = 0$.
-		Se $\text{vis}[v_i] = 1$ allora $v_i$ è stato visitato ed è stato inserito nello stack $S$.
-		Dato che l'algoritmo è terminato, significa che ad un certo punto $v_i$ è stato rimosso dallo stack.
-		
-		\textbf{Contraddizione}: se è stato rimosso, vuol dire che tutti gli adiacenti a $v_i$ erano a loro volta stati visitati. Tuttavia prima avevamo detto che $\text{vis}[v_{i+1}] = 0$, dunque abbiamo dimostrato per assurdo che l'algoritmo funziona.
-	\end{dimostrazione}
-	
-	\begin{proposizione}{Inesistenza dell'ordine topologico}{}
-		Se il \textbf{grafo orientato} $G$ definito dai processi \textbf{contiene un ciclo diretto}, allora \textbf{non esiste} alcun ordine topologico.
-	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		\label{dim:no_ord_top_aciclico}
-		Procediamo per assurdo. Assumiamo che esista un ciclo diretto formato dalla sequenza di vertici $(v_1, \dots, v_k)$ e che, contemporaneamente, esista un ordine topologico valido per il grafo.
-		
-		Se $v_i$ precede $v_{i+1}$ lungo il ciclo, allora per soddisfare la condizione di chiusura del ciclo deve esistere un arco che dal termine della sequenza ritorna all'inizio. Tuttavia, la presenza dell'arco $(v_i, v_{i+1})$ rende impossibile preservare l'ordinamento topologico lineare, poiché per definizione tutti gli archi orientati devono puntare coerentemente nella medesima direzione della sequenza (da destra verso sinistra nella notazione stabilita). Di conseguenza, almeno un arco lungo il ciclo violerà necessariamente la relazione d'ordine.
-	\end{dimostrazione}
-	
+	Possiamo subito individuare due casi base banali:
 	\begin{itemize}
-		\item \textbf{ARCHI IN AVANTI:} archi che vanno da un nodo ad un suo \textbf{discendente}.
-		\item \textbf{ARCHI ALL'INDIETRO:} archi che vanno da un nodo ad un suo \textbf{antenato}.
-		\item \textbf{ARCHI DI ATTRAVERSAMENTO:} archi che vanno da un nodo ad un suo \textbf{"cugino"}.
+		\item $\operatorname{dist}(x, x) = 0$
+		\item $\operatorname{dist}(x, w) = 1$, per ogni vertice $w$ adiacente a $x$ ($w \in x.\text{neighbr}$)
 	\end{itemize}
 	
-	\begin{dimostrazione}{}{}
-		\label{dim:tipologie_archi}
-		Per dimostrare che vale almeno una di queste proprietà, è necessario dimostrare che \textbf{non esiste} alcun caso in cui i due intervalli si sovrappongono parzialmente.
+	\begin{figure}[H]
+		\centering
+		\begin{tikzpicture}[thick, scale=1.1]
+			\tikzset{nodo/.style={circle, draw, minimum size=0.6cm, inner sep=0pt, font=\sffamily\small}}
+			
+			% Nodi
+			\node[nodo, label=below:{$x$}] (X) at (0, 0.5) {};
+			\node[nodo] (A) at (1.5, 1.4) {};
+			\node[nodo] (B) at (2.2, -0.4) {};
+			\node[nodo] (C) at (3.2, 1.4) {};
+			\node[nodo] (D) at (4.2, 0.5) {};
+			
+			% Archi evidenziati per il caso base con etichette distanziate
+			\draw[blue, line width=1.2pt] (X) -- (A) node[midway, above left=3pt, font=\footnotesize] {dist$=1$};
+			\draw[blue, line width=1.2pt] (X) -- (B) node[midway, below left=4pt, font=\footnotesize] {dist$=1$};
+			\node[blue, font=\footnotesize, above left=3pt] at (X) {dist$=0$};
+			
+			% Altri archi del grafo
+			\draw (A) -- (B);
+			\draw (A) -- (C);
+			\draw (B) -- (C);
+			\draw (C) -- (D);
+			\draw (B) -- (D);
+		\end{tikzpicture}
+		\caption{Esempio di distanze appuntate per i nodi rispettanti i casi base.}
+	\end{figure}
+	
+	Avendo individuato questi casi base, possiamo scalare il problema progressivamente a più nodi, ottenendo così l'algoritmo di visita in ampiezza \textbf{Bredth-First-Search (BFS)}.
+	
+	\begin{lstlisting}[language=Python, caption={Algoritmo BFS per il calcolo delle distanze da un nodo sorgente}]
+		def BFS(G, x):
+			dist = [-1] * n
+			dist[x] = 0
+			
+			Q = Queue()
+			Q.push(x)
+			
+			while Q.size() != 0:
+				y = Q.pop()
+				for z in y.neighbr:
+					if dist[z] == -1:
+						dist[z] = dist[y] + 1
+						Q.push(z)
+			
+			return dist
+	\end{lstlisting}
+	
+	\begin{algoritmo}{BFS}{}
+		Analizziamo nel dettaglio le istruzioni dell'algoritmo:
+		\begin{itemize}
+			\item \texttt{dist = [-1] * n}: Array che memorizza tutte le distanze dei vertici del grafo rispetto alla sorgente $x$. Dato che il valore $0$ è riservato alla distanza dal vertice stesso, inizializziamo tutti i valori a $-1$ per indicare che i nodi non sono stati ancora visitati.
+			
+			\item \texttt{dist[x] = 0}: Impostiamo la distanza del nodo sorgente $x$ a $0$, in virtù del caso base analizzato in precedenza.
+			
+			\item \texttt{Q = Queue()} e \texttt{Q.push(x)}: Creando una coda FIFO (\emph{First In, First Out}), abbiamo modo di tenere traccia mano a mano di tutti gli adiacenti e solo successivamente passare agli adiacenti degli adiacenti (garantendo un'esplorazione a livelli, e non andando in profondità come in un DFS classico).
+			
+			\item \texttt{y = Q.pop()}: Rimuoviamo l'elemento in testa alla coda per esaminarne i vicini adiacenti.
+			
+			\item \texttt{if dist[z] == -1}: Verifichiamo se il vertice $z$ è già stato visitato. Se fosse già stata segnata una distanza per quel vertice, rischieremmo di sovrascrivere la distanza minima di un nodo già visitato in precedenza.
+			
+			\item \texttt{dist[z] = dist[y] + 1}: Essendo $z$ adiacente a $y$ ($z \sim y$), la sua distanza dalla sorgente sarà pari alla distanza di $y$ incrementata di $1$.
+			
+			\item \texttt{Q.push(z)}: Infine, aggiungiamo $z$ alla coda per poter analizzare i suoi vicini nelle iterazioni successive.
+		\end{itemize}
+	\end{algoritmo}
+	
+	Analizzando la complessità, otteniamo che:
+	\begin{itemize}
+		\item Il ciclo \texttt{while} viene eseguito $\forall y \in V(G)$.
+		\item Dentro al ciclo eseguiamo un lavoro pari al grado del vertice.
+		\item Il tutto è descritto dall'equazione:
+		\[
+		\sum_{y \in V(G)} (1 + \operatorname{deg}(y)) = \mathbf{\mathcal{O}(n + m)}
+		\]
+	\end{itemize}
+	
+	\begin{proposizione}{Esistenza di un adiacente a distanza inferiore}{}
+		Sia $G$ un grafo e siano $x, y$ due suoi vertici. Se $\operatorname{dist}(x, y) = k$, allora $\exists$ un vicino $z$ di $y$ con $\operatorname{dist}(x, z) = k - 1$.
+	\end{proposizione}
+	
+	
+	Non verrà fornita una dimostrazione formale per la proposizione, ma intuitivamente, se è definita la distanza da $x \to y$, significa che esiste un cammino $x \to y$. Dunque ci sarà un nodo appartenente a tale cammino che viene subito prima di $y$, e tale nodo è proprio $z$.
+	
+	Usiamo questa proposizione per dimostrare la correttezza dell'algoritmo BFS, cioè $\operatorname{dist}[y] = \operatorname{dist}(x, y),\, \forall y$:
+	
+	\begin{itemize}
+		\item Per $x$ abbiamo $\operatorname{dist}[x] = 0 = \operatorname{dist}(x, x)$.
 		
-		\begin{center}
-			\begin{tikzpicture}[scale=1.2, every node/.style={font=\small}]
-				% Primo intervallo (u)
-				\draw[thick, |-|] (0, 0.6) -- (3, 0.6);
-				\node[above] at (0, 0.6) {$t(u)$};
-				\node[above] at (3, 0.6) {$T(u)$};
+		\item Per i nodi adiacenti ad $x$ vediamo che la distanza viene correttamente impostata a $\operatorname{dist}(x, x) + 1 = 1$.
+		
+		\item Usiamo la proposizione, dunque sappiamo che $\exists y$ t.c. $\operatorname{dist}(x, y) = k$.
+		
+		Esiste dunque $z \sim y$ con $\operatorname{dist}(x, z) = k - 1$:
+		\begin{itemize}
+			\item[$\implies$] $\operatorname{dist}[z] = k - 1$
+			\item[$\implies$] Essendo $z$ visitato prima di $y$ ed essendo $z \sim y$, $y$ verrà visitato all'iterazione dopo.
+		\end{itemize}
+		Dunque:
+		\[
+		\operatorname{dist}(x, y) = \operatorname{dist}(x, z) + \operatorname{dist}(z, y) = k - 1 + 1 = k
+		\]
+	\end{itemize}
+	
+	\subsection{Estrazione del cammino minimo}
+	
+	Abbiamo dimostrato come l'algoritmo BFS ci permetta di trovare correttamente la distanza di un nodo $z$ da un nodo radice $x$. E ricordiamo la distanza essere la lunghezza del cammino minimo. Ma come possiamo trovare questo cammino minimo, ossia l'insieme dei nodi (e archi) che ci permettono di arrivare da $x \rightarrow z$?
+	
+	\begin{osservazione}{Numero di cammini minimi in un grafo}{}
+		In un grafo con $n$ vertici possono esistere fino a circa $2^{n/2}$ cammini minimi distinti. Di conseguenza, non è possibile elencare individualmente tutti i cammini in tempo polinomiale; tuttavia, è possibile determinarne efficientemente il numero totale.
+	\end{osservazione}
+	
+	Di seguito viene presentata una versione modificata della BFS che calcola la distanza minima, ricostruisce l'albero di visita tramite il vettore dei padri e conta esattamente quanti cammini minimi esistono da $x$ verso qualsiasi altro vertice del grafo.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python, caption={Algoritmo BFS per il conteggio dei cammini minimi}]
+		def BFS_comp(G, x):
+			dist = [-1] * n
+			count = [0] * n
+			P = [None] * n
+			
+			Q = Queue()
+			Q.push(x)
+			
+			dist[x] = 0
+			count[x] = 1
+			P[x] = x
+			
+			while Q.size() != 0:
+				y = Q.pop()
+				for z in y.neighbr:
+					if dist[z] == -1:
+						dist[z] = dist[y] + 1
+						Q.push(z)
+						count[z] = count[y]
+						P[z] = y
+					else:
+						if dist[z] == dist[y] + 1:
+							count[z] += count[y]
+			
+			return count, dist, P
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Conteggio dei cammini minimi con BFS}{}
+		Analizziamo nel dettaglio le strutture dati utilizzate e il funzionamento dell'algoritmo:
+		
+		\begin{itemize}
+			\item \textbf{Inizializzazione delle strutture dati}:
+			\begin{itemize}
+				\item \texttt{dist}: vettore di dimensione $n$ inizializzato a $-1$ per tenere traccia delle distanze minime dalla radice $x$. Il valore $-1$ indica che il nodo non è ancora stato visitato.
 				
-				% Secondo intervallo (v)
-				\draw[thick, |-|] (1.5, 0) -- (4.5, 0);
-				\node[below] at (1.5, 0) {$t(v)$};
-				\node[below] at (4.5, 0) {$T(v)$};
-			\end{tikzpicture}
-		\end{center}
-		
-		Cioè, una situazione in cui $t(u) < t(v) \le T(u) < T(v)$ è \textbf{impossibile}.
-		
-		Supponiamo che $u$ sia il nodo inserito per primo nello stack. Di conseguenza, deve valere necessariamente $t(u) < t(v)$, dato che $v$ viene visitato successivamente.
-		
-		Per la natura LIFO (Last In, First Out) dello stack, il nodo $v$ deve essere rimosso prima di $u$, poiché l'ultimo elemento a essere visitato deve essere anche il primo a essere rimosso. Siccome $v$ viene sicuramente rimosso prima di $u$, è \textbf{impossibile} che si verifichi $T(v) > T(u)$.
-	\end{dimostrazione}
-	
-	\begin{proposizione}{}{}
-		Dato un DFS su un grafo \textbf{non diretto}, se un arco $(u, v)$ non fa parte dell'\textbf{albero di visita} (ovvero è un arco all'indietro/back edge), allora è impossibile che si verifichi il caso \textbf{iii)} degli intervalli disgiunti.
-	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		\label{dim:unicità_archi}
-		Supponiamo per assurdo che gli intervalli siano disgiunti, ovvero che esista un arco $(u, v)$ tale che:
-		\[
-		I_u \cap I_v = \emptyset
-		\]
-		Sicuramente uno dei due nodi verrà visitato prima dell'altro; senza perdita di generalità, assumiamo che questo sia $u$, ovvero che $t(u) < t(v)$.
-		
-		Data questa assunzione e data la natura LIFO dello stack, è impossibile che $u$ venga rimosso dallo stack prima che inizi la visita di $v$, poiché l'esistenza dell'arco $(u, v)$ impone che $v$ venga scoperto prima della chiusura di $u$. Di conseguenza, deve valere:
-		\[
-		t(v) \le T(u)
-		\]
-		Il che dimostra che gli intervalli non sono disgiunti, giungendo a una contraddizione.
-	\end{dimostrazione}
-	
-	\begin{proposizione}{Caratterizzazione dei cicli in grafi orientati}{}
-		Dato un grafo orientato $G$:
-		\[
-		\exists \text{ un ciclo in } G \iff \exists \text{ un arco all'indietro per qualsiasi DFS nel grafo}
-		\]
-	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		\label{dim:cicli_e_archi_indietro}
-		Analizziamo le due direzioni della doppia implicazione:
-		\begin{itemize}
-			\item \textbf{Direzione} ``$\impliedby$'':\\
-			Supponiamo che esista un arco all'indietro $(u, v)$, il che implica che $u$ è un discendente di $v$ nell'albero DFS. Nell'albero delle visite esiste quindi un cammino diretto $v \to u$. L'unione di tale cammino con l'arco diretto $(u, v)$ costituisce un ciclo diretto nel grafo.
+				\item \texttt{count}: array che tiene traccia, per ogni nodo del grafo, del numero di cammini minimi per arrivarci a partire da $x$. Inizialmente tutti i valori sono impostati a $0$, in quanto nessun cammino è ancora stato trovato.
+				
+				\item \texttt{P}: vettore dei padri impiegato per memorizzare la struttura dell'albero di visita.
+			\end{itemize}
 			
-			\item \textbf{Direzione} ``$\implies$'':\\
-			Sia $C$ un ciclo nel grafo $G$ e sia $v$ il primo vertice di $C$ ad essere visitato dalla DFS. Di conseguenza, tutti gli altri vertici del ciclo $C$ verranno scoperti mentre $v$ è ancora attivo, diventando quindi discendenti di $v$ nell'albero DFS.
+			\item \textbf{Caso base (inizializzazione della radice)}:
+			Per il nodo sorgente $x$, si imposta $\text{\texttt{dist[x]}} = 0$ e $\text{\texttt{P[x]}} = x$ (inizializzazione della radice nel vettore dei padri). Inoltre, si imposta $\text{\texttt{count[x]}} = 1$, poiché esiste un unico cammino (di lunghezza $0$) che collega $x$ a se stesso.
 			
-			Il vertice $v_k$ che completa il ciclo e si ricongiunge con $v$ darà origine a un arco $(v_k, v)$ che si configura come un arco all'indietro.
+			\item \textbf{Esplorazione dei vicini}:
+			Durante l'estrazione di un nodo $y$ dalla coda $Q$, si esamina ogni suo vicino $z \in \text{\texttt{y.neighbr}}$:
+			\begin{itemize}
+				\item \textbf{Caso 1: Nodo $z$ non ancora visitato ($\text{\texttt{dist[z] == -1}}$)}:\\
+				Se non abbiamo ancora visitato $z$, lo impostiamo come visitato assegnandogli la distanza $\text{\texttt{dist[z]}} = \text{\texttt{dist[y]}} + 1$, lo inseriamo nella coda di esplorazione $Q$ e aggiorniamo il suo padre $\text{\texttt{P[z]}} = y$.\\
+				\textbf{Fondamentale}: siccome $z$ non era ancora visitato e lo stiamo scoprendo a partire da $y$, significa che $z$ appartiene allo stesso cammino minimo che arriva a $y$. Di conseguenza, il conteggio dei cammini minimi per raggiungere $z$ eredita esattamente il valore del conteggio del nodo $y$:
+				\[
+				\text{\texttt{count[z]}} = \text{\texttt{count[y]}}
+				\]
+				
+				\item \textbf{Caso 2: Nodo $z$ già visitato ($\text{\texttt{else}}$)}:\\
+				Se invece $z$ è un nodo adiacente a $y$ ma è già stato visitato in precedenza, procediamo in modo diverso. In particolare, verifichiamo se vale la condizione:
+				\[
+				\text{\texttt{dist[z]}} == \text{\texttt{dist[y]}} + 1
+				\]
+				Se tale uguaglianza è verificata, significa che $z$ si trova a una distanza da $x$ esattamente pari a $\text{\texttt{dist[y]}} + 1$. Ciò implica che $z$ può essere raggiunto con un cammino minimo \emph{anche} passando attraverso il nodo $y$. Di conseguenza, $z$ può essere raggiunto da tutti i cammini minimi giunti fino a $y$, e aggiorniamo il totale sommando il contributo di $y$:
+				\[
+				\text{\texttt{count[z]}} \mathrel{+}= \text{\texttt{count[y]}}
+				\]
+			\end{itemize}
+		\end{itemize}
+	\end{algoritmo}
+	
+	\newpage
+	\begin{definizione}{Distanza tra due sottoinsiemi di vertici}{}
+		Dati due sottoinsiemi di vertici $X, Y \subseteq V(G)$, si definisce la \textbf{distanza tra $X$ e $Y$} come:
+		\[
+		\operatorname{dist}(X, Y) = \min \{ \operatorname{dist}(x, y) \mid x \in X, \, y \in Y \}
+		\]
+	\end{definizione}
+	
+	\begin{figure}[H]
+		\centering
+		\begin{tikzpicture}[scale=1.1, thick, >=stealth]
+			\tikzset{nodo/.style={circle, draw, minimum size=0.55cm, inner sep=0pt, fill=white, font=\small\bfseries}}
 			
-			Questo comportamento è garantito per tutti i nodi $u$ del ciclo visitati dopo $v$, in quanto, trovandosi all'interno del ciclo ed essendo stati scoperti dopo $v$, verranno terminati (e quindi rimossi dallo stack di ricorsione) prima di $v$. In termini di tempi di scoperta $t$ e fine visita $T$:
-			\[
-			t(v) < t(u) \land T(v) > T(u) \quad \forall u \in C \setminus \{v\}
-			\]
-		\end{itemize}
-	\end{dimostrazione}
-	
-	\begin{proposizione}{Caratterizzazione dei ponti in un albero DFS}{}
-		Sia $G$ un grafo connesso e $T$ un albero di ricerca DFS. Siano $xy \in E(T)$ con $y$ discendente di $x$.\\
-		Allora esiste un arco $(u, v) \in E(G)$ con $u \in T_y$ e $v$ antenato di $x$ $\iff (x, y)$ \textbf{non è un ponte}.
-	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		\label{dim:caratterizzazione_ponti}
-		$\implies$: Per quanto osservato in precedenza.\\
-		$\impliedby$: Se $xy$ non è un ponte, significa che esiste un ciclo $C$ che contiene $xy$. Avere un ciclo vuol dire che esiste un cammino $P$ da $x$ a $y$ che non usa l'arco $xy$. Banalmente, tale cammino risulta essere $P = C \setminus xy$.
-		
-		Ma intuitivamente, se parto dal vertice $y$ (che è un discendente di sé stesso) e in qualche modo arrivo ad $x$ (sicuramente posso arrivarci dato che c'era un ciclo), sicuramente ho usato un arco che mi porta da $T_y$ ad $x$ (o un suo antenato).
-		
-		Formalmente, $u \in T_y$ e $uv$ è un arco all'indietro, allora $v$ è anche un antenato di $y$. Inoltre è impossibile che $uv = xy$ dato che $uv \in P$ e $xy \notin P$.
-	\end{dimostrazione}
-	
-	Se esiste un ciclo $C$ diretto che contiene $x$ e $y$, ciò implica che $x$ e $y$ fanno parte della stessa componente fortemente connessa?
-	 
-	\begin{dimostrazione}{}{}
-		\label{dim:ciclo_componente_elementi_comuni}
-		Sia $H$ la componente che contiene $x$ e un ciclo $C$ che contiene $x, y$. 
-		Ne consegue che $H$ e $C$ hanno un vertice in comune, e l'unione $H \cup C$ è fortemente connessa. Dunque, per massimalità, $H \cup C$ è la componente finale a cui appartengono $x$ e $y$.
-	\end{dimostrazione}
-	
-	\begin{proposizione}{}{}
-		Sia $G$ un grafo diretto e $u \in V(G)$.
-		\[
-		G \text{ è fort. conn.} \iff \forall x \in V(G) \, \exists \text{ un cammino } x \to u \text{ e un cammino } u \to x
-		\]
-	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		\label{dim:caratterizzazione_grafo_fort_conn}
-		``$\implies$'': segue per la definizione di grafo fortemente connesso.\\
-		``$\impliedby$'': Sia $x, y \in V(G)$. Esiste un cammino $P$ da $x \to u$ e un cammino $Q$ da $u \to y$.
-		Dunque $P \cup Q$ è una passeggiata da $x \to y$ e dunque esiste anche un cammino.
-		Per simmetria, possiamo fare questo discorso anche da $y \to x$ passando per $u$.
-	\end{dimostrazione}
-	
-	\begin{proposizione}{Contrazione di un sottografo fortemente connesso}{}
-		Se $G$ è un grafo fortemente connesso e $H \subseteq G$ è un sottografo fortemente connesso, allora il grafo quoziente $G / V(H)$ ottenuto contraendo $H$ in un unico vertice è anch'esso fortemente connesso.
-	\end{proposizione}
-	
-	\begin{dimostrazione}{}{}
-		\label{dim:contrazione_grafo}
-		Per qualsiasi $y \in V(G / V(H))$ con $y \neq v_H$, sia $x \in H \subseteq G$ e sia $P$ un cammino da $y \to x$ in $G$.
-		
-		Sia $\bar{P}$ il pezzo del cammino $P$ da $y$ al primo vertice di $H$: allora $\bar{P}$ è un cammino in $G / V(H)$ da $y \to v_H$.
-		
-		Per lo stesso argomento, esiste un cammino da $v_H \to y$ e, per la proposizione precedente, $G / V(H)$ è fortemente connesso. Ciò è possibile ed ovvio dato che il grafo di partenza era fortemente connesso.
-	\end{dimostrazione}
-	
-	\begin{proposizione}{Proprietà delle $C$-radici}{}
-		Sia $u$ una $C$-radice all'interno di un'arborescenza DFS $T$. Allora valgono le seguenti proprietà:
-		\begin{enumerate}
-			\item $C(u) \subseteq T_u$, dove la notazione $C(u)$ indica l'intera componente fortemente connessa che contiene il vertice $u$.
-			\item Se $u_1, u_2, \dots, u_k$ sono tutte le $C$-radici contenute nel sottoalbero $T_u$, allora l'insieme dei vertici di $T_u$ è dato dall'unione disgiunta delle relative componenti fortemente connesse:
-			\[
-			V(T_u) = C(u_1) \cup C(u_2) \cup \dots \cup C(u_k)
-			\]
-		\end{enumerate}
-	\end{proposizione}
-	
-	
-	
-	\begin{dimostrazione}{Proprietà delle $C$-radici (Parte 1)}{dim_c_radici_1}
-		Ragioniamo per assurdo. Supponiamo che $C(u) \not\subseteq T_u$, il che implica che:
-		\[
-		\exists y \in C(u) \quad \text{con } y \notin T_u
-		\]
-		Dunque esiste un cammino orientato da $u$ ad un vertice esterno a $T_u$, e di conseguenza deve esistere almeno un arco lungo tale cammino che esce dal sottoalbero $T_u$.
-		
-		Sia $(x, y)$ questo arco, con $x \in T_u$ e $y \notin T_u$. Tale arco può essere unicamente:
-		\begin{itemize}
-			\item \textbf{Arco di attraversamento} (in quanto i due vertici non appartengono allo stesso ramo di discendenza diretta);
-			\item \textbf{Arco all'indietro}.
-		\end{itemize}
-		Si noti che non può trattarsi di un \textbf{arco in avanti}, altrimenti significherebbe che $y$ è un discendente di $x$, e quindi apparterrebbe a $T_u$.
-		
-		Analizziamo i due casi possibili:
-		\begin{itemize}
-			\item \textbf{Arco di attraversamento}: per la proposizione precedente, sappiamo che se esiste un arco di attraversamento, allora esiste anche un nodo $z$ antenato comune più vicino di $x$ e $y$. Sempre per tale proposizione, tutti i vertici del sottoalbero $T_z$ vengono visitati prima di tutti quelli di $T_u$. Ma ciò implica che $u$ non è stato il primo vertice visitato della componente, giungendo a una \textbf{contraddizione}, dato che avevamo definito $u$ come la $C$-radice.
+			% Nodi del sottoinsieme X
+			\node[nodo] (x1) at (0, 1.2) {};
+			\node[nodo] (x2) at (0, 0) {};
 			
-			\item \textbf{Arco all'indietro}: se fosse un arco all'indietro, significherebbe che il vertice $y$ è stato scoperto prima di $u$, e dunque $u$ non può essere la $C$-radice della componente, ottenendo nuovamente una \textbf{contraddizione}.
-		\end{itemize}
-	\end{dimostrazione}
+			% Nodi intermedi del grafo
+			\node[nodo] (m1) at (1.5, 1.8) {};
+			\node[nodo] (m2) at (1.5, 0.7) {};
+			\node[nodo] (m3) at (1.5, -0.6) {};
+			\node[nodo] (m4) at (3.0, 1.2) {};
+			
+			% Nodi del sottoinsieme Y
+			\node[nodo] (y1) at (4.5, 1.2) {};
+			\node[nodo] (y2) at (4.5, 0) {};
+			
+			% Archi standard del grafo
+			\draw (x1) -- (m1);
+			\draw (x1) -- (m2);
+			\draw (x2) -- (m2);
+			\draw (m1) -- (m4);
+			\draw (m2) -- (m4);
+			\draw (m4) -- (y1);
+			\draw (m4) -- (y2);
+			
+			% Cammino minimo tra X e Y (evidenziato in blu)
+			\draw[line width=1.5pt, DeepSkyBlue3] (x2) -- (m3);
+			\draw[line width=1.5pt, DeepSkyBlue3] (m3) -- (y2);
+			
+			% Insieme X (ovale viola)
+			\draw[draw=DarkOrchid, line width=1.2pt] (0, 0.6) ellipse (0.45cm and 1.1cm);
+			\node[DarkOrchid, font=\bfseries] at (0, -0.85) {$X$};
+			
+			% Insieme Y (ovale arancione)
+			\draw[draw=Orange, line width=1.2pt] (4.5, 0.6) ellipse (0.45cm and 1.1cm);
+			\node[Orange, font=\bfseries] at (4.5, -0.85) {$Y$};
+			
+			% Etichetta della distanza minima (distanziata sotto l'arco blu e il nodo m3)
+			\node[DeepSkyBlue3, font=\bfseries\small] at (2.4, -1.25) {$\operatorname{dist} = 2$};
+		\end{tikzpicture}
+		\caption{Cammino minimo tra i sottoinsiemi di nodi $X$ e $Y$.}
+		\label{fig:distanza_minima_insiemi}
+	\end{figure}
 	
-	\begin{dimostrazione}{Proprietà delle $C$-radici (Parte 2)}{dim_c_radici_2}
-		Per la proprietà (1) appena dimostrata, sappiamo che:
-		\[
-		C(u_i) \subseteq T_{u_i} \quad \text{per ogni $C$-radice } u_i
-		\]
-		Procediamo per assurdo supponendo che esista un nodo $w \in T_u$ la cui $C$-radice non appartiene a $T_u$:
-		\[
-		\exists w \in T_u \quad \text{tale che la $C(w)$-radice} \notin T_u
-		\]
-		Sia $z$ la radice di $C(w)$. Per il punto (1), $z$ è necessariamente un antenato di $w$. Essendo tuttavia $z \notin T_u$, ne consegue che $z$ deve essere anche un antenato di $u$ nell'albero di visita.
-		
-		Esistono quindi i seguenti cammini nel grafo:
+	Vogliamo progettare un algoritmo efficiente per determinare la distanza minima che intercorre tra due sottoinsiemi di vertici $X$ e $Y$ all'interno di un grafo $G$.
+	
+	\paragraph{Approccio Brute-Force.}
+	Una prima soluzione immediata consiste nell'eseguire una visita in ampiezza (BFS) a partire da ciascun elemento appartenente al sottoinsieme $X$ verso tutti i vertici del sottoinsieme $Y$. 
+	
+	Questo metodo risulta molto semplice ed efficace, ma comporta un costo computazionale pari a:
+	\[
+		\mathcal{O}(|X| \cdot (n + m)) = \mathcal{O}(n(n + m))
+	\]
+	
+	\paragraph{Soluzione Ottimizzata (BFS Multi-Sorgente).}
+	È possibile ottimizzare il procedimento facendo partire \textbf{``contemporaneamente''} la visita BFS da tutti i vertici $x \in X$. 
+	
+	Nel pratico questo risultato si ottiene inserendo inizialmente tutti i nodi di $X$ all'interno della coda (\texttt{queue}) con distanza impostata a $0$, per poi eseguire una normale esplorazione in ampiezza.
+	
+	\newpage
+	\begin{lstlisting}[style=stile-listings, language=Python, caption={Algoritmo BFS multi-sorgente per la distanza tra sottoinsiemi}]
+		def BFS_insiemi(G, X, Y):
+			dist = [-1] * n
+			Q = queue()
+			
+			for x in X:
+				dist[x] = 0
+				Q.push(x)
+			
+			while Q.size() != 0:
+				# Esecuzione della BFS classica
+				current = Q.pop()
+				for v in current.neighbor:
+					if dist[v] == -1:
+						dist[v] = dist[current] + 1
+						Q.push(v)
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Distanza tra sottoinsiemi}{}
 		\begin{itemize}
-			\item $w \leadsto z \in C(w)$
-			\item $z \leadsto u \in T$
-			\item $u \leadsto w \in T_u$
+			\item \textbf{Inizializzazione delle strutture dati}: Viene creato un array delle distanze \texttt{dist} di dimensione $n$, inizializzato interamente al valore $-1$ per indicare che nessun nodo è stato ancora visitato. Contestualmente viene istanziata una coda vuota \texttt{Q}.
+			
+			\item \textbf{Caricamento delle sorgenti}: Si scorrono tutti i vertici appartenenti al sottoinsieme $X$. Per ciascun vertice $x \in X$, si imposta la sua distanza sorgente a $0$ (\texttt{dist[x] = 0}) e lo si inserisce nella coda \texttt{Q}.
+			
+			\item \textbf{Propagazione a monte}: All'interno del ciclo \texttt{while Q.size() != 0}, si esegue l'estrazione e la visita standard della BFS. Poiché tutti i vertici dell'insieme $X$ sono stati inseriti contemporaneamente all'inizio con distanza zero, la visita si espanderà come un unico "fronte d'onda" a livelli di distanza crescenti.
+			
+			\item \textbf{Correttezza ed efficienza}: Il primo vertice appartenente al sottoinsieme $Y$ che viene estratto o scoperto durante l'esplorazione conterrà la distanza minima assoluta tra l'insieme $X$ e l'insieme $Y$. La complessità temporale totale dell'algoritmo si riduce a quella di una singola visita in ampiezza, ovvero $\mathcal{O}(n + m)$.
 		\end{itemize}
-		
-		Siccome tutti i nodi possono raggiungersi reciprocamente l'un l'altro, essi appartengono necessariamente alla stessa componente connessa. Tuttavia, essendo $z$ un antenato di $u$, si ha che:
-		\[
-		t(z) < t(u)
-		\]
-		e di conseguenza $u$ non può essere la radice della componente, pervenendo a una \textbf{contraddizione}.
-	\end{dimostrazione}
+	\end{algoritmo}
 	
-	\begin{proposizione}{Caratterizzazione di C-radice}{}
-		Un nodo $u$ non è una C-radice $\iff$ dalle chiamate ricorsive \texttt{DFS\_SCC} con radice $u$, viene attraversato un arco $(v, w)$ t.c. $w$ è stato già visitato ($t(w) < t(u)$) ma la componente di $w$ non è stato stabilito ($w \in \text{open}$, è ancora nello stack).
+	\begin{proposizione}{Distanza tra vertici adiacenti in BFS}{}
+		Sia \texttt{dist} l'array delle distanze a partire dal vertice $x$, generato da una visita in ampiezza (BFS). Allora per ogni coppia di vertici adiacenti $y, z$ ($y \sim z$), si ha che:
+		\[
+		|\operatorname{dist}(y) - \operatorname{dist}(z)| \le 1
+		\]
+	\end{proposizione}
+	Anche per questa proposizione non verrà fornita una dimostrazione formale, tuttavia si invita il lettore a ragionare sull'intuitività di tale. Sappiamo che se $x \sim y$ allora \texttt{dist[y] = dist[x] + 1}, dunque vediamo già come queste due distanze varino di una sola unità. La ragione per cui si prende il modulo di tale differenza è per impedire casi in cui prendiamo come riferimento il nodo $y$, visitato dopo il nodo $x$, ma che non essendo in un grafo orientato risulta comunque adiacente e raggiungibile da $x$. A tal proposito, in modo che tale proposizione valga per ogni coppia di vertici, è corretto inserire l'operatore modulo. Inoltre, non si può mettere un $=$ stretto in quanto si considera anche il caso in cui $x = y$.
+	
+	\begin{proposizione}{Uguaglianza tra alberi di visita BFS e DFS}{}
+		Sia $G$ un grafo non diretto e connesso, e sia $x \in V(G)$. Siano $T_1$ un albero BFS e $T_2$ un albero DFS del grafo $G$, entrambi aventi radice nel vertice $x$. Allora abbiamo che:
+		\[
+		T_1 = T_2 \iff G \text{ è un albero}
+		\]
 	\end{proposizione}
 	
-	\begin{dimostrazione}{}{}
-		\label{dim:caratterizzazione_c_radice}
-		``$\implies$'': Supponiamo $u$ non sia C-rad. Allora sia $\alpha$ la vera C-rad che è ovviamente un antenato di $u$ ($\alpha \in \text{open}$).
-		
-		Siccome appartengono alla stessa comp., esiste un cammino da $u \to \alpha$. Sia $(v, w)$ il primo arco uscente da $T_u$.
-		
-		$\implies w \in \text{open}$, $(v, w)$ è di attr. o all'indietro e in ogni caso $t(w) < t(u)$.
-		
-		``$\impliedby$'': Supponiamo che $u$ è una C-rad (per ass.) ma che esista anche l'arco $(v, w)$ della proposizione.
-		
-		Sia $z$ la C-rad di $C(w)$. Abbiamo un arco da $v \to w \in C(w)$. Un cammino da $w \to z$. Un cammino da $z \to u$ dato che $z$ antenato di $u$. Un cammino da $u \to v \in T_u$. Siccome sono tutti connessi tra loro significa che sono tutti nella stessa componente e dunque $u$ non è C-radice.
-	\end{dimostrazione}
+	\input{dimostrazioni_algoritmi.tex}
 	
 \end{document}
