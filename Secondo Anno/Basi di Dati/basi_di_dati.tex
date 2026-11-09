@@ -2932,6 +2932,137 @@
 	\end{center}
 	Mediante una vista, potremmo fare in modo che gli utenti accedano solo ai dati della vista, dunque già di per sé una porzione filtrata dei dati risultato di una speciale interrogazione.
 	
+	\subsection{Basi di dati attive e Trigger}
+	I DBMS tradizionali sono passivi, cioè tutte le operazioni vengono eseguite a richiesta dell'utente. Ci potrebbero essere dai casi in cui è però necessario effettuare dei controlli \textit{asincroni} sulle operazioni compiute, ovvero controlli su eventi scatenabili potenzialmente in qualsiasi momento. Serve dunque un DBMS che sia in grado di rispondere a questa categoria di eventi: parliamo qui di \textbf{DBMS attivi (ADBMS)}.\\
+	In realtà, abbiamo già visto un esempio di controllo attivo effettuato dal DBMS quando parlavamo dei vincoli di integrità referenziale: per quanto il concetto di \textit{chiave esterna} sia intuitivo e definito a livello anche matematico, nel pratico il DBMS deve controllare che, inserendo un record in una tabella \textit{slave}, il valore assunto dall'attributo definito come chiave esterna sia presente nell'attributo di riferimento della tabella \textit{master}. Questo tipo di controllo può essere effettuato solo "\textit{a runtime}", dunque una volta che si prova effettivamente ad inserire o modificare questi dati, e non è un'eccezione che possiamo in qualche modo prevedere. Non possiamo prevederla, ma possiamo gestirla.\\
+	Questo è solo uno dei tanti esempi di eventi asincroni gestibili dai DBMS, che a tal proposito ci mettono uno strumento potentissimo: i \textbf{trigger}. Il paradigma adottato dai trigger si dice di tipo \textbf{ECA} - \textbf{Evento-Condizione-Azione}, e può essere interpretato nel seguente modo:
+	\begin{enumerate}
+		\item Allo scatenarsi di un \textbf{evento}...
+		
+		\item Se si verifica una certa \textbf{condizione}...
+		
+		\item Si deve procedere con un'opportuna \textbf{azione}.
+	\end{enumerate}
+	Questa natura asincrona della gestione degli eventi ricorda per molti versi il pattern Observer della programmazione classica, quindi per chi è familiare in merito potrebbe essere più semplice da comprendere.\\
+	Di seguito vediamo la sintassi classica per la definizione dei trigger: si premette che non è una sintassi leggera, e che dunque verrà opportunamente analizzata sotto.
+	\begin{lstlisting}[language=SQL]
+		CREATE TRIGGER NomeTrigger
+		{ BEFORE | AFTER } Evento ON TabellaTarget
+		[ REFERENCING { OLD ROW AS NomeVecchiaRiga | NEW ROW AS NomeNuovaRiga } | { OLD TABLE AS NomeVecchiaTabella | NEW TABLE AS NomeNuovaTabella } ]
+		[ FOR EACH { ROW | STATEMENT } ]
+		[ WHEN Condizione ]
+		BEGIN
+			Comandi SQL da eseguire
+		END;
+	\end{lstlisting}
+	Allora, vediamo passo passo ogni istruzione:
+	\begin{itemize}
+		\item \texttt{CREATE TRIGGER NomeTrigger}: si definisce un nuovo trigger e ne si specifica il nome.
+		
+		\item Nella seconda riga, si può innanzitutto decidere \textbf{quando} il trigger deve agire (le due opzioni sono, ovviamente, mutualmente esclusive):
+		\begin{itemize}
+			\item \texttt{BEFORE}: il trigger intercetta l'operazione \textbf{prima} che venga effettivamente scritta su disco. E' più comune, in quanto serve per effettuare controlli a priori su inserimenti o cambiamenti di dati.
+			
+			\item \texttt{AFTER}: il trigger si attiva solo dopo che l'operazione è stata committata su disco. Serve generalmente per mantenere log di dati.
+		\end{itemize}
+		
+		\item Dobbiamo anche specificare l'evento per il quale si deve attivare questo trigger. I tipi di evento sono chiaramente inserimento (\texttt{INSERT}), modifica (\texttt{UPDATE}) e cancellazione (\texttt{DELETE}).
+		
+		\item Specifichiamo con \texttt{ON Tabella} anche la tabella sul quale deve avvenire il preciso evento per far sì che si scateni il trigger.
+		
+		\item La clausola \texttt{REFERENCING} e tutto ciò che ne segue è completamente opzionale, ma si tratta di un meccanismo per accedere ai dati che stanno subendo la modifica. Infatti in questa clausola si può decidere di attribuire un nome di variabile alla vecchia/nuova (\texttt{OLD/NEW}) riga/tabella (\texttt{ROW/TABLE}), rinominandola grazie alla clausola \texttt{AS}.
+		
+		\item La riga \texttt{FOR EACH { ROW | STATEMENT }} definisce \textit{quante volte dovrà essere eseguito il trigger}:
+		\begin{itemize}
+			\item Specificando \texttt{ROW}, stiamo dicendo che il trigger deve essere eseguito \textbf{una volta per ogni singola riga modificata dall'evento}.
+			
+			\item Con \texttt{STATEMENT} si fa in modo che il trigger venga eseguito \textbf{una singola volta per comando}. E con \textit{comando} si intende una \textbf{singola} \texttt{INSERT}, \texttt{UPDATE} o \texttt{DELETE}.
+		\end{itemize}
+		
+		\item \texttt{WHEN Condizione} serve a filtrare ulteriormente l'esecuzione del trigger, che eseguirà i seguenti comandi SQL solo se la condizione risulterà vera.
+	\end{itemize}
+	
+	Alla complessità di questo comando si contrappone la semplicità di eliminazione di un trigger: \texttt{DROP TRIGGER NomeTrigger}.
+	
+	\begin{osservazione}{Evento \texttt{UPDATE}}{}
+		Un'importante osservazione va fatta riguardo agli eventi di tipo \texttt{UPDATE}. Potremmo voler effettuare un controllo solo su \textit{un numero limitato di attributi che vengono modificati}, non su tutta la riga. In tal caso scriveremo:
+		\begin{lstlisting}[language=SQL]
+			...
+			{ BEFORE | AFTER } UPDATE OF ListaAttributi ON Tabella
+			...
+		\end{lstlisting}
+		La cosa importante da sapere è che, se specifichiamo un attributo$_i$ all'interno di \texttt{ListaAttributi}, il trigger si attiverà \textbf{ogni volta che tale attributo sarà coinvolto in un'operazione di \texttt{UPDATE}}, indipendentemente dal fatto che sia solo o sia con altri attributi.
+	\end{osservazione}
+	
+	\begin{osservazione}{La clausola \texttt{REFERENCING}}{}
+		Quando viene scatenato un evento asincrono a cui un trigger deve reagire, viene memorizzato lo stato corrente della tabella \texttt{Target}. Inoltre, viene anche creata temporaneamente una nuova tabella contenente lo stato atteso \textbf{dopo} aver effettuato l'operazione di modifica specificata dall'evento. Queste due tabelle vengono dette \textbf{transition table}, e sono proprio quelle che ci permettono di riferirci alle vecchi/nuove righe/tabelle nella clausola \texttt{REFERENCING}.
+	\end{osservazione}
+	
+	\begin{osservazione}{Trigger e vincoli di integrità}{}
+		Supponiamo di aver definito, nel seguente ordine, i seguenti trigger e vincoli:
+		\begin{lstlisting}[language=SQL]
+			CREATE TRIGGER Trigger1 AFTER UPDATE ON Tabella1 ...
+			CREATE TRIGGER Trigger2 BEFORE UPDATE ON Tabella1 ...
+			CREATE TRIGGER Trigger3 AFTER UPDATE ON Tabella1 ...
+			ALTER TABLE Tabella1 ADD CONSTRAINT Vincolo1 ...
+		\end{lstlisting}
+		Supponiamo adesso di voler effettuare un'operazione di modifica (\texttt{UPDATE}) sulla tabella \texttt{Tabella1}. L'ordine in cui questi controlli verranno effettuati sarà il seguente:
+		\begin{enumerate}
+			\item \texttt{Trigger2}: avendolo definito come \texttt{BEFORE UPDATE}, questo trigger viene eseguito \textit{prima} della modifica effettiva della tabella e del commit su disco.
+			
+			\item Viene eseguita l'effettiva modifica dei dati su \texttt{Tabella1}.
+			
+			\item \texttt{Vincolo1}: avendo completato la modifica, è necessario controllare che non siano stati violati vincoli di dominio o di integrità referenziale.
+			
+			\item \texttt{Trigger1}: essendo stato definito come \texttt{AFTER UPDATE}, una volta che il controllo del vincolo (si suppone) è andato a buon fine, si può procedere con il trigger da eseguire \textit{dopo} aver modificato i dati.
+			
+			\item \texttt{Trigger3}: anche questo è stato definito come \texttt{AFTER UPDATE}, ma viene eseguito \textit{dopo} \texttt{Trigger1} in quanto definito dopo.
+		\end{enumerate}
+		Dunque, in generale, l'ordine da seguire è:
+		\begin{center}
+			\texttt{BEFORE} $\rightarrow$ \texttt{Modifica} $\rightarrow$ \texttt{Vincoli} $\rightarrow$ \texttt{AFTER}
+		\end{center}
+		e, all'interno di ogni categoria, si procede per ordine di definizione.
+	\end{osservazione}
+	
+	Per consolidare definitivamente il discorso sui trigger, per il quale però si invita il lettore ad esercitarsi anche in solitaria, si lascia un esempio.
+	\begin{esempio}{Esempio di uso dei trigger}{}
+		Supponiamo che un'azienda voglia impedire qualsiasi tipo di operazione sulla base di dati prima e dopo una certa ora (supponiamo prima dell'apertura, alle 9, e dopo la chiusura, alle 18). Il trigger da scrivere dovrà essere il seguente.
+		
+		\begin{lstlisting}[language=SQL, caption={Per prevenire operazioni su ogni tabella, si dovrà creare un trigger del genere per ogni tabella della base di dati.}]
+			CREATE TRIGGER BloccaModificheNotturne
+			BEFORE UPDATE ON Tabella
+			FOR EACH STATEMENT
+			BEGIN
+				IF CURRENT_TIME > '18:00:00' OR CURRENT_TIME < '09:00:00' THEN
+					SIGNAL SQLSTATE '45000' 
+					SET MESSAGE_TEXT = 'Operazione non consentita fuori dall orario d ufficio!';
+				END IF;
+			END;
+		\end{lstlisting}
+		Come vediamo, in questo caso stiamo usando \texttt{FOR EACH STATEMENT} come granularità di esecuzione in quanto non ci interessa sapere quante/quali righe verranno modificate, bensì solo il fatto che vengano modificate (dunque l'esecuzione dell'operazione) è di per sè un problema.
+		\smallbreak
+		
+		Vediamo un altro esempio: supponiamo di voler prevenire che ad un utente venga ridotto lo stipendio.
+		\begin{lstlisting}[language=SQL]
+			CREATE TRIGGER PrevieniRiduzioneStipendio
+			BEFORE UPDATE ON Dipendente
+			REFERENCING OLD ROW AS VecchiaRiga NEW ROW AS NuovaRiga
+			FOR EACH ROW
+			WHEN (NuovaRiga.Stipendio < VecchiaRiga.Stipendio)
+			BEGIN
+				SIGNAL SQLSTATE '45000' 
+				SET MESSAGE_TEXT = 'Impossibile ridurre lo stipendio!';
+			END;
+		\end{lstlisting}
+		Stavolta invece operiamo per riga, in quanto l'operazione di \texttt{UPDATE} potrebbe modificare più di una riga e in ogni caso abbiamo necessità di fare riferimento alla riga modificata.
+	\end{esempio}
+	
+	\begin{osservazione}{Vincoli interpretati come trigger}{}
+		Come detto anche all'inizio del paragrafo riguardante i trigger, alcuni esempi di controlli asincroni possono essere individuati anche sui vincoli di dominio o di chiave esterna.\\
+		Non verrà fornita l'implementazione in "versione trigger" di tali vincoli, ma si invita il lettore a pensare a come questi potrebbero essere scritti.
+	\end{osservazione}
+	
 	\section{Il linguaggio di interrogazione dei dati: DQL}
 	Lo studio degli operatori dell'algebra relazionale è fondamentale per capire la logica che avviene dietro alle interrogazioni di una base di dati che segue il modello relazionale. Avendo definito il linguaggio formale e matematico da cui prendere le fondamenta, possiamo spostarci sull'effettivo \textbf{linguaggio che useremo per ottenere le informazioni sulla nostra base di dati}: il \textbf{Data Query Language (DQL)}.\\
 	\begin{osservazione}{Natura del linguaggio DQL}{}
@@ -3577,5 +3708,239 @@
 		
 		In seguito, gli amministratori della base di dati si renderanno conto dell'errore e decideranno di riportare la situazione ad uno stato corretto. Potranno farlo con un semplice \texttt{ROLLBACK WORK;} che riporterà lo stato della base di dati all'ultimo \texttt{COMMIT WORK} incontrato, che nel nostro esempio sarà il completamento del trasferimento dei 1000 euro dai due conti correnti.
 	\end{esempio}
+	
+	\chapter{Dipendenze funzionali}
+	Nel seguente capitolo andremo a definire altri aspetti legati al modello relazionale definito da Edgar F. Codd, in particolare riguardanti alla creazione di particolari vincoli fondamentali per la progettazione di una base di dati corretta.
+	
+	\begin{definizione}{Dipendenza funzionale}{}
+		Dato uno schema di relazione $R$ e $X, Y \subseteq R$, una \textbf{dipendenza funzionale} è una coppia ordinata di $X$ e $Y$ che stabilisce un particolare legame semantico tra i due insiemi. Si denota nel seguente modo
+		\[
+			X \rightarrow Y
+		\]
+		e si legge \textbf{X determina Y}, oppure \textbf{Y dipende funzionalmente da X}.\\
+		L'insieme $X$ è detto \textbf{determinante} o \textbf{parte sinistra della dipendenza}, mentre l'insieme $Y$ è detto \textbf{dipendente} o \textbf{parte destra della dipendenza}.
+	\end{definizione}
+	
+	Per quanto questa definizione matematica possa sembrare complicata, una dipendenza funzionale è un concetto estremamente comune e individuabile in qualsiasi relazione reale che possiamo immaginare. Facciamo un esempio. Supponiamo di avere due automobili dello stesso modello: allora \textbf{necessariamente} quelle due automobili non solo avranno lo stesso modello, ma anche la stessa marca. Se prendiamo due automobili di modello \textit{Panda}, è ovvio che la marca dovrà essere \textit{Fiat}, dato che ad oggi non esistono marche diverse che producono lo stesso modello. Ci sarà dunque una dipendenza funzionale del tipo Modello $\rightarrow$ Marca.
+	
+	\begin{definizione}{Soddisfazione di dipendenza funzionale}{}
+		Sia $r$ un'istanza di relazione di $R$ (un insieme di tuple).\\
+		Diciamo che $r$ \textbf{soddisfa} la dipendenza funzionale $X \rightarrow Y$ se:
+		\begin{enumerate}
+			\item Vale che $X, Y \subseteq R$.
+			
+			\item $\forall t_1, t_2 \in r$, se $t_1[X] = t_2[X]$ allora $t_1[Y] = t_2[Y]$. Questa implicazione vuol dire che presa una qualsiasi coppia di tuple in $r$, se queste due tuple hanno lo stesso valore per l'insieme degli attributi $X$ \textbf{allora} dovranno avere lo stesso valore anche per l'insieme di attributi $Y$. Questo ovviamente affinché la dipendenza sia soddisfatta. Tuttavia, se le due tuple avessero valori diversi per $X$, allora quella coppia di tuple soddisferebbe la dipendenza funzionale per la definizione di implicazione.
+		\end{enumerate}
+		
+		Due piccole banali osservazioni:
+		\begin{itemize}
+			\item Un'istanza di relazione vuota soddisfa qualsiasi dipendenza funzionale (non ci sono insiemi di attributi su cui verificare la definizione, dunque è \textbf{vacuamente vera}).
+			
+			\item Un'istanza di relazione con una sola tupla soddisfa qualsiasi dipendenza funzionale, in quanto tutti i controlli verranno effettuati sulla tupla stessa.
+		\end{itemize}
+	\end{definizione}
+	
+	\begin{osservazione}{Natura delle dipendenze funzionali}{}
+		Come per la scelta degli attributi, delle chiavi, e di tutto ciò che riguarda una base di dati, non esiste una dipendenza funzionale \textit{unica e corretta}: dipende dal contesto della realtà che stiamo esaminando e vogliamo rappresentare.\\
+		Per tale ragione, sarebbe errato definire le dipendenze funzionali a partire dalle tuple di una relazione, in quanto le dipendenze funzionali sono a tutti gli effetti dei \textit{vincoli} che vengono definiti sugli attributi, e non sui valori.
+	\end{osservazione}
+	
+	\begin{esempio}{Esempio di relazioni con dipendenze funzionali}{}
+		Riprendiamo l'esempio di prima delle automobili e della dipendenza funzionale Modello $\rightarrow$ Marca.\\
+		Vediamo di seguito due tabelle, e discutiamo se queste rispettino la dipendenza funzionale scritta sopra.
+		\begin{tabella}{|C|C|C|C|C|}
+			& MARCA   & MODELLO & CILINDRATA & COLORE \\\hline
+			t1 & FIAT    & Tipo    & 1000       & giallo \\
+			t2 & FIAT    & Panda   & 600        & rosso  \\
+			t3 & Citroen & Picasso & 1200       & blu    \\
+		\end{tabella}
+		Andiamo a verificare se rispetta la dipendenza funzionale partendo dalla definizione, quindi prendendo ogni possibile coppia di tuple.
+		\begin{itemize}
+			\item Coppia (t1, t2): hanno un valore diverso per l'attributo modello, e dunque la dipendenza è soddisfatta.
+			
+			\item Coppia (t1, t3): hanno un valore diverso per l'attributo modello, e dunque la dipendenza è soddisfatta.
+			
+			\item Coppia (t2, t3): hanno un valore diverso per l'attributo modello, e dunque la dipendenza è soddisfatta.
+		\end{itemize}
+		Ne segue che tale istanza di relazione \textbf{rispetta} la dipendenza funzionale Modello $\rightarrow$ Marca.
+		
+		\begin{tabella}{|C|C|C|C|C|}
+			& MARCA   & MODELLO & CILINDRATA & COLORE \\\hline
+			t1 & FIAT    & Tipo    & 1000       & giallo \\
+			t2 & Citroen & Tipo    & 600        & rosso  \\
+			t3 & Citroen & Picasso & 1200       & blu    \\
+		\end{tabella}
+		Andiamo anche qui a verificare ogni coppia di tuple:
+		\begin{itemize}
+			\item Coppia (t1, t2): hanno lo stesso valore per il modello (t1[Modello] = t2[Modello]) dunque ci aspettiamo che anche il valore di marca sia lo stesso. Non è però il caso, e dunque la coppia \textbf{non} rispetta la dipendenza funzionale.
+		\end{itemize}
+		Non c'è neanche bisogno di controllare altre coppie: per la definizione di dipendenza funzionale, questa deve essere soddisfatta \textbf{per ogni coppia di tuple}. Dunque se troviamo anche solo \textbf{una} coppia per cui questa non vale, possiamo smettere di cercare.
+	\end{esempio}
+	
+	\begin{definizione}{Istanza legale}{}
+		Dato $F = \{X_1 \rightarrow Y_1, \dots, X_n \rightarrow Y_n\}$ un insieme di dipendenze funzionali, un'istanza di relazione $r$ si dice \textbf{legale} se \textbf{soddisfa tutte le dipendenze funzionali di F}.\\
+		Ovviamente, una stessa istanza di relazione può essere legale per un certo insieme $F$ e magari non esserlo per un altro.\\
+		Come prima, tutte le istanze vuote oppure con una sola tupla sono legali.
+	\end{definizione}
+	
+	\begin{esempio}{Esempio di istanze legali}{}
+		Definiamo $F = \{AB \rightarrow C\}$ e consideriamo la seguente istanza di relazione:
+		\begin{tabella}{|C|C|C|C|C|}
+			& A  & B  & C  & D  \\\hline
+			t1 & a1 & b1 & c1 & d1 \\
+			t2 & a1 & b2 & c1 & d2 \\
+			t3 & a1 & b1 & c1 & d3 \\
+		\end{tabella}
+		Andando ad esaminare ogni coppia di tuple...
+		\begin{itemize}
+			\item Coppia (t1, t2): hanno valori diversi per la coppia AB, dunque la dipendenza è soddisfatta.
+			
+			\item Coppia (t1, t3): hanno lo stesso valore per la coppia AB. Controlliamo il valore per l'attributo C, che risulta essere uguale e dunque la dipendenza è soddisfatta.
+			
+			\item Coppia (t2, t3): hanno valori diversi per la coppia AB, dunque la dipendenza è soddisfatta.
+		\end{itemize}
+		L'istanza di relazione risulta essere \textbf{legale}.
+		
+		Ma se ridefinissimo $F = \{AB \rightarrow C, B \rightarrow CD\}$ si può facilmente verificare come l'istanza continui a soddisfare la dipendenza $AB \rightarrow C$ ma non soddisfi $B \rightarrow CD$, e dunque \textbf{non è legale}.
+	\end{esempio}
+	
+	Abbiamo appena visto come un'istanza di relazione sia legale in base ad un insieme $F$ di dipendenze funzionali. Partendo però dall'insieme $F$ potremmo individuare delle dipendenze funzionali "derivate", cioè \textbf{non scritte} esplicitamente all'interno di $F$ che però valgono implicitamente da quelle già definite. Questo concetto viene formalizzato nella definizione sottostante.
+	
+	\begin{definizione}{Chiusura di $F$}{}
+		Data un'istanza di relazione $r$ legale secondo l'insieme $F$, definiamo come $F^+$ l'insieme di \textbf{tutte} le dipendenze funzionali soddisfatte da $r$, sia quelle contenute in $F$, sia quelle \textit{implicite} o \textit{derivabili} di cui parlavamo prima. Tale insieme $F^+$ si dice \textbf{chiusura di} $\mathbf{F}$ e vale ovviamente $F \subseteq F^+$.
+	\end{definizione}
+	L'insieme $F^+$ è uno strumento potentissimo, che ci permette di ottenere tutti i vincoli relativi ad uno schema di relazione. Ad ora non abbiamo gli strumenti per dimostrare la natura e l'utilità di questo insieme, ma basti sapere che la chiusura di $F$ è \textbf{l'insieme da cui traiamo tutti i vincoli per le nostre relazioni}.\\
+	Di seguito due proposizioni banali ma essenziali per alcune dimostrazioni che vedremo in seguito.
+	\begin{proposizione}{}{}
+		Dato uno schema di relazione $R$ e un insieme di dipendenze funzionali $F$, con $X, Y \subseteq R$ sottoinsiemi di attributi:
+		\[
+			\text{Se } X \rightarrow Y \in F \text{ allora } \forall A \in Y, X \rightarrow A \in F^+
+		\]
+		intuitivamente, se $A_i$ sono gli attributi che compongono l'insieme $Y$, se l'insieme $X$ determina l'intero insieme $Y$, allora determinerà anche i singoli attributi che lo compongono.
+	\end{proposizione}
+	
+	\begin{proposizione}{}{}
+		Vale anche il contrario della proposizione soprastante, ovvero:
+		\[
+			\text{Se } Y = A_1, A_2, \dots, A_k \text{ e } \forall A_i \in Y, X \rightarrow A_i \in F \text{ allora } X \rightarrow Y \in F^+
+		\]
+	\end{proposizione}
+	
+	Queste due proposizioni ci saranno più utili in seguito, ma molto banalmente ci stanno dicendo che le due scritture riportate di seguito sono equivalenti (cioè hanno lo stesso significato semantico):
+	\begin{center}
+		\{matr $\rightarrow$ nome, cogn\} $\in F^+$\\
+		\{matr $\rightarrow$ nome, matr $\rightarrow$ cogn\} $\subseteq F^+$
+	\end{center}
+	
+	\begin{proposizione}{Dipendenze funzionali banali}{}
+		Per quanto sia \textit{banale} dirlo, se si ha una dipendenza del tipo $X \rightarrow Y$, con $Y \subseteq X$ questa sarà \textbf{sempre soddisfatta}. Da questo il nome \textbf{dipendenza funzionale banale}.\\
+		Intuitivamente, se $X$ determina univocamente $Y$, essendo $Y$ un sottoinsieme di $X$ è come dire che $X$ determina univocamente sé stesso.
+	\end{proposizione}
+	
+	Avendo ora definito molti dei concetti matematici su cui si fonda la teoria relazionale, si vuole fare un appunto su un concetto già visto e stravisto in precedenza, ma mai definito in maniera troppo formale: le chiavi. Ciò che sappiamo delle chiavi è che sono un insieme di attributi che \textbf{identificano univocamente ogni tupla} all'interno di una relazione. Notiamo delle analogie con il concetto di dipendenza funzionale appena definito: se le chiavi devono identificare univocamente ogni tupla della relazione, significa che tutti gli attributi sono \textit{funzionalmente dipendenti dalla chiave}. Di seguito la formalizzazione matematica di questo concetto. 
+	\begin{definizione}{Chiave}{}
+		Sia $K \subseteq R$ un sottoinsieme di attributi della relazione. L'insieme $K$ è una chiave di $R$ se rispetta le seguenti proprietà:
+		\begin{enumerate}
+			\item $K \rightarrow R \in F^+$, cioè tutti gli attributi della relazione sono determinati dalla chiave $K$.
+			
+			\item Tale sottoinsieme $K$ deve essere \textbf{minimale}, cioè \textbf{il più piccolo sottoinsieme di attributi per cui vale (1)}. Formalmente scriviamo $\nexists K' \subset K$ t.c. $K' \rightarrow R \in F^+$.
+		\end{enumerate}
+		Se, preso un insieme di attributi, questo rispetta solo la proprietà (1) allora tale insieme si dice \textbf{superchiave}.
+	\end{definizione}
+	
+	\section{Chiusura di un insieme di dipendenze funzionali}
+	Precedentemente si è accennato alla definizione della chiusura di $F$, un insieme che ci servirà più avanti per ricavare tutte le dipendenze relative ad uno schema di relazione $R$. In questa sezione ci muoveremo per fornire le definizioni e dimostrazioni mancanti per raggiungere il nostro obiettivo, e dare una procedura algoritmica per ricavare le chiavi di uno schema e anche le dipendenze funzionali essenziali.\\
+	Partiamo introducendo un nuovo insieme, del quale stavolta diamo però una definizione formale.
+	\begin{definizione}{Chiusura con assiomi di Armstrong}{}
+		Dato $F$ un insieme di dipendenze funzionali, denotiamo con $F^A$ l'insieme che rispetta le seguenti proprietà:
+		\begin{enumerate}
+			\item $F \subseteq F^A$
+			
+			\item \textbf{Assioma della riflessività}: se $Y \subseteq X$ allora $X \rightarrow Y \in F^A$.
+			
+			\item \textbf{Assioma dell'aumento}: se $X \rightarrow Y \in F^A$ allora $XZ \rightarrow YZ \in F^A, \forall Z \subseteq R$. Questa risulta essere una \textit{definizione ricorsiva} dell'insieme $F^A$, che ci darà particolari problemi con una dimostrazione successiva.
+			
+			\item \textbf{Assioma della transitività}: se $X \rightarrow Y \in F^A$ e $Y \rightarrow Z \in F^A$ allora $X \rightarrow Z \in F^A$.
+		\end{enumerate}
+	\end{definizione}
+	
+	Questi appena scritti sono gli assiomi di Armstrong per la definizione dell'insieme $F^A$. Prima di procedere, introduciamo alcune \textit{regole deduttive}, ovvero delle proprietà di $F^A$ che non sono assiomi in quanto si possono semplicemente dedurre a partire da questi.
+	\begin{enumerate}
+		\setcounter{enumi}{4}
+		\item \textbf{Regola dell'unione:} se $X \rightarrow Y \in F^A$ e $X \rightarrow Z \in F^A$ allora $X \rightarrow YZ \in F^A$.
+		
+		\item \textbf{Regola della decomposizione}: se $X \rightarrow Y \in F^A$ e $Z \subseteq Y$ allora $X \rightarrow Z \in F^A$.
+		
+		\item \textbf{Regola della pseudotransitività}: se $X \rightarrow Y \in F^A$ e $WY \rightarrow Z \in F^A$ allora $WX \rightarrow Z \in F^A$.
+	\end{enumerate}
+	
+	\begin{dimostrazione}{Regola dell'Unione}{dim:unione}
+		Siano $X \to Y \in F^A$ e $X \to Z \in F^A$.
+		\begin{enumerate}
+			\item Applicando l'assioma dell'\textbf{aumento} a $X \to Y$ aggiungendo l'insieme $X$ a entrambi i membri, si ha $XX \to XY$. Poiché stiamo trattando insiemi di attributi, vale l'idempotenza $XX = X$, da cui $X \to XY \in F^A$.
+			\item Applicando l'assioma dell'\textbf{aumento} a $X \to Z$ aggiungendo $Y$ a entrambi i membri, si ottiene $XY \to YZ \in F^A$.
+			\item Avendo ricavato $X \to XY \in F^A$ e $XY \to YZ \in F^A$, per l'assioma della \textbf{transitività} si conclude che $X \to YZ \in F^A$.
+		\end{enumerate}
+	\end{dimostrazione}
+	
+	\begin{dimostrazione}{Regola della Decomposizione}{dim:decomposizione}
+		Siano $X \to Y \in F^A$ e $Z \subseteq Y$.
+		\begin{enumerate}
+			\item Poiché $Z \subseteq Y$, per l'assioma della \textbf{riflessività} si ha $Y \to Z \in F^A$.
+			\item Avendo per ipotesi $X \to Y \in F^A$ e per riflessività $Y \to Z \in F^A$, applicando l'assioma della \textbf{transitività} segue direttamente che $X \to Z \in F^A$.
+		\end{enumerate}
+	\end{dimostrazione}
+	
+	\begin{dimostrazione}{Regola della Pseudotransitività}{dim:pseudotransitivita}
+		Siano $X \to Y \in F^A$ e $WY \to Z \in F^A$.
+		\begin{enumerate}
+			\item Applicando l'assioma dell'\textbf{aumento} a $X \to Y$ unendo l'insieme di attributi $W$ a entrambi i membri, si ricava $WX \to WY \in F^A$.
+			\item Poiché $WX \to WY \in F^A$ e per ipotesi $WY \to Z \in F^A$, applicando l'assioma della \textbf{transitività} si deduce che $WX \to Z \in F^A$.
+		\end{enumerate}
+	\end{dimostrazione}
+	
+	Forniamo adesso una dimostrazione che in verità ci sarà più utile in seguito, ma che si ritiene necessario mostrare adesso.
+	\begin{definizione}{Chiusura di un insieme di attributi}{}
+		Sia $R$ uno schema di relazione e $X \subseteq R$ un sottoinsieme di attributi dello schema.\\
+		Definiamo la chiusura dell'insieme $X$ nel seguente modo:
+		\[
+			X^+_F = \{A | X \rightarrow A \in F^A\}
+		\]
+		ovvero l'\textbf{insieme di tutti gli attributi che sono determinati funzionalmente da X}.
+	\end{definizione}
+	
+	Di nuovo, un lemma fondamentale per la teoria relazionale, che ci permette di determinare se una data dipendenza funzionale è rispettata o meno, solo in base alla natura degli insiemi considerati.
+	\begin{proposizione}{Dipendenze e Chiusura di Attributi}{prop:lemma_chiusura_dipendenze}
+		Siano $R$ uno schema di relazione ed $F$ un insieme di dipendenze funzionali su $R$. Si ha che:
+		\[
+		X \to Y \in F^A \iff Y \subseteq X^+
+		\]
+	\end{proposizione}
+	
+	\begin{dimostrazione}{Dimostrazione del Lemma}{dim:lemma_chiusura_dipendenze}
+		Sia $Y = \{A_1, A_2, \dots, A_n\}$. Dimostriamo la doppia implicazione.
+		
+		\textbf{Parte ``se'' ($\Leftarrow$).}
+		Assumiamo che $Y \subseteq X^+$.
+		\begin{enumerate}
+			\item Poiché $Y \subseteq X^+$, per ogni $i \in \{1, \dots, n\}$ si ha che $A_i \in X^+$.
+			\item Per definizione di chiusura di un insieme di attributi, $A_i \in X^+$ implica che $X \to A_i \in F^A$ per ciascun $i$.
+			\item Applicando la regola dell'\textbf{unione} alle $n$ dipendenze funzionali $X \to A_i \in F^A$, si ottiene:
+			\[
+			X \to A_1 A_2 \dots A_n \in F^A \implies X \to Y \in F^A
+			\]
+		\end{enumerate}
+		
+		\textbf{Parte ``solo se'' ($\Rightarrow$).}
+		Assumiamo che $X \to Y \in F^A$.
+		\begin{enumerate}
+			\item Poiché $X \to Y \in F^A$ e per ogni $i \in \{1, \dots, n\}$ vale $\{A_i\} \subseteq Y$, per la regola della \textbf{decomposizione} si ha che:
+			\[
+			X \to A_i \in F^A \quad \forall i \in \{1, \dots, n\}
+			\]
+			\item Per definizione di chiusura di un insieme di attributi, il fatto che $X \to A_i \in F^A$ implica che $A_i \in X^+$ per ogni $i$.
+			\item Essendo ogni elemento $A_i \in Y$ appartenente a $X^+$, ne consegue che $Y \subseteq X^+$.
+		\end{enumerate}
+	\end{dimostrazione}
 	
 \end{document}
