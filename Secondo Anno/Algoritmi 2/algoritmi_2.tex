@@ -348,7 +348,6 @@
 	
 	\begin{corollario}{}{}
 		Esiste una passeggiata da $x$ a $y$ $\iff$ esiste un cammino da $x$ a $y$.\\
-		La dimostrazione è reperibile \hyperref[dim:cammino_sse_passeggiata]{qui}.
 	\end{corollario}
 	
 	\begin{figure}[H]
@@ -669,7 +668,7 @@
 					dfs_ric(G, v, vis)
 	\end{lstlisting}
 	
-	La visita costa sempre $O(n+m)$. L'unica limitazione è lo stack delle funzioni, che per grafi molto pieni potrebbe andare in \textit{recursion depth}. La dimostrazione di correttezza di tale algoritmo, nella sua versione ricorsiva, è reperibile \hyperref[dim:funzionamento_dfs]{qui}.
+	La visita costa sempre $O(n+m)$. L'unica limitazione è lo stack delle funzioni, che per grafi molto pieni potrebbe andare in \textit{recursion depth}.
 	
 	Proponiamo ora un esercizio che ci aiuterà a lavorare con i grafi e con la visita in profondità (DFS).
 	
@@ -1033,8 +1032,7 @@
 	\end{center}
 	
 	\begin{proposizione}{Inesistenza dell'ordine topologico}{}
-		Se il \textbf{grafo orientato} $G$ definito dai processi \textbf{contiene un ciclo diretto}, allora \textbf{non esiste} alcun ordine topologico.\\
-		La dimostrazione di tale proposizione si trova \hyperref[dim:no_ord_top_aciclico]{qui}.
+		Se il \textbf{grafo orientato} $G$ definito dai processi \textbf{contiene un ciclo diretto}, allora \textbf{non esiste} alcun ordine topologico.
 	\end{proposizione}
 	
 	\begin{proposizione}{Proprietà dei cicli nei grafi diretti}{}
@@ -1331,7 +1329,6 @@
 		\item \textbf{ARCHI ALL'INDIETRO:} archi che vanno da un nodo ad un suo \textbf{antenato}.
 		\item \textbf{ARCHI DI ATTRAVERSAMENTO:} archi che vanno da un nodo ad un suo \textbf{"cugino"}.
 	\end{itemize}
-	La dimostrazione del fatto che un arco non possa appartenere contemporaneamente a più di una di queste categorie si trova \hyperref[dim:tipologie_archi]{qui}.
 	
 	\subsection{Comportamento nei grafi non diretti}
 	
@@ -1367,8 +1364,7 @@
 	\end{center}
 	
 	\begin{proposizione}{}{}
-		Dato un DFS su un grafo \textbf{non diretto}, se un arco $(u, v)$ non fa parte dell'\textbf{albero di visita} (ovvero è un arco all'indietro/back edge), allora è impossibile che si verifichi il caso \textbf{iii)} degli intervalli disgiunti.\\
-		La dimostrazione è \hyperref[dim:unicità_archi]{qui}.
+		Dato un DFS su un grafo \textbf{non diretto}, se un arco $(u, v)$ non fa parte dell'\textbf{albero di visita} (ovvero è un arco all'indietro/back edge), allora è impossibile che si verifichi il caso \textbf{iii)} degli intervalli disgiunti.
 	\end{proposizione}
 	
 	\begin{osservazione}{Archi fuori dall'albero in grafi non orientati}{}
@@ -1380,7 +1376,6 @@
 		\[
 		G \text{ ha un ciclo} \iff \text{ogni DFS ha almeno un arco all'indietro}
 		\]
-		La dimostrazione è \hyperref[dim:cicli_e_archi_indietro]{qui}.
 	\end{proposizione}
 	
 	\begin{proposizione}{Caratterizzazione dei cicli in grafi orientati}{}
@@ -1695,7 +1690,7 @@
 		Sia $G$ un grafo connesso e $T$ un albero di ricerca DFS. Siano $xy \in E(T)$ con $y$ discendente di $x$.\\
 		Allora esiste un arco $(u, v) \in E(G)$ con $u \in T_y$ e $v$ antenato di $x$ $\iff (x, y)$ \textbf{non è un ponte}.
 	\end{proposizione}
-	Questa proposizione sostanzialmente completa la precedente, collegando i due concetti di arco all'indietro e ponte mediante una doppia implicazione. La dimostrazione si trova \hyperref[dim:caratterizzazione_ponti]{qui}.
+	Questa proposizione sostanzialmente completa la precedente, collegando i due concetti di arco all'indietro e ponte mediante una doppia implicazione.
 	
 	Fatte le dovute osservazioni teoriche, possiamo procedere con la stesura dell'algoritmo.
 	
@@ -1852,9 +1847,9 @@
 	
 	Nota: quando ci viene chiesto se ``allora esiste'', si intende ``allora \textbf{esiste sempre}''.
 	
-	Al contrario, vale la seguente proprietà: se esiste un ciclo $C$ diretto che contiene $x$ e $y$, ciò implica che $x$ e $y$ fanno parte della stessa componente fortemente connessa?
+	Al contrario, vale la seguente proprietà: se esiste un ciclo $C$ diretto che contiene $x$ e $y$, ciò implica che $x$ e $y$ fanno parte della stessa componente fortemente connessa?\\
 	
-	La risposta è \textbf{sì}, e la dimostrazione si trova \hyperref[dim:ciclo_componente_elementi_comuni]{qui}.
+	La risposta è, in quest'altro caso, \textbf{affermativa}.
 	
 	\begin{osservazione}{}{}
 		Ogni vertice è singolarmente una componente fortemente connessa (ricordiamo $\{x\}$ essere una componente valida). 
@@ -1931,7 +1926,6 @@
 		\[
 		G \text{ è fort. conn.} \iff \forall x \in V(G) \, \exists \text{ un cammino } x \to u \text{ e un cammino } u \to x
 		\]
-		Dimostrazione \hyperref[dim:caratterizzazione_grafo_fort_conn]{qui}.
 	\end{proposizione}
 	
 	\begin{enumerate}
@@ -1943,8 +1937,7 @@
 	\end{enumerate}
 	
 	\begin{proposizione}{Contrazione di un sottografo fortemente connesso}{}
-		Se $G$ è un grafo fortemente connesso e $H \subseteq G$ è un sottografo fortemente connesso, allora il grafo quoziente $G / V(H)$ ottenuto contraendo $H$ in un unico vertice è anch'esso fortemente connesso.\\
-		Dimostrazione \hyperref[dim:contrazione_grafo]{qui}.
+		Se $G$ è un grafo fortemente connesso e $H \subseteq G$ è un sottografo fortemente connesso, allora il grafo quoziente $G / V(H)$ ottenuto contraendo $H$ in un unico vertice è anch'esso fortemente connesso.
 	\end{proposizione}
 	
 	La notazione $G / V(H)$ indica il nuovo grafo ottenuto dopo la contrazione. Se volessimo definirlo formalmente:
@@ -2205,7 +2198,6 @@
 			V(T_u) = C(u_1) \cup C(u_2) \cup \dots \cup C(u_k)
 			\]
 		\end{enumerate}
-		La dimostrazione dei due punti si può trovare al \hyperref[dim_c_radici_1]{seguente riferimento}.
 	\end{proposizione}
 	
 	Prendendo come esempio il grafo di seguito riportato, verifichiamo intuitivamente la validità delle proprietà enunciate.
@@ -2440,7 +2432,6 @@
 	
 	\begin{proposizione}{Caratterizzazione di C-radice}{}
 		Un nodo $u$ non è una C-radice $\iff$ dalle chiamate ricorsive \texttt{DFS\_SCC} con radice $u$, viene attraversato un arco $(v, w)$ t.c. $w$ è stato già visitato ($t(w) < t(u)$) ma la componente di $w$ non è stato stabilito ($w \in \text{open}$, è ancora nello stack).\\
-		La dimostrazione si trova \hyperref[dim:caratterizzazione_c_radice]{qui}.
 	\end{proposizione}
 	
 	In parole molto povere: affinché un nodo sia C-radice deve necessariamente essere il più vecchio (quello scoperto prima di tutto il suo gruppo).
@@ -2829,6 +2820,328 @@
 		\]
 	\end{proposizione}
 	
-	\input{dimostrazioni_algoritmi.tex}
+	\section{Grafi pesati}
+	\begin{definizione}{Grafo pesato}{}
+		Un grafo si dice \textbf{pesato} se a ogni suo arco viene associato un \textbf{peso}, ovvero un numero reale positivo. Formalmente definiamo una funzione di peso:
+		\[
+		w \colon E(G) \longrightarrow \mathbb{R}^+
+		\]
+	\end{definizione}
+	
+	\begin{center}
+		\begin{tikzpicture}[thick, scale=1.2, nodo/.style={circle, draw, minimum size=0.65cm, inner sep=0pt, font=\sffamily\bfseries}]
+			% Posizionamento nodi
+			\node[nodo] (X) at (0, 0) {$x$};
+			\node[nodo] (A) at (1.3, 1.2) {};
+			\node[nodo] (B) at (2.7, 1.2) {};
+			\node[nodo] (C) at (2.0, -1.0) {};
+			\node[nodo] (Y) at (4.0, 0) {$y$};
+			
+			% Archi con pesi
+			\draw (X) -- (A) node[midway, above left, color=blue] {$1$};
+			\draw (X) -- (C) node[midway, below left, color=blue] {$2$};
+			\draw (A) -- (B) node[midway, above, color=blue] {$2$};
+			\draw (A) -- (C) node[midway, left=2pt, color=blue] {$3$};
+			\draw (B) -- (C) node[midway, right=2pt, color=blue] {$4$};
+			\draw (B) -- (Y) node[midway, above right, color=blue] {$2$};
+			\draw (C) -- (Y) node[midway, below right, color=blue] {$5$};
+		\end{tikzpicture}
+	\end{center}
+	
+	\begin{definizione}{Peso di un cammino e distanza pesata}{}
+		Il \textbf{peso di un cammino} $P$ è definito come la somma di tutti i pesi associati agli archi che lo compongono:
+		\[
+		w(P) = \sum_{e \in P} w(e)
+		\]
+		
+		Analogamente a quanto fatto per i grafi non pesati, definiamo come \textbf{distanza pesata} $\operatorname{dist}_w(x, y)$ tra due vertici $x$ e $y$ il peso del cammino di peso minimo che li collega:
+		\[
+		\operatorname{dist}_w(x, y) = \min_{\forall P \text{ tra } x \to y} w(P)
+		\]
+	\end{definizione}
+	
+	\begin{center}
+		\begin{tikzpicture}[thick, scale=1.2, nodo/.style={circle, draw, minimum size=0.65cm, inner sep=0pt, font=\sffamily\bfseries}]
+			% Posizionamento nodi
+			\node[nodo] (X) at (0, 0) {$x$};
+			\node[nodo] (A) at (1.3, 1.2) {};
+			\node[nodo] (B) at (2.7, 1.2) {};
+			\node[nodo] (C) at (2.0, -1.0) {};
+			\node[nodo] (Y) at (4.0, 0) {$y$};
+			
+			% Archi interni non scelti
+			\draw (A) -- (C) node[midway, left=2pt, color=blue] {$3$};
+			\draw (B) -- (C) node[midway, right=2pt, color=blue] {$4$};
+			
+			% Cammino P1 (in arancione)
+			\draw[orange, line width=2pt] (X) -- (C) node[midway, below left, color=blue] {$2$};
+			\draw[orange, line width=2pt] (C) -- (Y) node[midway, below right, color=blue] {$5$};
+			
+			% Cammino P2 (in viola)
+			\draw[purple, line width=2pt] (X) -- (A) node[midway, above left, color=blue] {$1$};
+			\draw[purple, line width=2pt] (A) -- (B) node[midway, above, color=blue] {$2$};
+			\draw[purple, line width=2pt] (B) -- (Y) node[midway, above right, color=blue] {$2$};
+			
+			% Etichette pesi dei cammini
+			\node[purple, right] at (4.3, 0.7) {$w(P_2) = 5$};
+			\node[orange, right] at (4.3, -0.2) {$w(P_1) = 7$};
+		\end{tikzpicture}
+	\end{center}
+	
+	\begin{osservazione}{Proprietà della distanza pesata}{}
+		La distanza pesata $\operatorname{dist}_w$ soddisfa le seguenti proprietà fondamentali:
+		\begin{itemize}
+			\item $\operatorname{dist}_w(x, x) = 0$;
+			\item $\operatorname{dist}_w(x, y) \ge 0$, ammettendo l'uguaglianza se e solo se $y = x$, poiché tutti i pesi associati agli archi sono strettamente positivi per definizione;
+			\item $\operatorname{dist}_w(x, y) \le \operatorname{dist}_w(x, z) + \operatorname{dist}_w(z, y)$.
+		\end{itemize}
+	\end{osservazione}
+	% --- NEW PAGE (48) ---
+	
+	Se il grafo è diretto, essenzialmente la definizione non cambia: $\operatorname{dist}_w(x,y)$ rappresenta il peso minimo di un cammino \textbf{diretto} da $x$ a $y$.
+	
+	\begin{osservazione}{Confronto tra grafi orientati e non orientati}{}
+		L'unica sostanziale differenza tra le due tipologie di grafo riguarda la simmetria della funzione distanza:
+		\begin{itemize}
+			\item \textbf{Nei grafi non diretti}: $\operatorname{dist}_w(x, y) = \operatorname{dist}_w(y, x)$ per ogni coppia di vertici.
+			\item \textbf{Nei grafi diretti}: molto spesso si ha $\operatorname{dist}_w(x, y) \neq \operatorname{dist}_w(y, x)$.
+		\end{itemize}
+	\end{osservazione}
+	
+	\subsection{Calcolo delle distanze pesate}
+	
+	Consideriamo ora il problema generale di determinare la distanza $\operatorname{dist}_w(x, y)$ all'interno di un grafo non diretto. 
+	Se il peso di ogni arco è unitario, ovvero $w(e) = 1$ per ogni $e \in E(G)$, il problema si riduce semplicemente all'esecuzione di una visita in ampiezza (\textbf{BFS}).
+	
+	Tuttavia, in presenza di pesi generici la situazione non è così semplice.\\
+	La distanza pesata da $x$ a $v$ non è più necessariamente pari al peso dell'arco diretto $(x, v)$, poiché potrebbe esistere un cammino alternativo da $x$ a $v$ con un peso complessivo minore. Nel nostro esempio, il cammino più breve è quello che passa per il nodo $u$, fornendo un peso totale di $1 + 1 = 2$, che risulta inferiore a $5$.
+	
+	Tuttavia, possiamo stabilire un'importante certezza: partendo da $x$ e considerando l'insieme dei suoi nodi adiacenti, se selezioniamo l'arco di \textbf{peso minimo} uscente da $x$ (sia esso l'arco $(x, u)$), siamo matematicamente certi che la distanza pesata da $x$ a $u$ sarà esattamente pari al peso dell'arco stesso, ossia:
+	\[
+	\operatorname{dist}_w(x, u) = w((x, u))
+	\]
+	Questo è garantito dal fatto che, essendo $(x, u)$ l'arco uscente di peso minimo da $x$, non può esistere alcun altro cammino alternativo verso $u$ con peso strettamente minore.
+	
+	Però andando avanti non possiamo dire la stessa cosa: \textbf{non sempre scegliere l'arco di peso minimo è la scelta giusta, dato che potremmo avere un cammino a lungo andare molto pesante contro un arco diretto pesante ma non così tanto}.
+	
+	Supponiamo di aver trovato un insieme $Z$ di vertici per il quale conosciamo $\operatorname{dist}_w(x, y)$ con $y \in Z$. Nel nostro esempio precedente, questo insieme sarà inizialmente composto solo da $x$ e dal nodo con cui condivide l'arco di peso minore, che abbiamo chiamato $u$.
+	
+	\begin{proposizione}{Estensione dell'insieme delle distanze minime}{}
+		Se $v$ è il vertice con arco $(u', v)$ tale che $v \notin Z$, $u' \in Z$ e la quantità $w(u', v) + \operatorname{dist}_w(x, u')$ è minima, allora:
+		\[
+		\operatorname{dist}_w(x, v) = \operatorname{dist}_w(x, u') + w(u', v)
+		\]
+	\end{proposizione}
+	
+	In parole molto povere, $v$ è il nodo \textbf{fuori} da $Z$ che ha un arco verso un nodo \textbf{dentro} $Z$ e tale arco ci permette di minimizzare la distanza dalla sorgente $x$ a tale nodo $v$.
+	
+	In modo concettuale, proviamo a stendere un algoritmo:
+	\begin{enumerate}
+		\item Inizializziamo l'insieme $Z$ contenente inizialmente solo la radice $x$.
+		\item Iteriamo lungo tutti gli adiacenti di $x$ e prendiamo la loro distanza pesata da $x$.
+		\item Una volta scorsi tutti, prendiamo quello di peso minimo e lo aggiungiamo a $Z$.
+		\item Adesso $Z$ è cresciuto, ma la procedura è la stessa: per ogni nodo $v \notin Z$, applichiamo il procedimento descritto sopra, che è valido in quanto ad ogni nodo di $Z$ è associata una distanza calculata rispetto al nodo sorgente $x$.
+	\end{enumerate}
+	
+	Tale algoritmo è il motore sotto il quale girano Google Maps e tutti i principali servizi di navigazione: è l'\textbf{algoritmo di Dijkstra}.
+	Siccome ad ogni nuovo nodo aggiunto al nostro insieme $Z$ dovremo far ripartire la procedura di ricerca del nodo minimizzante, necessitiamo di una struttura dati che ci permetta di estrarre il valore minimo e di inserirne di nuovi in modo efficiente: utilizziamo dunque un \textbf{Min-Heap}.
+	
+	\begin{lstlisting}[language=Python, caption={Algoritmo di Dijkstra con Min-Heap}]
+		def algoritmoDijkstra(G, w, x):
+			dist = [float('inf')] * n
+			dist[x] = 0
+			P = [-1] * n
+			P[x] = x
+			H = Heap()
+			
+			# 1. Inserimento degli archi uscenti dalla sorgente
+			for (x, v) in E(G):
+				H.insert([w((x, v)), (x, v)])
+			
+			# 2. Estrazione progressiva e aggiornamento dei nodi
+			for i in range(n - 1):
+				(u, v) = H.extract_min()
+			
+			if P[u] == -1:
+				new = u
+				old = v
+			else:
+				new = v
+				old = u
+			
+			P[new] = old
+			dist[new] = dist[old] + w((u, v))
+			
+			# 3. Aggiornamento dello stato dell'heap con i nuovi archi
+			for y in new.neighbor:
+				if P[y] == -1:
+					H.insert([dist[new] + w((new, y)), (new, y)])
+				else:
+					H.remove((new, y))
+			
+			return P
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Algoritmo di Dijkstra}{alg_dijkstra_min_heap}
+		\begin{itemize}
+			\item \textbf{Inizializzazione delle strutture dati}:
+			\begin{itemize}
+				\item \texttt{dist}: Array contenente le distanze minime calcolate a partire dalla sorgente $x$, inizializzato a $\infty$ per tutti i vertici tranne per la sorgente dove $\text{dist}[x] = 0$.
+				\item \texttt{P}: Vettore dei padri impiegato per la ricostruzione del cammino minimo. Inizialmente ha tutti i valori a $-1$, tranne $\text{P}[x] = x$.
+				\item \texttt{H}: Struttura dati Min-Heap contenente man mano gli archi uscenti dall'insieme logico dei nodi correntemente visitati $Z$.
+			\end{itemize}
+			
+			\item \textbf{Fase 1 -- Popolamento iniziale dello Heap}:
+			Con il ciclo \texttt{for (x, v) in E(G)}, aggiungiamo allo heap tutti gli archi uscenti dalla sorgente $x$. Essendo inizialmente $Z = \{x\}$, gli unici archi uscenti da $Z$ sono proprio quelli che partono da $x$.
+			
+			\item \textbf{Fase 2 -- Estrazione ed espansione del cammino minimo}:
+			Iteriamo per $n - 1$ volte al fine di includere tutti i nodi del grafo nell'insieme $Z$:
+			\begin{itemize}
+				\item \texttt{(u, v) = H.extract\_min()}: Estraiamo dallo heap l'arco che presenta la distanza minima dal bordo dell'insieme $Z$ verso l'esterno.
+				\item \textbf{Identificazione del nodo esterno} (\texttt{if P[u] == -1}): Effettuiamo un controllo per verificare quale dei due vertici dell'arco si trova dentro $Z$ e quale si trova fuori. Utilizziamo il vettore dei padri $P$ come rappresentazione implicita dell'insieme $Z$ (se $\text{P}[u] == -1$, allora $u \notin Z$). Assegniamo il valore a \texttt{new} per il nodo fuori da $Z$ e ad \texttt{old} per il nodo dentro $Z$.
+				\item \textbf{Aggiornamento dei cammini}: Il padre di \texttt{new} diventerà \texttt{old} ($\text{P}[\text{new}] = \text{old}$), e la distanza viene aggiornata come $\text{dist}[\text{new}] = \text{dist}[\text{old}] + w((u, v))$, in diretta conseguenza delle proprietà sui cammini minimi.
+			\end{itemize}
+			
+			\item \textbf{Fase 3 -- Aggiornamento degli archi uscenti}:
+			Esaminiamo tutti i vicini $y$ del nodo appena aggiunto \texttt{new}:
+			\begin{itemize}
+				\item Se $y \notin Z$ (ovvero $\text{P}[y] == -1$), inseriamo il nuovo arco uscente nello heap valorizzato con la chiave $\text{dist}[\text{new}] + w((\text{new}, y))$.
+				\item Se invece $y \in Z$, rimuoviamo l'arco $(\text{new}, y)$ dallo heap mediante \texttt{H.remove((new, y))}, poiché collegherebbe due nodi già appartenenti a $Z$ e quindi già considerati.
+			\end{itemize}
+		\end{itemize}
+	\end{algoritmo}
+	% --- NEW PAGE (51) ---
+	
+	Analizzando la complessità si ottiene che:
+	\begin{itemize}
+		\item Il \texttt{for} in (1) esegue un'operazione di costo $\log(m)$ per un totale di al più $m$ volte (caso in cui da $x$ partono tutti gli archi del grafo, sarà $n - 1$).
+		Il costo totale è dunque $O(m \log m)$. Volendo però esprimerlo in funzione di $n$, e ricordandoci che stiamo aggiungendo tutti gli archi uscenti da $x$ che sono al più $n - 1$, il costo di questo ciclo diventa $O(n \log n)$.
+		
+		\item Il ciclo in (2) si ripete banalmente $n$ volte e al suo interno:
+		\begin{itemize}
+			\item Si estrae il minimo dall'heap che costa, alla fine dell'algoritmo, $O(\log m)$, dove stavolta $m$ sono tutti gli archi del grafo, dunque al più $n^2$. Otteniamo dunque $O(\log n^2) = O(2 \log n) = O(\log n)$.
+			\item Il ciclo in (3) è descrivibile dalla sommatoria
+			\[
+			\sum_{e \in E(G)} \log(n) = O(m \log n)
+			\]
+		\end{itemize}
+	\end{itemize}
+	
+	Il costo totale:
+	\[
+	O(n \log n) + O(m \log n) = \mathbf{O((n + m) \log n)}
+	\]
+	
+	\chapter{Algoritmi Greedy}
+	
+	Gli \textbf{algoritmi greedy} si occupano di risolvere problemi di ottimizzazione, cercando di individuare la soluzione globale migliore attraverso una serie di scelte locali ottime ad ogni passo.
+	
+	\begin{esercizio}{Problema della selezione degli intervalli}{def_interval_scheduling}
+		Dato in input un insieme di $n$ intervalli del tipo $[a_i, b_i]$, per $i = 1, \dots, n$, l'obiettivo è trovare un sottoinsieme di intervalli \textit{mutuamente disgiunti} (compatibili) di \textit{cardinalità massima}.
+	\end{esercizio}
+	
+	A titolo esemplificativo, consideriamo la seguente istanza del problema:
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=0.95, every node/.style={font=\small}]
+			% Asse temporale di riferimento
+			\draw[gray!50, thick, ->] (0.5, 0) -- (10.5, 0) node[right] {$t$};
+			
+			% Intervalli riga superiore
+			\draw[very thick, blu] (1, 0.8) -- (4, 0.8) node[midway, above] {$[1, 4]$};
+			\draw[thick, blu] (1, 0.6) -- (1, 1.0);
+			\draw[thick, blu] (4, 0.6) -- (4, 1.0);
+			
+			\draw[very thick, blu] (5, 0.8) -- (7, 0.8) node[midway, above] {$[5, 7]$};
+			\draw[thick, blu] (5, 0.6) -- (5, 1.0);
+			\draw[thick, blu] (7, 0.6) -- (7, 1.0);
+			
+			\draw[very thick, blu] (8, 0.8) -- (10, 0.8) node[midway, above] {$[8, 10]$};
+			\draw[thick, blu] (8, 0.6) -- (8, 1.0);
+			\draw[thick, blu] (10, 0.6) -- (10, 1.0);
+			
+			% Intervalli riga inferiore
+			\draw[very thick, rossoSapienza] (3, -0.8) -- (6, -0.8) node[midway, below] {$[3, 6]$};
+			\draw[thick, rossoSapienza] (3, -1.0) -- (3, -0.6);
+			\draw[thick, rossoSapienza] (6, -1.0) -- (6, -0.6);
+			
+			\draw[very thick, rossoSapienza] (7, -0.8) -- (9, -0.8) node[midway, below] {$[7, 9]$};
+			\draw[thick, rossoSapienza] (7, -1.0) -- (7, -0.6);
+			\draw[thick, rossoSapienza] (9, -1.0) -- (9, -0.6);
+		\end{tikzpicture}
+	\end{center}
+	
+	Dall'immagine si nota come una scelta parziale corretta possa portare a soluzioni differenti; per questo problema, l'insieme $\{[1,4], [5,7], [8,10]\}$ costituisce una soluzione totale ottima di cardinalità $3$.
+	
+	\subsection{Strategie di ordinamento per l'algoritmo Greedy}
+	
+	Per applicare la tecnica greedy occorre stabilire un criterio di ordinamento per gli intervalli.
+	
+	\paragraph{Idea 1: Ordinamento per estremo inferiore.}
+	Se ordiniamo gli intervalli in base al loro estremo inferiore $a_i$, la soluzione trovata è corretta ma \textit{non è sempre ottima}. Scegliendo infatti come primo intervallo uno molto ampio, rischiamo di eliminare molti piccoli intervalli ad esso sovrapposti ma reciprocamente compatibili.
+	
+	\textbf{Controesempio:}
+	\[
+	I_1 = [1, 100], \quad I_2 = [2, 3], \quad I_3 = [4, 5], \dots
+	\]
+	L'algoritmo selezionerebbe l'intervallo $[1, 100]$, scartando tutti i successivi ed ottenendo una soluzione di cardinalità $1$, contro una soluzione ottima di cardinalità molto più elevata.
+	
+	\paragraph{Idea 2: Ordinamrnto per ampiezza degli intervalli.}
+	Anche la seconda strategia \textit{non garantisce l'ottimalità}.
+	\textbf{Controesempio:} consideriamo il seguente insieme di 5 intervalli.
+	
+	\begin{center}
+		\begin{tikzpicture}[scale=0.9, every node/.style={font=\small}]
+			% Linea di base
+			\draw[thick, ->] (-0.5, 0) -- (10.5, 0);
+			
+			% Intervalli superiori (3, 4, 5)
+			\draw[very thick, DarkGoldenrod2] (0, 1.2) -- (3.2, 1.2) node[midway, above=2pt] {\textbf{3}};
+			\draw[thick, DarkGoldenrod2] (0, 0.9) -- (0, 1.5);
+			\draw[thick, DarkGoldenrod2] (3.2, 0.9) -- (3.2, 1.5);
+			
+			\draw[very thick, DarkGoldenrod2] (3.6, 1.2) -- (6.8, 1.2) node[midway, above=2pt] {\textbf{4}};
+			\draw[thick, DarkGoldenrod2] (3.6, 0.9) -- (3.6, 1.5);
+			\draw[thick, DarkGoldenrod2] (6.8, 0.9) -- (6.8, 1.5);
+			
+			\draw[very thick, DarkGoldenrod2] (7.2, 1.2) -- (10.4, 1.2) node[midway, above=2pt] {\textbf{5}};
+			\draw[thick, DarkGoldenrod2] (7.2, 0.9) -- (7.2, 1.5);
+			\draw[thick, DarkGoldenrod2] (10.4, 0.9) -- (10.4, 1.5);
+			
+			% Intervalli inferiori (1, 2)
+			\draw[very thick, Coral3] (2.4, -1.2) -- (4.4, -1.2) node[midway, below=2pt] {\textbf{1}};
+			\draw[thick, Coral3] (2.4, -1.5) -- (2.4, -0.9);
+			\draw[thick, Coral3] (4.4, -1.5) -- (4.4, -0.9);
+			
+			\draw[very thick, Coral3] (6.0, -1.2) -- (8.0, -1.2) node[midway, below=2pt] {\textbf{2}};
+			\draw[thick, Coral3] (6.0, -1.5) -- (6.0, -0.9);
+			\draw[thick, Coral3] (8.0, -1.5) -- (8.0, -0.9);
+		\end{tikzpicture}
+	\end{center}
+	
+	Se ordiniamo per ampiezza crescente, l'algoritmo sceglie prima gli intervalli $1$ e $2$ (aventi lunghezza inferiore). Tuttavia, l'inclusione di $1$ e $2$ rende incompatibili tutti e tre gli intervalli superiori.
+	
+	\paragraph{Idea 3: Ordinamento per estremo superiore.} In questo caso, l'ordinamento crescente con chiave l'estremo superiore di ogni intervallo risulta essere la scelta corretta per ottenere la soluzione ottimale al problema. La dimostrazione di correttezza verrà fatta in seguito alla presentazione dell'algoritmo, ma si può verificare come sia impossibile trovare un controesempio.
+	
+	\begin{lstlisting}[style=stile-listings, language=Python, caption={Algoritmo Greedy per la selezione di intervalli}]
+		def intervalli(sets):
+			sol = set()
+			# ordinare sets in ordine crescente in base all'estremo superiore
+			
+			for i in range(n):
+				if sets[i] non interseca alcun S in sol:
+					sol.add(sets[i])
+			
+			return sol
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Selezione di intervalli}{alg:intervalli}
+		\begin{enumerate}
+			\item Inizializza un insieme vuoto \texttt{sol} per memorizzare la soluzione finale.
+			\item Ordina gli intervalli dell'insieme \texttt{sets} in ordine crescente in base al loro estremo superiore.
+			\item Per ogni intervallo \texttt{sets[i]}, controlla se esso interseca qualche intervallo $S \in \text{\texttt{sol}}$. In caso negativo, l'intervallo viene aggiunto a \texttt{sol}.
+			\item Restituisce l'insieme \texttt{sol} degli intervalli selezionati.
+		\end{enumerate}
+	\end{algoritmo}
 	
 \end{document}

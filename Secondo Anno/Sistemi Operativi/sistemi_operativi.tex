@@ -3330,7 +3330,7 @@
 	\subsubsection*{Test-and-Set (TAS)}
 	L'implementazione della logica \textbf{Test-and-Set} avviene nel seguente modo:
 	\begin{lstlisting}[language=C]
-		int TestAndSet(int* ptr, int nuovo_valore) {
+		int TestAndSet(int* indirizzo, int nuovo_valore) {
 			int vecchio = *ptr;
 			*ptr = nuovo_valore;
 			return vecchio;
@@ -3339,27 +3339,57 @@
 	Questo algoritmo si occupa di scrivere \textit{incondizionatamente} un nuovo valore all'interno dell'indirizzo di memoria fornito (\texttt{int* ptr} in questo caso) e di restituire il vecchio valore presente. E come può una strategia così semplice funzionare?\\
 	Supponiamo di impostare \texttt{flag = 0} per un lock libero e \texttt{flag = 1} per il lock occupato. Quando un thread inizialmente arriva e prende il lock, il nuovo valore del flag sarà chiaramente 1. Tuttavia la funzione restituirà 0, che era il valore precedente. Vedendo come valore di ritorno 0, il thread capisce che ha acquisito il lock e può eseguire la funzione critica. Qualsiasi altro thread che proverà a prendere il lock dovrà dunque eseguire la funzione \texttt{TestAndSet()} in loop, che continuerà ad impostare continuamente il valore ad 1 ma, finché il thread vedrà come valore restituito dalla funzione 1, capirà che anche precedentemente al suo arrivo il lock era già stato ottenuto e dunque non può procedere con la sezione critica.
 	
+	\begin{esempio}{Esempio di uso reale di TAS}{}
+		Una semplice implementazione di un lock che garantisce la mutua esclusione tra più thread dello stesso processo è la seguente:
+		\begin{lstlisting}[language=C]
+			int counter = 0;
+			int mutex = 0;
+			
+			void lock_tas() {
+				while (TestAndSet(&mutex, 1) == 1) {}
+			}
+			
+			void unlock_tas() {
+				mutex = 0;
+			}			
+		\end{lstlisting}
+		Definiamo innanzitutto il nostro lock, che assumerà valore 0 quando libero e 1 quando occupato. Il primo thread che entrerà nella funzione \texttt{foo()} sarà anche il primo ad acquisire il lock. L'acquisizione del lock si basa sul funzionamento dell'algoritmo TAS:
+		\begin{enumerate}
+			\item Il primo thread tenta di scrivere 1 all'interno del mutex (vedi il secondo parametro della funzione \texttt{TestAndSet}).
+			
+			\item Tale funzione restituirà sempre il valore \texttt{old}, cioè quello precedente alla chiamata di funzione. Se tale valore sarà 0 (e questo è \textbf{certo} per il primo thread che accede alla risorsa) allora il valore viene correttamente impostato ad 1 e viene restituito 0.
+			
+			\item Il thread chiamante, leggendo come valore di ritorno 0, non si bloccherà dentro al ciclo while, benì procederà con le istruzioni della sezione critica.
+			
+			\item Se nel frattempo il \textit{time-slice} di tale thread dovesse terminare e dovesse essere mandato in esecuzione un altro, questo dovrà a sua volta tentare di acquisire il lock per accedere alla sezione critica.\\
+			Nel suo caso, però, chiamando la funzione \texttt{TestAndSet} si otterrà come valore di ritorno 1, poiché il lock era già stato acquisito, ma non liberato, dal thread precedente.
+			
+			\item Al suo ritorno, quello che era il primo thread libererà il lock semplicemente impostandolo a 0. Nota che non è necessario eseguire un \texttt{TestAndSet(\&mutex, 0)}, in quanto il thread corrente avrà già acquisito il lock e \textit{dunque} sarà sicuramente l'unico in esecuzione per quell'istruzione.
+		\end{enumerate}
+	\end{esempio}
+	
 	Questa soluzione garantisce la \textbf{correttezza} del lock, bensì \textbf{non l'equità}, in quanto non viene memorizzata alcuna coda dei thread in ordine di come hanno richiesto il lock, e dunque la scelta del prossimo thread da eseguire è totalmente casuale (problema della \textbf{starvation}). Si tratta inoltre di un algoritmo oneroso anche dal punto di vista computazionale, in quanto i thread inattivi eseguono costantemente la funzione \texttt{TestAndSet()} fino all'arrivo del loro turno: ciò implica una lettura e una scrittura per ogni tick di esecuzione del thread, portando così ad un innecessario traffico dei bus di sistema per aggiornare la cache.
 	
 	\subsubsection*{Compare-and-Swap (CAS)}
 	Un'alternativa all'algoritmo TAS, che scrive costantemente il nuovo valore all'interno della variabile, è presentata dall'algoritmo \textbf{Compare-and-Swap (CAS)}, che aggiorna il valore del lock solo se questo corrisponde al valore atteso passato dal thread in esecuzione.
 	\begin{lstlisting}[language=C]
-		int CompareAndSwap(int* ptr, int valore_atteso, int nuovo_valore) {
-			if (*ptr == valore_atteso) {
-				*ptr = nuovo_valore;
-				return 1; // SUCCESSO
+		int CompareAndSwap(int* ptr, int atteso, int nuovo) {
+			if (*ptr == atteso) {
+				*ptr = nuovo;
+				return 1;
 			}
 			
-			return 0; // FALLIMENTO
+			return 0;
 		}
 	\end{lstlisting}
 	Molto banalmente, il funzionamento di CAS è il seguente:
 	\begin{enumerate}
-		\item Il thread chiamante vuole modificare una variabile, supponiamo incrementandola di una sola unità. Dato che l'incremento di una variabile condivisa da parte di più thread abbiamo visto essere un'operazione delicata, il thread chiama la funzione CAS con la seguente firma: \texttt{CompareAndSwap(\&variabile, valore\_vecchio, valore\_vecchio + 1)}. Questo perché il singolo thread, non avendo modificato il valore della variabile nel mentre, si aspetta di trovare \texttt{valore\_atteso = valore\_vecchio}.
+		\item Il thread chiamante vuole modificare una variabile, supponiamo incrementandola di una sola unità. Dato che l'incremento di una variabile condivisa da parte di più thread abbiamo visto essere un'operazione delicata, il thread chiama la funzione CAS con la seguente firma: \texttt{CompareAndSwap(\&variabile, vecchio, vecchio + 1)}. Questo perché il singolo thread, non avendo modificato il valore della variabile nel mentre, si aspetta di trovare \texttt{atteso = vecchio}.
 		
 		\item Nella realtà dei fatti, come abbiamo visto, non sempre questo accade: se si verificasse che un thread ha modificato la variabile condivisa, avremmo un disallineamento tra i due valori. A quel punto il controllo della funzione CAS fallirebbe e dunque il thread dovrà riprovare e aggiornare il valore della variabile da lui letto, ri-eseguendo il CAS: solo una volta che il controllo andrà a buon fine il thread potrà procedere.
 	\end{enumerate}
-	Questo algoritmo è apparentemente ottimo, e permette di definire algoritmi potenti privi di lock (\textit{lock-free}), tuttavia soffre dello stesso problema di consumo delle risorse del TAS (chiamate continue alla funzione di aggiornamento) e del cosiddetto \textbf{problema ABA}: se un valore cambia da A a B e poi ritorna ad A prima che il thread completi il CAS, questo non si accorge minimamente della manipolazione della variabile, portando potenzialmente a gravi bug come la corruzione della memoria.
+	Questo algoritmo è apparentemente ottimo, e permette di definire algoritmi potenti privi di lock (\textit{lock-free}) e non soggetti a soli due stati (sarà utile per la costruzione dei futex, citati in seguito), tuttavia soffre dello stesso problema di consumo delle risorse del TAS (chiamate continue alla funzione di aggiornamento) e del cosiddetto \textbf{problema ABA}: se un valore cambia da A a B e poi ritorna ad A prima che il thread completi il CAS, questo non si accorge minimamente della manipolazione della variabile, portando potenzialmente a gravi bug come la corruzione della memoria.
+	L'implementazione del CAS come mutex è analoga a quella vista nell'esempio precedente riguardante il CAS.
 	
 	\subsubsection*{Fetch-and-Add (FAA) e Ticket-Lock}
 	L'algoritmo \textbf{Fetch-and-Add (FAA)} si occupa di incrementare la variabile condivisa di un dato valore \texttt{d} (tipicamente 1) e restituisce il vecchio valore. Il principio è simile ai due algoritmi precedenti, ma questo viene spesso accoppiato all'algoritmo \textbf{Ticket-Lock}, che prevede l'assegnazione di un \textit{biglietto d'ingresso} ad ogni thread che prova ad accedere alla variabile. In particolare, il funzionamento di questo algoritmo è il seguente:
@@ -3430,5 +3460,292 @@
 		
 		\item Se durante lo spinning il thread non è riuscito ad acquisire il lock, significa che la \textbf{sezione critica è abbastanza lunga}, e dunque \textbf{il thread viene mandato in \texttt{BLOCKED}}, per evitare di consumare inutilmente cicli di CPU.
 	\end{itemize}
+	
+	\section{Condition Variables}
+	Fino ad ora abbiamo visto come l'unico modo che ha un thread (ad esempio il \textit{main}) per attendere un altro thread sia che quest'ultimo termini la sua esecuzione. Questo comportamento è ottenibile mediante la funzione \texttt{pthread\_join(\&tid, ...)}. Tuttavia, in molti casi, vorremmo che la \textit{condizione di sblocco} del thread che attende non sia \textit{la fine dell'altro thread}, bensì una condizione arbitraria, come ad esempio il cambio di valore di una variabile. Una semplice implementazione può essere quella di bloccare il main thread con un ciclo while finché tale variabile di condizionamento (o espressione di condizionamento) non assume il valore atteso. Tuttavia, come si può vedere nell'esempio di seguito, si ritorna sempre al problema di spinning e di spreco del time-slice della CPU.
+	\begin{lstlisting}[language=C]
+		volatile int done = 0;
+		
+		void *child(void *arg) {
+			printf("child: in esecuzione\n");
+			done = 1;
+			return NULL;
+		}
+		
+		int main(void) {
+			pthread_t tid;
+			pthread_create(&tid, NULL, child, NULL);
+			while (done == 0) { }
+			printf("parent: child terminato\n");
+			return 0;
+		}
+	\end{lstlisting}
+	La soluzione proposta dalle condition variable è molto semplice ed intuitiva: quando ad un thread la condizione di controllo risulta falsa, questo va a dormire; si sveglierà soltanto mediante un apposito segnale, rilasciato dal processo occupante nel momento in cui terminerà la sezione critica.
+	\begin{definizione}{Condition Variable}{}
+		Una \textbf{condition variable} non è altro che una struttura composta da vari elementi, che lavorando insieme garantiscono la mutua esclusione tra thread evitando però il busy-waiting:
+		\begin{itemize}
+			\item Una \textbf{condizione di controllo}, che di fatto si traduce in una variabile condivisa tra i vari thread (dunque \textit{ovviamente} protetta da mutex) che rappresenta la condizione secondo la quale i thread possono accedere o meno alla sezione critica.
+			
+			\item Una \textbf{coda dei thread dormienti}, usata per tenere traccia dei thread che staranno effettivamente attendendo che si liberi il lock (ovvero la condizione di controllo diventi vera) in modo da accedere alla risorsa condivisa.
+		\end{itemize}
+	\end{definizione}
+	
+	Le due operazioni fondamentali che caratterizzano le condition variable sono:
+	\begin{itemize}
+		\item \texttt{wait(cv, m)}, che si occupa di rilasciare il lock \texttt{m} e di aggiungere alla coda dei processi dormienti il thread che ha chiamato la funzione. Il processo di rilascio della lock + inserimento in coda + passaggio a \texttt{BLOCKED} viene visto dal sistema come una singola operazione atomica, in modo da impedire che alcuni thread vadano a dormire per sempre.
+		
+		\item \texttt{signal(cv)}, che si occupa di svegliare \textit{casualmente} uno dei thread dormienti nella coda. Nota importante: in alcune implementazioni (discusse brevemente in seguito) la \texttt{signal()} si limita solo a svegliare un thread dormiente, senza però attribuirgli la lock \texttt{m}.
+	\end{itemize}
+	
+	Il pattern universale dei thread che utilizzano una condition variable è il seguente:
+	\begin{lstlisting}[language=C, caption={Pattern per il thread attendente}]
+		pthread_mutex_lock(&m);
+		while (!condizione) {
+			pthread_cond_wait(cv, &m);
+		}
+		// fai operazioni
+		pthread_mutex_unlock(&m);
+	\end{lstlisting}
+	
+	\begin{lstlisting}[language=C, caption={Pattern per il thread eseguente}]
+		pthread_mutex_lock(&m);
+		// fai operazioni che renderanno vera la condizione
+		pthread_cond_signal(&cv);
+		pthread_mutex_unlock(&m);
+	\end{lstlisting}
+	
+	\begin{osservazione}{Ruolo della lock e della condizione}{}
+		Una causa frequente di confusione riguardo alle condition variable è il seguente: a che serve definire \textit{sia un lock che una condizione?} Giustamente, se definiamo un lock è impossibile che due thread eseguano contemporaneamente la sezione critica, in quanto la lock garantisce la \textit{mutua esclusione}. Tuttavia, come abbiamo premesso introducendo l'argomento, la condizione serve proprio a limitare \textit{l'accesso alla risorsa in un momento errato}, oppure "non propizio". Magari il secondo thread riuscirà ad acquisire la lock, però poi rimarrà bloccato nel ciclo while perché la condizione non sarà ancora diventata vera, e dunque dovrà atomicamente rilasciare la lock e mettersi a dormire (situazione non calzante per l'esempio precedente, ma verificabile in contesti reali).
+	\end{osservazione}
+	
+	\subsection{Il problema dei Produttori-Consumatori}
+	Presentiamo adesso uno dei problemi classici della programmazione concorrente: il problema dei Produttori e Consumatori. La traccia è semplice: si hanno \texttt{n} thread che hanno accesso ad un buffer di elementi; alcuni di questi thread, i \textbf{produttori}, si occupano di \textbf{inserire elementi all'interno del buffer}. La condizione che li limita dal farlo è ovviamente che il buffer sia pieno; il resto dei thread rappresenta i \textbf{consumatori}, che si occupano dell'operazione duale. Rimuovere una risorsa dal buffer, con l'ovvia limitazione di non poterlo fare quando questo è vuoto. Ovviamente, l'accesso al buffer è garantito solo in mutua esclusione, ma ormai siamo bravi a gestire queste casistiche e sappiamo di dover utilizzare un \texttt{mutex}.\\
+	Nel nostro esempio useremo come \texttt{buffer} una singola variabile (anche se il problema si può estendere anche a strutture dati più complesse) e una variabile di stato \texttt{count} che varrà \texttt{0} se il buffer è vuoto e \texttt{1} se il buffer è pieno.\\
+	Leggendo questa traccia, una prima soluzione che ci viene in mente è quella di usare un mutex per proteggere l'accesso al buffer e una Condition Variable che controlli:
+	\begin{itemize}
+		\item Per il produttore se il buffer è pieno (\texttt{count = 1}) e gli impedisca di procedere in tal caso.
+		
+		\item Per il consumatore se il buffer è vuoto (\texttt{count = 0}) e gli impedisca di procedere se tale condizione risulta vera.
+	\end{itemize}
+	Lo pseudocodice può essere dunque tradotto semplicemente nel seguente modo:
+	\begin{lstlisting}[language=C]
+		void produttore() {
+			pthread_mutex_lock(&m);
+			while (count == 1) {
+				pthread_cond_wait(&cv, &m);
+			}
+			// mette un elemento nel buffer
+			pthread_cond_signal(&cv);
+			pthread_mutex_unlock(&m);
+		}
+		
+		void consumatore() {
+			pthread_mutex_lock(&m);
+			while (count == 0) {
+				pthread_cond_wait(&cv, &m);
+			}
+			// rimuove un elemento dal buffer
+			pthread_cond_signal(&cv);
+			pthread_mutex_unlock(&m);
+		}
+	\end{lstlisting}
+	Ad una prima occhiata sembra funzionare: avendo messo un mutex prima della sezione critica è vero che due thread non possono accedere contemporaneamente ad essa. E grazie alla condizione e alla \texttt{wait()} è anche vero che i thread dello stesso tipo vengono bloccati finché la condizione non risulta vero.\\
+	Ma mettiamoci nell'ottica di avere un produttore P e due consumatori, C1 e C2. Supponiamo che P esegua tranquillamente le sue operazioni, e nel mentre è arrivato C1. Esso viene dunque messo a dormire. Prima che P finisca, arriva anche C2. Al termine di P viene svegliato un dormiente casuale, sia questo C1: esegue la sezione critica, libera il buffer e rilascia il lock. Tutto corretto. Adesso nella "coda dei dormienti" abbiamo P, C2. Supponiamo che C1 svegli C2 invece di P: C2 vede il buffer vuoto e torna a dormire, senza svegliare nessuno (non ha completato l'operazione!). Tutti i thread dormono: \textbf{deadlock}.
+	\smallbreak
+	
+	Come abbiamo visto, il problema è dato dall'implementazione dell'operazione \texttt{signal()}, che sveglia un processo casuale all'interno della coda, ma \textbf{non garantisce che questo acquisisca la lock, né tantomento che questo venga eseguito!} Per prevenire situazioni di stallo come quella descritta precedentemente, dobbiamo fare in modo che i produttori sveglino i consumatori e viceversa: ciò si ottiene implementando due CV, ognuna per coda. Di seguito l'implementazione \textit{corretta} per risolvere problemi del tipo \textit{Produttore-Consumatore}.
+	\begin{lstlisting}[language=C]
+		pthread_cond_t cv_produttori = ...
+		pthread_cond_t cv_consumatori = ...
+		
+		void produttore() {
+			pthread_mutex_lock(&m);
+			while (count == 1) {
+				pthread_cond_wait(&cv_produttori, &m);
+			}
+			// mette un elemento nel buffer
+			pthread_cond_signal(&cv_consumatori);
+			pthread_mutex_unlock(&m);
+		}
+		
+		void consumatore() {
+			pthread_mutex_lock(&m);
+			while (count == 0) {
+				pthread_cond_wait(&cv_consumatori, &m);
+			}
+			// rimuove un elemento dal buffer
+			pthread_cond_signal(&cv_produttori);
+			pthread_mutex_unlock(&m);
+		}
+	\end{lstlisting}
+	Con questa nuova implementazione, si ottiene il comportamento descritto: quando un produttore trova il buffer pieno, va a dormire\textit{nella sua coda}; dopo aver eseguito le operazioni, non sveglia a caso rischiando di svegliare un altro produttore, bensì sveglia un consumatore dall'apposita coda. Il discorso è analogo per il ruolo duale.
+	
+	\subsection{Semantiche Mesa e Hoare}
+	Brevemente, discutiamo un concetto accennato precedentemente riguardante diverse filosofie di implementazione della funzione \texttt{signal()}:
+	\begin{itemize}
+		\item \textbf{Semantica Hoare}: prevede che il segnale svegli un processo dalla coda, gli attribuisca la lock e lo faccia schedulare immediatamente. Utile per la maggior parte dei casi, ma include un ampio numero di chiamate di sistema (manipolazione dello scheduler, ad esempio) e include nel suo costo l'overhead di un context switch, dunque se usato troppo frequentemente risulta oneroso dal punto di vista del costo.
+		
+		\item \textbf{Semantica Mesa}: prevede che il segnale si occupi solo di svegliare casualmente un processo in coda. Si tratta della semantica adottata finora negli esempi, dunque se mal gestita può portare ai problemi di deadlock visti poc'anzi.
+	\end{itemize}
+	
+	\subsection{Broadcast}
+	Ci sono casistiche in cui svegliare un singolo thread non è sufficiente. Supponiamo di voler implementare un allocatore di memoria. Abbiamo un processo A che richiede di allocare 100 byte e un processo B che ne richiede 50.\\
+	Supponiamo ora di avere 60 byte di memoria liberi, e di avere i processi A, B dormienti nella coda della Condition Variable: per la natura casuale della \texttt{signal()}, viene svegliato prima il thread A e viene effettuato il controllo di validità della condizione: 100 <= 60? No, dunque il processo A torna (correttamente) a dormire. Tuttavia non è stato svegliato nessun altro, dunque il processo B, anche se per lui la condizione sarà vera, non avrà mai la possibilità di procedere nella sezione critica in quanto non potrà essere svegliato da nessuno (salvo processi nuovi entranti, ma stiamo considerando un caso estremo).\\
+	Dato che i thread dormienti non sono fisicamente allocati, non abbiamo neanche modo di controllare se per loro la condizione sarebbe vera o meno, in modo da svegliarli. Quando non possiamo determinare quali processi svegliare, li svegliamo tutti: è proprio questo il ruolo della funzione \texttt{broadcast()}.
+	Una volta svegliati, i thread si alterneranno per provare ad accedere alla sezione critica: solo uno potrà accedervi e dunque tutti gli altri torneranno a dormire, ma è un piccolo prezzo da pagare per non entrare in una situazione di stallo.
+	
+	\section{Semafori}
+	Nelle precedenti sezioni abbiamo coperto il concetto di \textbf{lock}, come strumento per garantire l'accesso in mutua esclusione su una risorsa da parte di più thread, e di \textbf{Condition Variable} per limitare l'accesso alla risorsa solo ai thread per cui è rispettata una certa condizione. Per semplificare il tutto, il genio informatico \textit{Edsger Djikstra} ha pensato di condensare entrambe queste strutture in una sola: i \textbf{semafori}.\\
+	Si può pensare ad un semaforo banalmente come un "distributore di biglietti", con cui ovviamente si può interagire in due modi:
+	\begin{itemize}
+		\item \texttt{wait()}: si prende un biglietto. Se il distributore è vuoto, si attende finché qualcun altro non avrà rimesso il suo biglietto a posto.
+		
+		\item \texttt{post()}: si mette un biglietto nel distributore. Nota che, seppur logicamente non sia così, quest'operazione ha senso anche se un semaforo viene inizializzato come "senza biglietti". Vedremo a breve perché.
+	\end{itemize}
+	
+	Fatte le dovute premesse diciamo dunque che, essenzialmente, un semaforo non è altro che una struttura dati che mette a disposizione un intero \texttt{S} (che rappresenta il numero di biglietti), una coda dei thread in attesa (come nelle CV) e le due operazioni descritte poco fa, che sono banalmente implementabili con il seguente pseudocodice:
+	\begin{lstlisting}[language=C]
+		semaforo_wait(S):
+			while (S == 0):
+				metti a dormire il thread nella coda del semaforo
+			S = S - 1
+			
+		semafoto_post(S):
+			S = S + 1
+			if coda non vuota:
+				sveglia un thread
+	\end{lstlisting}
+	Come vediamo, sono tutte operazioni molto intuitive se si sono capiti i concetti precedenti, in quanto non è altro che la consolidazione finale di tali strutture in una sola. Possiamo infatti vedere un'analogia: la \texttt{wait()} del semaforo è come se fosse la \texttt{lock()} del mutex, che blocca i thread che trovano S == 0; la \texttt{post()}, al contrario, può essere vista come l'analogo della \texttt{unlock()}, che incrementa S e dunque dà possibilità ad altri thread di accedere alla risorsa.\\
+	I semafori hanno però una caratteristica fondamentale che li distingue dalle due strutture precedenti: sono più generici e scalabili. Questo assume maggiore significato paragonandoli alle lock: in queste ultime, il valore del mutex poteva essere 0 oppure 1, per garantire la mutua esclusione. In un semaforo, il valore di S può tranquillamente essere > 0, in quanto dipende dalla situazione che si vuole gestire. Vediamo infatti di seguito le 3 casistiche per cui vengono utilizzati i semafori.
+	
+	\subsection{I semafori come mutex}
+	Alla creazione del semaforo, inizializzando il valore di \texttt{S = 1} avremo che questo si comporterà esattamente come una lock: quando un thread chiamerà \texttt{semaforo\_wait()} la funzione controllerà la condizione del while, ossia \texttt{S == 0}. Siccome questa risulterà falsa, il thread passerà immediatamente all'istruzione successiva e decrementerà S, portandolo a 0. Se un secondo thread proverà ora ad accedere alla sezione critica, dovrà comunque fare \texttt{semaforo\_wait()}. Nel suo caso, però, il valore di S risulterà 0 in quanto decrementato dal primo thread, e dunque non potrà procedere, dunque andrà a dormire. Terminata la sezione critica, il primo thread chiamerà \texttt{semaforo\_post()}, riportando S al valore 1 e svegliando uno dei thread in attesa nella coda. E così via, conosciamo già il cinema...
+	
+	\subsection{I semafori come ordinamento}
+	Supponiamo invece di voler far comportare un semaforo come una \texttt{pthread\_join()}, cioè facendo in modo che un thread "padre" attenda la fine (oppure il verificarsi di una condizione, similmente alle CV) all'interno di un thread figlio.\\
+	Possiamo ottenere questo comportamento in modo molto semplice, inizializzando il semaforo a 0 e chiamando la funzione \texttt{semaforo\_wait()} all'interno del thread padre. Nel thread figlio, invece, eseguiremo tutte le operazioni critiche e solo alla fine chiameremo \texttt{semaforo\_post()}, in modo da "sbloccare" eventuali thread in attesa. Una semplice implementazione è la seguente:
+	\begin{lstlisting}[language=C]
+		void operazioni_figlio() {
+			// operazioni critiche
+			semaforo_post(&sem);
+		}
+		
+		int main() {
+			sem_init(&sem, 0);
+			pthread_t tid;
+			pthread_create(&tid, operazioni_figlio);
+			semaforo_wait(&sem);
+			return 0;
+		}
+	\end{lstlisting}
+	
+	\subsection{Semafori come gestori di un pool di risorse}
+	Immaginiamo infine di avere una situazione diversa dalle precedenti: abbiamo un server che può gestire un massimo di \texttt{N} richieste alla volta. Le richieste sono indipendenti l'una dall'altra, ma sulla macchina possono lavorare più thread contemporaneamente: l'importante è garantire che non venga sforato il numero \texttt{N} di thread in esecuzione contemporaneamente (ha senso parlare di contemporaneità nei sistemi multi-core). Tale operazione si può, di nuovo, gestire grazie ad un semaforo, inizializzando il valore di \texttt{S = N}. In questo modo è come se il semaforo stesse dicendo: "Posso far passare un massimo di \texttt{N} thread alla volta, ma l'\texttt{N+1}-esimo troverà S=0 e dunque verrà bloccato finché uno dei thread non avrà rilasciato la risorsa".
+	
+	\begin{osservazione}{Produttori-Consumatori coi semafori}{}
+		Per risolvere il problema dei Produttori-Consumatori trattato in precedenza avevamo usato un mutex (per controllare l'accesso al buffer) e due CV il blocco e la memorizzazione separata dei produttori/consumatori.\\
+		Tale soluzione può essere ottenuta anche mediante i semafori, inizializzandone uno come \texttt{mutex, S=1}, uno come \texttt{waiter, S=0} (per bloccare i consumatori dal provare a consumare subito quando ancora non c'è nulla) e uno con \texttt{S = lunghezza\_buffer} (per permettere ai produttori di aggiungere elementi al buffer).
+	\end{osservazione}
+	
+	\subsection{Il problema dei filosofi a cena}
+	Avendo ora definito la struttura \textit{Semaforo}, discuteremo i problemi della programmazione concorrente utilizzando questo nuovo costrutto. Il problema che si vuole esaminare adesso è il famoso dilemma (che nasce in realtà come forma di presa in giro) dei \textit{filosofi a cena}. Ci sono \texttt{N} filosofi a tavola e altrettante forchette. Un filosofo può compiere solo due azioni, alternate l'una dall'altra: prima pensa \texttt{think()} e poi mangia \texttt{eat()}. Per mangiare, però, ha bisogno sia della forchetta alla sua destra che di quella alla sua sinistra (insomma la forchetta destinata a lui e quella destinata ad un altro filosofo). Come coordinare una routine corretta ed efficiente per fare in modo che tutti i filosofi eseguano entrambe le azioni?\\
+	Una prima idea e intuitiva idea è quella di mettere un lock su ogni forchetta, in modo che due filosofi non possano avere contemporaneamente la stessa forchetta. Facciamo dunque prendere ad ogni filosofo la forchetta di sinistra, comportamento che viene rappresentato dal seguente codice:
+	\begin{lstlisting}[language=C]
+		sem_t forchette[N];
+		
+		void filosofo(int id_filosofo) {
+			while (true) {
+				think();
+				// prova a prendere la forchetta a destra
+				semaforo_wait(&forchette[id_filosofo])
+				
+				// prova a prendere la forchetta a sinistra
+				semaforo_wait(&forchette[(id_filosofo+1)\%N]);
+				eat();
+				
+				// mette a posto entrambe le forchette
+				semaforo_push(&forchette[id_filosofo)
+				semaforo_push(&forchette[(id_filosofo+1)\%N]);
+			}
+		}
+	\end{lstlisting}
+	Sembra logico no? Ma per il ragionamento che stiamo seguendo, tutti i filosofi prendono, uno dopo l'altro, la forchetta di sinistra. Forchetta che \textit{per un filosofo} sarà quella di sinistra, mentre per quello adiacente sarà quella di destra. Si otterrà dunque una fantastica situazione in cui tutti i filosofi terranno alzata la forchetta di sinistra e proveranno a prendere quella di destra, che sarà però occupata da un altro filosofo: \textbf{stallo, deadlock}.
+	\smallbreak
+	
+	Per problemi di questa natura la soluzione è pensare fuori dagli schemi: la posizione circolare dei filosofi al tavolo ci fa pensare di dover mantenere una simmetria, ma è proprio per questo che dobbiamo romperla: dobbiamo fare in modo che \textbf{almeno un filosofo rompa la simmetria prendendo in mano la forchetta di posizione opposta agli altri}. Tale comportamento si ottiene modificando leggermente il codice precedente:
+	\begin{lstlisting}[language=C]
+		sem_t forchette[N];
+		
+		void filosofo(int id_filosofo) {
+			while (true) {
+				think();
+				
+				// Per un singolo filosofo rompiamo la simmetria,
+				// provando a prendereprima la forchetta di sinistra
+				// e poi quella di destra
+				if (id_filosofo == N - 1) {
+					semaforo_wait(&forchette[(id_filosofo+1)\%N]);
+					semaforo_wait(&forchette[id_filosofo];
+				} else {
+					semaforo_wait(&forchette[id_filosofo];	
+					semaforo_wait(&forchette[(id_filosofo+1)\%N]);
+				}
+				
+				eat();
+				
+				// Mette a posto entrambe le forchette
+				semaforo_push(&forchette[id_filosofo)
+				semaforo_push(&forchette[(id_filosofo+1)\%N]);
+			}
+		}
+	\end{lstlisting}
+	
+	\section{Il deadlock}
+	In questa sezione andiamo ad argomentare brevemente uno dei maggiori problemi della programmazione concorrente, già incontrato in numerosi esempi precedenti: lo \textbf{stallo} o \textbf{deadlock}. Si tratta di una situazione critica, che non causa errori o bug nell'esecuzione del programma, bensì si verifica quando \textbf{due o più thread si bloccano a vicenda attendendo l'accesso ad una risorsa condivisa}.
+	\begin{osservazione}{Rilevamento degli stalli mediante grafi}{}
+		Il problema di rilevamento degli stalli all'interno di un programma può essere modellato come un grafo orientato, dove i vertici sono rappresentati sia dai singoli thread T$_i$ che dalle risorse R$_j$. Gli archi di questo grafo possono essere poi di due tipi:
+		\begin{itemize}
+			\item Arco del tipo $T_i \rightarrow R_i$: indica che il thread $T_i$ ha richiesto la risorsa $R_i$.
+			
+			\item Arco del tipo $R_i \rightarrow T_i$: indica che la risorsa $R_i$ è stata concessa al thread $T_i$.
+		\end{itemize}
+		Dunque, la scrittura $T_i \rightarrow R \rightarrow T_j$ significa che il thread $i$ ha richiesto la risorsa $R$ che è stata però concessa al thread $j$. Dunque il thread $i$ è in attesa che $j$ rilasci la risorsa.\\
+		Chiaramente questo è solo un modo teorico di individuare un problema, e nessun programma reale implementa mai questo meccanismo per rilevare deadlock, ma tali situazioni corrispondono alla rilevazione di \textit{un ciclo all'interno del grafo}.
+	\end{osservazione}
+	
+	In maniera più pragmatica, sono state definite 4 condizioni che devono verificarsi simultaneamente affinché si possa avere la certezza di avere un deadlock. Tali condizioni vengono dette \textbf{condizioni di Coffman}:
+	\begin{enumerate}
+		\item \textbf{Mutua esclusione}: vi è mutua esclusione tra i thread, cioè che solo un thread alla volta può possedere tale risorsa.
+		
+		\item \textbf{Hold and Wait}: un thread possiede già almeno una risorsa e nel frattempo si mette in attesa per prenderne un'altra.
+		
+		\item \textbf{Nessun rilascio forzato}: il sistema operativo non può togliere la risorsa al thread, deve essere lui a rilasciarla.
+		
+		\item \textbf{Attesa circolare}: quando si crea una catena chiusa di attese (A aspetta B, B aspetta C, C aspetta A).
+	\end{enumerate}
+	
+	Conoscendo queste 4 condizioni di verifica di un deadlock, si può dunque strutturare il proprio codice in modo da impedire che \textbf{almeno una di queste non si verifichi}. Vediamo di seguito le varie strategie.
+	
+	\subsection{Prevenzione del deadlock}
+	Si possono prevenire contemporaneamente sia la clausola \textit{Hold-and-Wait} sia la clausola che \textit{impedisce il rilascio forzato} mediante la funzione \texttt{trylock(\&lock)} che, come suggerisce il nome, \textbf{tenta di acquisire il lock}: restituisce 0 se il lock è acquisibile (in quanto il valore del mutex sarebbe 0) mentre \texttt{EBUSY} se già un altro thread l'ha acquisito. La soluzione è usare tale funzione per provare ad acquisire entrambi i lock e, se anche uno solo sarà occupato, rilasciare quello acquisito.\\
+	Un breve esempio di codice è mostrato di seguito:
+	\begin{lstlisting}[language=C]
+		void acquisisci_entrambi(pthread_mutex_t lock_a, pthread_mutex_t lock_b) {
+			while (true) {
+				if (pthread_mutex_trylock(&lock_a) == 0) {
+					if (pthread_mutex_trylock(&lock_b) == 0) {
+						// Acquisiti entrambi con successo
+						return;
+					}
+					
+					// Se siamo arrivati qui, b non è stato preso
+					// dunque viene rilasciato a
+					pthread_mutex_unlock(&lock_a);
+				} 
+			}
+		}
+	\end{lstlisting}
+	
+	Un altro metodo è quello di definire un ordinamento sui lock da acquisire per i vari thread. Ricordiamoci che deadlock $\Rightarrow$ ciclo esiste nel grafo. Se noi impostiamo dunque un ordinamento che forza ogni thread ad acquisire il lock successivo, ordinando i lock in ordine crescente, otteniamo una struttura \textit{lineare, non più ciclica}, con dunque l'impossibilità di creare un deadlock. Si tratta esattamente della strategia utilizzata per risolvere il problema dei filosofi a cena, dove abbiamo "rotto la simmetria" del tavolo circolare.
 	
 \end{document}

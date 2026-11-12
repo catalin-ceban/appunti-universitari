@@ -3943,4 +3943,92 @@
 		\end{enumerate}
 	\end{dimostrazione}
 	
+	Passiamo ora alla dimostrazione che ci farà chiudere il cerchio, quella che ci permetterà di dare un senso all'aver definito gli insiemi F$^A$ e X$^+_F$: dimostriamo che F$^+$ = F$^A$, definendo così un modo abbastanza algoritmico di riuscire a ricavare \textbf{tutte le dipendenze funzionali di uno schema di relazione}, ovviamente a partire da un insieme di dipendenze F definito a priori da noi.
+	
+	\begin{dimostrazione}{F$^+$ = F$^A$}{}
+		Volendo dimostrare l'uguaglianza tra due insiemi dovremo procedere per la strategia del \textit{doppio contenimento}, ovvero dimostrare che gli insiemi sono contenuti l'uno nell'altro. Al fine di procedere con la dimostrazione, ricordiamo una cosa fondamentale: sia l'insieme $F^A$ che l'insieme $F^+$ sono definiti \textbf{a partire dallo stesso insieme F di dipendenze funzionali}. Si tratta di un appunto ovvio, ma essenziale per non perdersi nella correttezza della dimostrazione.
+		
+		\paragraph{Parte 1: Dimostriamo che $F^A \subseteq F^+$.}
+		Dire che $F^A \subseteq F^+$ equivale a dire che una dipendenza funzionale $X \rightarrow Y$ definita mediante gli assiomi di Armstrong è una regola semantica valida rispettata da tutte le istanze legali della base di dati (che sono appunto contenute in $F^+$). Siccome abbiamo 3 assiomi di Armstrong, procediamo per induzione sul numero di assiomi applicati ad una dipendenza del tipo $X \rightarrow Y \in F$.\\
+		
+		\textbf{Base dell'induzione (i = 0)}: se non ho applicato alcun assioma alla dipendenza iniziale $X \rightarrow Y$ allora tale dipendenza è per definizione anche contenuta all'interno di $F^+$, dato che come sappiamo $F \subseteq F^+$.\\
+		
+		\textbf{Ipotesi induttiva (i > 0)}: supponendo che tutte le dipendenze ottenute applicando al massimo $i-1$ volte gli assiomi di Armstrong siano contenute all'interno di $F^+$, dobbiamo dimostrare che applicando anche la $i$-esima operazione la dipendenza funzionale rimarrà dentro $F^+$.
+		\begin{enumerate}
+			\item \textbf{Se ho applicato la riflessività}, significa che ho ottenuto la dipendenza $X \rightarrow Y$ sapendo che $Y \subseteq X$. Presa una qualsiasi coppia di tuple $t_1, t_2$, se si suppone che esse coincidano sugli attributi dell'insieme $X$, dunque $t_1[X] = t_2[X]$, allora necessariamente sarà valido $t_1[Y] = t_2[Y]$ dato che Y è un sottoinsieme di X (dunque contiene gli stessi attributi, forse in quantità minore). La dipendenza ottenuta mediante riflessività rispetta la definizione di dipendenza funzionale, e dunque è compatibile con $F^+$.
+			
+			\item \textbf{Se ho applicato l'aumento}, significa che ho ottenuto $X \rightarrow Y$ a partire da una dipendenza $V \rightarrow W$ già esistente in $F^A$ (e dunque presente anche in $F^+$ per ipotesi induttiva). Possiamo dunque applicare l'aumento aggiungendo ad entrambi i membri di $V \rightarrow W$ un certo insieme Z, ottenendo dunque $VZ \rightarrow WZ$. La dipendenza che otterremo per aumento sarà, per ipotesi, proprio $X \rightarrow Y$, e si avrà dunque che $X = VZ, Y = WZ$.\\
+			Prendo adesso un'istanza legale della base di dati e suppongo che due tuple siano uguali per gli attributi dell'insieme X. Siccome $X = VZ$ significa che saranno uguali sia per gli attributi V che in Z. Tuttavia, per ipotesi induttiva, sapevamo che valeva la dipendenza $V \rightarrow W$. Essendo W dipendente da V, significa che due tuple uguali in V sono anche uguali in W. Siccome abbiamo assunto $t_1[X] = t_1[VZ] = t_2[VZ] = t_2[X]$, significa che tali tuple saranno uguali anche per l'insieme W, $t_1[W] = t_2[W]$. Se uniamo questa scoperta all'applicazione dell'assioma dell'aumento, che ci garantisce la permanenza della dipendenza anche aggiungendo un insieme ad entrambi i membri, otteniamo che le tuple dovranno necessariamente essere uguali anche per Z. Dunque, siccome $Y = WZ$ e sappiamo le tuple essere uguali per X $\Rightarrow$ uguali per VZ $\Rightarrow$ uguali per W $\rightarrow$ uguali per Y.
+			
+			\item \textbf{Se applichiamo la transitività}, significa che ho ottenuto $X \rightarrow Y$ a partire da due dipendenze precedenti $X \rightarrow Z, Z \rightarrow Y$, che per ipotesi induttiva sono contenute in $F^+$. Stavolta, molto banalmente, prendo le solite due tuple $t_1, t_2$. Supponiamo $t_1[X] = t_2[X]$. Per la prima dipendenza vale dunque $t_1[Z] = t_2[Z]$. Per la seconda dipendenza vale poi $t_1[Y] = t_2[Y]$. Leggendo il primo e l'ultimo elemento della catena di implicazioni si ha 
+			proprio $t_1[X] = t_2[X] \Rightarrow t_1[Y] = t_2[Y]$.
+		\end{enumerate}
+		
+		Avendo verificato la compatibilità dei 3 assiomi, abbiamo dimostrato che ogni dipendenza funzionale contenuta in $F^A$ è compatibile con quelle contenute in $F^+$. Passiamo all'inclusione inversa.
+		
+		\paragraph{Parte 2: Dimostriamo che $F^+ \subseteq F^A$.} L'obiettivo stavolta è dimostrare se una dipendenza $X \rightarrow Y$ è sempre soddisfatta da istanze legali della base di dati, allora si può ottenere mediante gli assiomi di Armstrong.\\
+		Per questa parte della dimostrazione usiamo un trucchetto matematico ingegnoso, poco intuitivo all'inizio, ma molto efficace. Prendiamo la dipendenza $X \rightarrow Y \in F^+$ e calcoliamo $X^+$ e costruiamo una relazione fatta ad-hoc per la dimostrazione. Tale relazione avrà come attributi \textbf{tutti gli attributi dello schema di relazione}, bensì suddivisi in due "macro-insiemi logici": a sinistra avremo tutti gli attributi ottenuti dal calcolo di $X^+$; a destra avremo tutti gli altri attributi, ovvero quelli ottenuti da $R - X^+$. A tal proposito, inseriamo nella relazione due tuple:
+		\begin{itemize}
+			\item Nella prima tupla avremo tutti valori impostati ad 1, sia per gli attributi in $X^+$ che per quelli restanti.
+			
+			\item Nella seconda tupla avremo tutti i valori impostati ad 1 per gli attributi in $X^+$ (dunque per la "prima parte" della relazione) e valori 0 per il resto degli attributi.
+		\end{itemize}
+		\begin{center}
+			\begin{tikzpicture}[
+				font=\small\sffamily,
+				thick,
+				cell/.style={
+					draw=black,
+					thick,
+					minimum width=0.95cm,
+					minimum height=0.7cm,
+					align=center,
+					inner sep=0pt,
+					font=\bfseries
+				}
+				]
+				% --- RIGA 1 ---
+				\node[cell] (r1c1) at (0, 0)   {1};
+				\node[cell, anchor=west] (r1c2) at (r1c1.east) {1};
+				\node[cell, anchor=west] (r1c3) at (r1c2.east) {$\dots$};
+				\node[cell, anchor=west] (r1c4) at (r1c3.east) {1};
+				\node[cell, anchor=west] (r1c5) at (r1c4.east) {1};
+				\node[cell, anchor=west] (r1c6) at (r1c5.east) {1};
+				\node[cell, anchor=west] (r1c7) at (r1c6.east) {$\dots$};
+				\node[cell, anchor=west] (r1c8) at (r1c7.east) {1};
+				
+				% --- RIGA 2 ---
+				\node[cell, anchor=north] (r2c1) at (r1c1.south) {1};
+				\node[cell, anchor=west]  (r2c2) at (r2c1.east)  {1};
+				\node[cell, anchor=west]  (r2c3) at (r2c2.east)  {$\dots$};
+				\node[cell, anchor=west]  (r2c4) at (r2c3.east)  {1};
+				\node[cell, anchor=west]  (r2c5) at (r2c4.east)  {0};
+				\node[cell, anchor=west]  (r2c6) at (r2c5.east)  {0};
+				\node[cell, anchor=west]  (r2c7) at (r2c6.east)  {$\dots$};
+				\node[cell, anchor=west]  (r2c8) at (r2c7.east)  {0};
+				
+				% --- DELIMITATORI SUPERIORI (senza librerie esterne) ---
+				\draw[thick] ([yshift=4pt]r1c1.north west) -- ([yshift=9pt]r1c1.north west) 
+				-- ([yshift=9pt]r1c4.north east) -- ([yshift=4pt]r1c4.north east);
+				\node[font=\bfseries\normalsize] at ([yshift=18pt]$(r1c1.north west)!0.5!(r1c4.north east)$) {$X^+$};
+				
+				\draw[thick] ([yshift=4pt]r1c5.north west) -- ([yshift=9pt]r1c5.north west) 
+				-- ([yshift=9pt]r1c8.north east) -- ([yshift=4pt]r1c8.north east);
+				\node[font=\bfseries\normalsize] at ([yshift=18pt]$(r1c5.north west)!0.5!(r1c8.north east)$) {$R - X^+$};
+				
+			\end{tikzpicture}
+		\end{center}
+		Per quanto sembri comoda questa relazione, dobbiamo prima dimostrare che è legale rispetto ad $F^+$.\\
+		Prendiamo una dipendenza qualsiasi $V \rightarrow W \in F$ e controlliamo le due tuple. Le possibili casistiche sono queste:
+		\begin{itemize}
+			\item Se gli attributi di V \textbf{non sono tutti} dentro $X^+$ allora la dipendenza funzionale è vacuamente vera, in quanto non è rispettata neanche la "condizione di entrata" per il soddisfacimento della dipendenza.
+			
+			\item Se invece si ha $V \subseteq X^+$ significa che le tuple hanno tutti valori uguali in V e dobbiamo dimostrare che abbiano gli stessi valori anche per W. Questo si traduce nel dimostrare che $W \subseteq X^+$. Ma questo è vero in quanto sicuramente $V \subseteq X^+$, e dunque per il lemma di appartenenza si ha che $X \rightarrow V \in F^A$. E poiché la dipendenza $V \rightarrow W \in F$ (e dunque in $F^A$) vale la transitività $X \rightarrow V \rightarrow W$ e allora sempre per il lemma si ha che necessariamente $W \subseteq X^+$.
+		\end{itemize}
+		Abbiamo dunque dimostrato che l'istanza è legale, ci manca solo l'ultimo passaggio.\\
+		Ci manca di dimostrare che se $X \rightarrow Y \in F^+$ allora $X \rightarrow Y \in F^A$. Il fatto che la dipendenza sia contenuta in $F^+$ (cosa che sappiamo per ipotesi) significa che essa è valida \textbf{per ogni istanza legale della base di dati}. Ciò vuol dire anche sull'istanza $r$ che abbiamo costruito poco fa.\\
+		Prendiamo dunque tale istanza $r$: è vero che le due tuple coincidono sui valori di X? Assolutamente si, poiché per riflessività vale $X \rightarrow X$ e dunque $X \subseteq X^+$ per il lemma.\\
+		Abbiamo dunque appurato, come si poteva vedere già ad occhio, che le due tuple coincidono sui valori di $X$. Ma sui valori di Y? Sappiamo per certo che l'istanza è \textbf{legale} e dunque, dato che le due tuple coincidono per X allora \textbf{necessariamente} devono coincidere per Y. Tuttavia vediamo come nella sezione $R - X^+$ questo non sia vero. Ciò vuol dire che Y deve sicuramente appartenere alla parte destra, e dunque essere un sottoinsieme di $X^+$. Ma il fatto che Y sia un sottoinsieme degli attributi raggiungibili da X ci dice, \textit{per il lemma}, che \textbf{esiste una dipendenza funzionale} $\mathbf{X \rightarrow Y}$ e che questa appartiene proprio all'insieme delle dipendenze funzionali costruito a partire dagli assiomi di Armstrong.		
+	\end{dimostrazione}
+	
 \end{document}
