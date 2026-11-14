@@ -3,6 +3,11 @@
 \usepackage{../../nuovo_stile}
 \lstset{style=stile-listings}
 
+% Comando per le rightarrow che le sto usando sempre
+\newcommand{\ra}{
+	\rightarrow
+}
+
 \begin{document}
 	
 	\generaFrontespizio{Basi di Dati}{2026}{Giuseppe Perelli}{m}
@@ -3020,7 +3025,7 @@
 		\end{enumerate}
 		Dunque, in generale, l'ordine da seguire è:
 		\begin{center}
-			\texttt{BEFORE} $\rightarrow$ \texttt{Modifica} $\rightarrow$ \texttt{Vincoli} $\rightarrow$ \texttt{AFTER}
+			\texttt{BEFORE} $\ra$ \texttt{Modifica} $\ra$ \texttt{Vincoli} $\ra$ \texttt{AFTER}
 		\end{center}
 		e, all'interno di ogni categoria, si procede per ordine di definizione.
 	\end{osservazione}
@@ -3715,17 +3720,17 @@
 	\begin{definizione}{Dipendenza funzionale}{}
 		Dato uno schema di relazione $R$ e $X, Y \subseteq R$, una \textbf{dipendenza funzionale} è una coppia ordinata di $X$ e $Y$ che stabilisce un particolare legame semantico tra i due insiemi. Si denota nel seguente modo
 		\[
-			X \rightarrow Y
+			X \ra Y
 		\]
 		e si legge \textbf{X determina Y}, oppure \textbf{Y dipende funzionalmente da X}.\\
 		L'insieme $X$ è detto \textbf{determinante} o \textbf{parte sinistra della dipendenza}, mentre l'insieme $Y$ è detto \textbf{dipendente} o \textbf{parte destra della dipendenza}.
 	\end{definizione}
 	
-	Per quanto questa definizione matematica possa sembrare complicata, una dipendenza funzionale è un concetto estremamente comune e individuabile in qualsiasi relazione reale che possiamo immaginare. Facciamo un esempio. Supponiamo di avere due automobili dello stesso modello: allora \textbf{necessariamente} quelle due automobili non solo avranno lo stesso modello, ma anche la stessa marca. Se prendiamo due automobili di modello \textit{Panda}, è ovvio che la marca dovrà essere \textit{Fiat}, dato che ad oggi non esistono marche diverse che producono lo stesso modello. Ci sarà dunque una dipendenza funzionale del tipo Modello $\rightarrow$ Marca.
+	Per quanto questa definizione matematica possa sembrare complicata, una dipendenza funzionale è un concetto estremamente comune e individuabile in qualsiasi relazione reale che possiamo immaginare. Facciamo un esempio. Supponiamo di avere due automobili dello stesso modello: allora \textbf{necessariamente} quelle due automobili non solo avranno lo stesso modello, ma anche la stessa marca. Se prendiamo due automobili di modello \textit{Panda}, è ovvio che la marca dovrà essere \textit{Fiat}, dato che ad oggi non esistono marche diverse che producono lo stesso modello. Ci sarà dunque una dipendenza funzionale del tipo Modello $\ra$ Marca.
 	
 	\begin{definizione}{Soddisfazione di dipendenza funzionale}{}
 		Sia $r$ un'istanza di relazione di $R$ (un insieme di tuple).\\
-		Diciamo che $r$ \textbf{soddisfa} la dipendenza funzionale $X \rightarrow Y$ se:
+		Diciamo che $r$ \textbf{soddisfa} la dipendenza funzionale $X \ra Y$ se:
 		\begin{enumerate}
 			\item Vale che $X, Y \subseteq R$.
 			
@@ -3746,7 +3751,7 @@
 	\end{osservazione}
 	
 	\begin{esempio}{Esempio di relazioni con dipendenze funzionali}{}
-		Riprendiamo l'esempio di prima delle automobili e della dipendenza funzionale Modello $\rightarrow$ Marca.\\
+		Riprendiamo l'esempio di prima delle automobili e della dipendenza funzionale Modello $\ra$ Marca.\\
 		Vediamo di seguito due tabelle, e discutiamo se queste rispettino la dipendenza funzionale scritta sopra.
 		\begin{tabella}{|C|C|C|C|C|}
 			& MARCA   & MODELLO & CILINDRATA & COLORE \\\hline
@@ -3762,7 +3767,7 @@
 			
 			\item Coppia (t2, t3): hanno un valore diverso per l'attributo modello, e dunque la dipendenza è soddisfatta.
 		\end{itemize}
-		Ne segue che tale istanza di relazione \textbf{rispetta} la dipendenza funzionale Modello $\rightarrow$ Marca.
+		Ne segue che tale istanza di relazione \textbf{rispetta} la dipendenza funzionale Modello $\ra$ Marca.
 		
 		\begin{tabella}{|C|C|C|C|C|}
 			& MARCA   & MODELLO & CILINDRATA & COLORE \\\hline
@@ -3778,13 +3783,13 @@
 	\end{esempio}
 	
 	\begin{definizione}{Istanza legale}{}
-		Dato $F = \{X_1 \rightarrow Y_1, \dots, X_n \rightarrow Y_n\}$ un insieme di dipendenze funzionali, un'istanza di relazione $r$ si dice \textbf{legale} se \textbf{soddisfa tutte le dipendenze funzionali di F}.\\
+		Dato $F = \{X_1 \ra Y_1, \dots, X_n \ra Y_n\}$ un insieme di dipendenze funzionali, un'istanza di relazione $r$ si dice \textbf{legale} se \textbf{soddisfa tutte le dipendenze funzionali di F}.\\
 		Ovviamente, una stessa istanza di relazione può essere legale per un certo insieme $F$ e magari non esserlo per un altro.\\
 		Come prima, tutte le istanze vuote oppure con una sola tupla sono legali.
 	\end{definizione}
 	
 	\begin{esempio}{Esempio di istanze legali}{}
-		Definiamo $F = \{AB \rightarrow C\}$ e consideriamo la seguente istanza di relazione:
+		Definiamo $F = \{AB \ra C\}$ e consideriamo la seguente istanza di relazione:
 		\begin{tabella}{|C|C|C|C|C|}
 			& A  & B  & C  & D  \\\hline
 			t1 & a1 & b1 & c1 & d1 \\
@@ -3801,7 +3806,7 @@
 		\end{itemize}
 		L'istanza di relazione risulta essere \textbf{legale}.
 		
-		Ma se ridefinissimo $F = \{AB \rightarrow C, B \rightarrow CD\}$ si può facilmente verificare come l'istanza continui a soddisfare la dipendenza $AB \rightarrow C$ ma non soddisfi $B \rightarrow CD$, e dunque \textbf{non è legale}.
+		Ma se ridefinissimo $F = \{AB \ra C, B \ra CD\}$ si può facilmente verificare come l'istanza continui a soddisfare la dipendenza $AB \ra C$ ma non soddisfi $B \ra CD$, e dunque \textbf{non è legale}.
 	\end{esempio}
 	
 	Abbiamo appena visto come un'istanza di relazione sia legale in base ad un insieme $F$ di dipendenze funzionali. Partendo però dall'insieme $F$ potremmo individuare delle dipendenze funzionali "derivate", cioè \textbf{non scritte} esplicitamente all'interno di $F$ che però valgono implicitamente da quelle già definite. Questo concetto viene formalizzato nella definizione sottostante.
@@ -3814,7 +3819,7 @@
 	\begin{proposizione}{}{}
 		Dato uno schema di relazione $R$ e un insieme di dipendenze funzionali $F$, con $X, Y \subseteq R$ sottoinsiemi di attributi:
 		\[
-			\text{Se } X \rightarrow Y \in F \text{ allora } \forall A \in Y, X \rightarrow A \in F^+
+			\text{Se } X \ra Y \in F \text{ allora } \forall A \in Y, X \ra A \in F^+
 		\]
 		intuitivamente, se $A_i$ sono gli attributi che compongono l'insieme $Y$, se l'insieme $X$ determina l'intero insieme $Y$, allora determinerà anche i singoli attributi che lo compongono.
 	\end{proposizione}
@@ -3822,28 +3827,29 @@
 	\begin{proposizione}{}{}
 		Vale anche il contrario della proposizione soprastante, ovvero:
 		\[
-			\text{Se } Y = A_1, A_2, \dots, A_k \text{ e } \forall A_i \in Y, X \rightarrow A_i \in F \text{ allora } X \rightarrow Y \in F^+
+			\text{Se } Y = A_1, A_2, \dots, A_k \text{ e } \forall A_i \in Y, X \ra A_i \in F \text{ allora } X \ra Y \in F^+
 		\]
 	\end{proposizione}
 	
 	Queste due proposizioni ci saranno più utili in seguito, ma molto banalmente ci stanno dicendo che le due scritture riportate di seguito sono equivalenti (cioè hanno lo stesso significato semantico):
 	\begin{center}
-		\{matr $\rightarrow$ nome, cogn\} $\in F^+$\\
-		\{matr $\rightarrow$ nome, matr $\rightarrow$ cogn\} $\subseteq F^+$
+		\{matr $\ra$ nome, cogn\} $\in F^+$\\
+		\{matr $\ra$ nome, matr $\ra$ cogn\} $\subseteq F^+$
 	\end{center}
 	
 	\begin{proposizione}{Dipendenze funzionali banali}{}
-		Per quanto sia \textit{banale} dirlo, se si ha una dipendenza del tipo $X \rightarrow Y$, con $Y \subseteq X$ questa sarà \textbf{sempre soddisfatta}. Da questo il nome \textbf{dipendenza funzionale banale}.\\
+		Per quanto sia \textit{banale} dirlo, se si ha una dipendenza del tipo $X \ra Y$, con $Y \subseteq X$ questa sarà \textbf{sempre soddisfatta}. Da questo il nome \textbf{dipendenza funzionale banale}.\\
 		Intuitivamente, se $X$ determina univocamente $Y$, essendo $Y$ un sottoinsieme di $X$ è come dire che $X$ determina univocamente sé stesso.
 	\end{proposizione}
 	
 	Avendo ora definito molti dei concetti matematici su cui si fonda la teoria relazionale, si vuole fare un appunto su un concetto già visto e stravisto in precedenza, ma mai definito in maniera troppo formale: le chiavi. Ciò che sappiamo delle chiavi è che sono un insieme di attributi che \textbf{identificano univocamente ogni tupla} all'interno di una relazione. Notiamo delle analogie con il concetto di dipendenza funzionale appena definito: se le chiavi devono identificare univocamente ogni tupla della relazione, significa che tutti gli attributi sono \textit{funzionalmente dipendenti dalla chiave}. Di seguito la formalizzazione matematica di questo concetto. 
 	\begin{definizione}{Chiave}{}
+		\label{def:chiave}
 		Sia $K \subseteq R$ un sottoinsieme di attributi della relazione. L'insieme $K$ è una chiave di $R$ se rispetta le seguenti proprietà:
 		\begin{enumerate}
-			\item $K \rightarrow R \in F^+$, cioè tutti gli attributi della relazione sono determinati dalla chiave $K$.
+			\item $K \ra R \in F^+$, cioè tutti gli attributi della relazione sono determinati dalla chiave $K$.
 			
-			\item Tale sottoinsieme $K$ deve essere \textbf{minimale}, cioè \textbf{il più piccolo sottoinsieme di attributi per cui vale (1)}. Formalmente scriviamo $\nexists K' \subset K$ t.c. $K' \rightarrow R \in F^+$.
+			\item Tale sottoinsieme $K$ deve essere \textbf{minimale}, cioè \textbf{il più piccolo sottoinsieme di attributi per cui vale (1)}. Formalmente scriviamo $\nexists K' \subset K$ t.c. $K' \ra R \in F^+$.
 		\end{enumerate}
 		Se, preso un insieme di attributi, questo rispetta solo la proprietà (1) allora tale insieme si dice \textbf{superchiave}.
 	\end{definizione}
@@ -3856,22 +3862,22 @@
 		\begin{enumerate}
 			\item $F \subseteq F^A$
 			
-			\item \textbf{Assioma della riflessività}: se $Y \subseteq X$ allora $X \rightarrow Y \in F^A$.
+			\item \textbf{Assioma della riflessività}: se $Y \subseteq X$ allora $X \ra Y \in F^A$.
 			
-			\item \textbf{Assioma dell'aumento}: se $X \rightarrow Y \in F^A$ allora $XZ \rightarrow YZ \in F^A, \forall Z \subseteq R$. Questa risulta essere una \textit{definizione ricorsiva} dell'insieme $F^A$, che ci darà particolari problemi con una dimostrazione successiva.
+			\item \textbf{Assioma dell'aumento}: se $X \ra Y \in F^A$ allora $XZ \ra YZ \in F^A, \forall Z \subseteq R$. Questa risulta essere una \textit{definizione ricorsiva} dell'insieme $F^A$, che ci darà particolari problemi con una dimostrazione successiva.
 			
-			\item \textbf{Assioma della transitività}: se $X \rightarrow Y \in F^A$ e $Y \rightarrow Z \in F^A$ allora $X \rightarrow Z \in F^A$.
+			\item \textbf{Assioma della transitività}: se $X \ra Y \in F^A$ e $Y \ra Z \in F^A$ allora $X \ra Z \in F^A$.
 		\end{enumerate}
 	\end{definizione}
 	
 	Questi appena scritti sono gli assiomi di Armstrong per la definizione dell'insieme $F^A$. Prima di procedere, introduciamo alcune \textit{regole deduttive}, ovvero delle proprietà di $F^A$ che non sono assiomi in quanto si possono semplicemente dedurre a partire da questi.
 	\begin{enumerate}
 		\setcounter{enumi}{4}
-		\item \textbf{Regola dell'unione:} se $X \rightarrow Y \in F^A$ e $X \rightarrow Z \in F^A$ allora $X \rightarrow YZ \in F^A$.
+		\item \textbf{Regola dell'unione:} se $X \ra Y \in F^A$ e $X \ra Z \in F^A$ allora $X \ra YZ \in F^A$.
 		
-		\item \textbf{Regola della decomposizione}: se $X \rightarrow Y \in F^A$ e $Z \subseteq Y$ allora $X \rightarrow Z \in F^A$.
+		\item \textbf{Regola della decomposizione}: se $X \ra Y \in F^A$ e $Z \subseteq Y$ allora $X \ra Z \in F^A$.
 		
-		\item \textbf{Regola della pseudotransitività}: se $X \rightarrow Y \in F^A$ e $WY \rightarrow Z \in F^A$ allora $WX \rightarrow Z \in F^A$.
+		\item \textbf{Regola della pseudotransitività}: se $X \ra Y \in F^A$ e $WY \ra Z \in F^A$ allora $WX \ra Z \in F^A$.
 	\end{enumerate}
 	
 	\begin{dimostrazione}{Regola dell'Unione}{dim:unione}
@@ -3904,18 +3910,19 @@
 		Sia $R$ uno schema di relazione e $X \subseteq R$ un sottoinsieme di attributi dello schema.\\
 		Definiamo la chiusura dell'insieme $X$ nel seguente modo:
 		\[
-			X^+_F = \{A | X \rightarrow A \in F^A\}
+			X^+_F = \{A | X \ra A \in F^A\}
 		\]
 		ovvero l'\textbf{insieme di tutti gli attributi che sono determinati funzionalmente da X}.
 	\end{definizione}
 	
 	Di nuovo, un lemma fondamentale per la teoria relazionale, che ci permette di determinare se una data dipendenza funzionale è rispettata o meno, solo in base alla natura degli insiemi considerati.
-	\begin{proposizione}{Dipendenze e Chiusura di Attributi}{prop:lemma_chiusura_dipendenze}
+	\begin{lemma}{Dipendenze e Chiusura di Attributi}{}
+		\label{lem:lemma_chiusura_dipendenze}
 		Siano $R$ uno schema di relazione ed $F$ un insieme di dipendenze funzionali su $R$. Si ha che:
 		\[
 		X \to Y \in F^A \iff Y \subseteq X^+
 		\]
-	\end{proposizione}
+	\end{lemma}
 	
 	\begin{dimostrazione}{Dimostrazione del Lemma}{dim:lemma_chiusura_dipendenze}
 		Sia $Y = \{A_1, A_2, \dots, A_n\}$. Dimostriamo la doppia implicazione.
@@ -3931,7 +3938,7 @@
 			\]
 		\end{enumerate}
 		
-		\textbf{Parte ``solo se'' ($\Rightarrow$).}
+		\textbf{Parte ``solo se'' ($\ra$).}
 		Assumiamo che $X \to Y \in F^A$.
 		\begin{enumerate}
 			\item Poiché $X \to Y \in F^A$ e per ogni $i \in \{1, \dots, n\}$ vale $\{A_i\} \subseteq Y$, per la regola della \textbf{decomposizione} si ha che:
@@ -3949,25 +3956,25 @@
 		Volendo dimostrare l'uguaglianza tra due insiemi dovremo procedere per la strategia del \textit{doppio contenimento}, ovvero dimostrare che gli insiemi sono contenuti l'uno nell'altro. Al fine di procedere con la dimostrazione, ricordiamo una cosa fondamentale: sia l'insieme $F^A$ che l'insieme $F^+$ sono definiti \textbf{a partire dallo stesso insieme F di dipendenze funzionali}. Si tratta di un appunto ovvio, ma essenziale per non perdersi nella correttezza della dimostrazione.
 		
 		\paragraph{Parte 1: Dimostriamo che $F^A \subseteq F^+$.}
-		Dire che $F^A \subseteq F^+$ equivale a dire che una dipendenza funzionale $X \rightarrow Y$ definita mediante gli assiomi di Armstrong è una regola semantica valida rispettata da tutte le istanze legali della base di dati (che sono appunto contenute in $F^+$). Siccome abbiamo 3 assiomi di Armstrong, procediamo per induzione sul numero di assiomi applicati ad una dipendenza del tipo $X \rightarrow Y \in F$.\\
+		Dire che $F^A \subseteq F^+$ equivale a dire che una dipendenza funzionale $X \ra Y$ definita mediante gli assiomi di Armstrong è una regola semantica valida rispettata da tutte le istanze legali della base di dati (che sono appunto contenute in $F^+$). Siccome abbiamo 3 assiomi di Armstrong, procediamo per induzione sul numero di assiomi applicati ad una dipendenza del tipo $X \ra Y \in F$.\\
 		
-		\textbf{Base dell'induzione (i = 0)}: se non ho applicato alcun assioma alla dipendenza iniziale $X \rightarrow Y$ allora tale dipendenza è per definizione anche contenuta all'interno di $F^+$, dato che come sappiamo $F \subseteq F^+$.\\
+		\textbf{Base dell'induzione (i = 0)}: se non ho applicato alcun assioma alla dipendenza iniziale $X \ra Y$ allora tale dipendenza è per definizione anche contenuta all'interno di $F^+$, dato che come sappiamo $F \subseteq F^+$.\\
 		
 		\textbf{Ipotesi induttiva (i > 0)}: supponendo che tutte le dipendenze ottenute applicando al massimo $i-1$ volte gli assiomi di Armstrong siano contenute all'interno di $F^+$, dobbiamo dimostrare che applicando anche la $i$-esima operazione la dipendenza funzionale rimarrà dentro $F^+$.
 		\begin{enumerate}
-			\item \textbf{Se ho applicato la riflessività}, significa che ho ottenuto la dipendenza $X \rightarrow Y$ sapendo che $Y \subseteq X$. Presa una qualsiasi coppia di tuple $t_1, t_2$, se si suppone che esse coincidano sugli attributi dell'insieme $X$, dunque $t_1[X] = t_2[X]$, allora necessariamente sarà valido $t_1[Y] = t_2[Y]$ dato che Y è un sottoinsieme di X (dunque contiene gli stessi attributi, forse in quantità minore). La dipendenza ottenuta mediante riflessività rispetta la definizione di dipendenza funzionale, e dunque è compatibile con $F^+$.
+			\item \textbf{Se ho applicato la riflessività}, significa che ho ottenuto la dipendenza $X \ra Y$ sapendo che $Y \subseteq X$. Presa una qualsiasi coppia di tuple $t_1, t_2$, se si suppone che esse coincidano sugli attributi dell'insieme $X$, dunque $t_1[X] = t_2[X]$, allora necessariamente sarà valido $t_1[Y] = t_2[Y]$ dato che Y è un sottoinsieme di X (dunque contiene gli stessi attributi, forse in quantità minore). La dipendenza ottenuta mediante riflessività rispetta la definizione di dipendenza funzionale, e dunque è compatibile con $F^+$.
 			
-			\item \textbf{Se ho applicato l'aumento}, significa che ho ottenuto $X \rightarrow Y$ a partire da una dipendenza $V \rightarrow W$ già esistente in $F^A$ (e dunque presente anche in $F^+$ per ipotesi induttiva). Possiamo dunque applicare l'aumento aggiungendo ad entrambi i membri di $V \rightarrow W$ un certo insieme Z, ottenendo dunque $VZ \rightarrow WZ$. La dipendenza che otterremo per aumento sarà, per ipotesi, proprio $X \rightarrow Y$, e si avrà dunque che $X = VZ, Y = WZ$.\\
-			Prendo adesso un'istanza legale della base di dati e suppongo che due tuple siano uguali per gli attributi dell'insieme X. Siccome $X = VZ$ significa che saranno uguali sia per gli attributi V che in Z. Tuttavia, per ipotesi induttiva, sapevamo che valeva la dipendenza $V \rightarrow W$. Essendo W dipendente da V, significa che due tuple uguali in V sono anche uguali in W. Siccome abbiamo assunto $t_1[X] = t_1[VZ] = t_2[VZ] = t_2[X]$, significa che tali tuple saranno uguali anche per l'insieme W, $t_1[W] = t_2[W]$. Se uniamo questa scoperta all'applicazione dell'assioma dell'aumento, che ci garantisce la permanenza della dipendenza anche aggiungendo un insieme ad entrambi i membri, otteniamo che le tuple dovranno necessariamente essere uguali anche per Z. Dunque, siccome $Y = WZ$ e sappiamo le tuple essere uguali per X $\Rightarrow$ uguali per VZ $\Rightarrow$ uguali per W $\rightarrow$ uguali per Y.
+			\item \textbf{Se ho applicato l'aumento}, significa che ho ottenuto $X \ra Y$ a partire da una dipendenza $V \ra W$ già esistente in $F^A$ (e dunque presente anche in $F^+$ per ipotesi induttiva). Possiamo dunque applicare l'aumento aggiungendo ad entrambi i membri di $V \ra W$ un certo insieme Z, ottenendo dunque $VZ \ra WZ$. La dipendenza che otterremo per aumento sarà, per ipotesi, proprio $X \ra Y$, e si avrà dunque che $X = VZ, Y = WZ$.\\
+			Prendo adesso un'istanza legale della base di dati e suppongo che due tuple siano uguali per gli attributi dell'insieme X. Siccome $X = VZ$ significa che saranno uguali sia per gli attributi V che in Z. Tuttavia, per ipotesi induttiva, sapevamo che valeva la dipendenza $V \ra W$. Essendo W dipendente da V, significa che due tuple uguali in V sono anche uguali in W. Siccome abbiamo assunto $t_1[X] = t_1[VZ] = t_2[VZ] = t_2[X]$, significa che tali tuple saranno uguali anche per l'insieme W, $t_1[W] = t_2[W]$. Se uniamo questa scoperta all'applicazione dell'assioma dell'aumento, che ci garantisce la permanenza della dipendenza anche aggiungendo un insieme ad entrambi i membri, otteniamo che le tuple dovranno necessariamente essere uguali anche per Z. Dunque, siccome $Y = WZ$ e sappiamo le tuple essere uguali per X $\ra$ uguali per VZ $\ra$ uguali per W $\ra$ uguali per Y.
 			
-			\item \textbf{Se applichiamo la transitività}, significa che ho ottenuto $X \rightarrow Y$ a partire da due dipendenze precedenti $X \rightarrow Z, Z \rightarrow Y$, che per ipotesi induttiva sono contenute in $F^+$. Stavolta, molto banalmente, prendo le solite due tuple $t_1, t_2$. Supponiamo $t_1[X] = t_2[X]$. Per la prima dipendenza vale dunque $t_1[Z] = t_2[Z]$. Per la seconda dipendenza vale poi $t_1[Y] = t_2[Y]$. Leggendo il primo e l'ultimo elemento della catena di implicazioni si ha 
-			proprio $t_1[X] = t_2[X] \Rightarrow t_1[Y] = t_2[Y]$.
+			\item \textbf{Se applichiamo la transitività}, significa che ho ottenuto $X \ra Y$ a partire da due dipendenze precedenti $X \ra Z, Z \ra Y$, che per ipotesi induttiva sono contenute in $F^+$. Stavolta, molto banalmente, prendo le solite due tuple $t_1, t_2$. Supponiamo $t_1[X] = t_2[X]$. Per la prima dipendenza vale dunque $t_1[Z] = t_2[Z]$. Per la seconda dipendenza vale poi $t_1[Y] = t_2[Y]$. Leggendo il primo e l'ultimo elemento della catena di implicazioni si ha 
+			proprio $t_1[X] = t_2[X] \ra t_1[Y] = t_2[Y]$.
 		\end{enumerate}
 		
 		Avendo verificato la compatibilità dei 3 assiomi, abbiamo dimostrato che ogni dipendenza funzionale contenuta in $F^A$ è compatibile con quelle contenute in $F^+$. Passiamo all'inclusione inversa.
 		
-		\paragraph{Parte 2: Dimostriamo che $F^+ \subseteq F^A$.} L'obiettivo stavolta è dimostrare se una dipendenza $X \rightarrow Y$ è sempre soddisfatta da istanze legali della base di dati, allora si può ottenere mediante gli assiomi di Armstrong.\\
-		Per questa parte della dimostrazione usiamo un trucchetto matematico ingegnoso, poco intuitivo all'inizio, ma molto efficace. Prendiamo la dipendenza $X \rightarrow Y \in F^+$ e calcoliamo $X^+$ e costruiamo una relazione fatta ad-hoc per la dimostrazione. Tale relazione avrà come attributi \textbf{tutti gli attributi dello schema di relazione}, bensì suddivisi in due "macro-insiemi logici": a sinistra avremo tutti gli attributi ottenuti dal calcolo di $X^+$; a destra avremo tutti gli altri attributi, ovvero quelli ottenuti da $R - X^+$. A tal proposito, inseriamo nella relazione due tuple:
+		\paragraph{Parte 2: Dimostriamo che $F^+ \subseteq F^A$.} L'obiettivo stavolta è dimostrare se una dipendenza $X \ra Y$ è sempre soddisfatta da istanze legali della base di dati, allora si può ottenere mediante gli assiomi di Armstrong.\\
+		Per questa parte della dimostrazione usiamo un trucchetto matematico ingegnoso, poco intuitivo all'inizio, ma molto efficace. Prendiamo la dipendenza $X \ra Y \in F^+$ e calcoliamo $X^+$ e costruiamo una relazione fatta ad-hoc per la dimostrazione. Tale relazione avrà come attributi \textbf{tutti gli attributi dello schema di relazione}, bensì suddivisi in due "macro-insiemi logici": a sinistra avremo tutti gli attributi ottenuti dal calcolo di $X^+$; a destra avremo tutti gli altri attributi, ovvero quelli ottenuti da $R - X^+$. A tal proposito, inseriamo nella relazione due tuple:
 		\begin{itemize}
 			\item Nella prima tupla avremo tutti valori impostati ad 1, sia per gli attributi in $X^+$ che per quelli restanti.
 			
@@ -4019,16 +4026,223 @@
 			\end{tikzpicture}
 		\end{center}
 		Per quanto sembri comoda questa relazione, dobbiamo prima dimostrare che è legale rispetto ad $F^+$.\\
-		Prendiamo una dipendenza qualsiasi $V \rightarrow W \in F$ e controlliamo le due tuple. Le possibili casistiche sono queste:
+		Prendiamo una dipendenza qualsiasi $V \ra W \in F$ e controlliamo le due tuple. Le possibili casistiche sono queste:
 		\begin{itemize}
 			\item Se gli attributi di V \textbf{non sono tutti} dentro $X^+$ allora la dipendenza funzionale è vacuamente vera, in quanto non è rispettata neanche la "condizione di entrata" per il soddisfacimento della dipendenza.
 			
-			\item Se invece si ha $V \subseteq X^+$ significa che le tuple hanno tutti valori uguali in V e dobbiamo dimostrare che abbiano gli stessi valori anche per W. Questo si traduce nel dimostrare che $W \subseteq X^+$. Ma questo è vero in quanto sicuramente $V \subseteq X^+$, e dunque per il lemma di appartenenza si ha che $X \rightarrow V \in F^A$. E poiché la dipendenza $V \rightarrow W \in F$ (e dunque in $F^A$) vale la transitività $X \rightarrow V \rightarrow W$ e allora sempre per il lemma si ha che necessariamente $W \subseteq X^+$.
+			\item Se invece si ha $V \subseteq X^+$ significa che le tuple hanno tutti valori uguali in V e dobbiamo dimostrare che abbiano gli stessi valori anche per W. Questo si traduce nel dimostrare che $W \subseteq X^+$. Ma questo è vero in quanto sicuramente $V \subseteq X^+$, e dunque per il lemma di appartenenza si ha che $X \ra V \in F^A$. E poiché la dipendenza $V \ra W \in F$ (e dunque in $F^A$) vale la transitività $X \ra V \ra W$ e allora sempre per il lemma si ha che necessariamente $W \subseteq X^+$.
 		\end{itemize}
 		Abbiamo dunque dimostrato che l'istanza è legale, ci manca solo l'ultimo passaggio.\\
-		Ci manca di dimostrare che se $X \rightarrow Y \in F^+$ allora $X \rightarrow Y \in F^A$. Il fatto che la dipendenza sia contenuta in $F^+$ (cosa che sappiamo per ipotesi) significa che essa è valida \textbf{per ogni istanza legale della base di dati}. Ciò vuol dire anche sull'istanza $r$ che abbiamo costruito poco fa.\\
-		Prendiamo dunque tale istanza $r$: è vero che le due tuple coincidono sui valori di X? Assolutamente si, poiché per riflessività vale $X \rightarrow X$ e dunque $X \subseteq X^+$ per il lemma.\\
-		Abbiamo dunque appurato, come si poteva vedere già ad occhio, che le due tuple coincidono sui valori di $X$. Ma sui valori di Y? Sappiamo per certo che l'istanza è \textbf{legale} e dunque, dato che le due tuple coincidono per X allora \textbf{necessariamente} devono coincidere per Y. Tuttavia vediamo come nella sezione $R - X^+$ questo non sia vero. Ciò vuol dire che Y deve sicuramente appartenere alla parte destra, e dunque essere un sottoinsieme di $X^+$. Ma il fatto che Y sia un sottoinsieme degli attributi raggiungibili da X ci dice, \textit{per il lemma}, che \textbf{esiste una dipendenza funzionale} $\mathbf{X \rightarrow Y}$ e che questa appartiene proprio all'insieme delle dipendenze funzionali costruito a partire dagli assiomi di Armstrong.		
+		Ci manca di dimostrare che se $X \ra Y \in F^+$ allora $X \ra Y \in F^A$. Il fatto che la dipendenza sia contenuta in $F^+$ (cosa che sappiamo per ipotesi) significa che essa è valida \textbf{per ogni istanza legale della base di dati}. Ciò vuol dire anche sull'istanza $r$ che abbiamo costruito poco fa.\\
+		Prendiamo dunque tale istanza $r$: è vero che le due tuple coincidono sui valori di X? Assolutamente si, poiché per riflessività vale $X \ra X$ e dunque $X \subseteq X^+$ per il lemma.\\
+		Abbiamo dunque appurato, come si poteva vedere già ad occhio, che le due tuple coincidono sui valori di $X$. Ma sui valori di Y? Sappiamo per certo che l'istanza è \textbf{legale} e dunque, dato che le due tuple coincidono per X allora \textbf{necessariamente} devono coincidere per Y. Tuttavia vediamo come nella sezione $R - X^+$ questo non sia vero. Ciò vuol dire che Y deve sicuramente appartenere alla parte destra, e dunque essere un sottoinsieme di $X^+$. Ma il fatto che Y sia un sottoinsieme degli attributi raggiungibili da X ci dice, \textit{per il lemma}, che \textbf{esiste una dipendenza funzionale} $\mathbf{X \ra Y}$ e che questa appartiene proprio all'insieme delle dipendenze funzionali costruito a partire dagli assiomi di Armstrong.		
 	\end{dimostrazione}
+	
+	\section{Chiusura di un insieme di attributi}
+	Conclusa questa lunga e tortuosa dimostrazione, abbiamo capito che l'insieme di \textbf{tutte} le dipendenze funzionali di uno schema di relazione si può ottenere applicando in serie i 3 assiomi di Armstrong. Vediamo dunque come ciò ci semplifichi molto la vita: non abbiamo ancora un modo veloce di calcolare tutte queste dipendenze, però almeno abbiamo \textit{il modo}. In questa sezione ci occuperemo di definire un algoritmo per il calcolo della chiusura di un insieme di attributi. E questo ci viene utile in quanto, per il lemma \ref{lem:lemma_chiusura_dipendenze} sappiamo che una dipendenza funzionale $X \ra Y \in F^+ \iff Y \subseteq X^+$. Inoltre, tale algoritmo ci verrà utile anche per il calcolo delle chiavi di uno schema.\\
+	Presentiamo di seguito tale algoritmo, per poi darne la spiegazione e la dimostrazione di correttezza.
+	\begin{lstlisting}[language=Python]
+		def calcoloChiusura(X, F):
+			Z = X
+			S = { A | (Y -> V)in F, A in V, Y in Z }
+			
+			while S not in Z:
+				Z = Z union S
+				S = { A | (Y -> V)in F, A in V, Y in Z }
+				
+			return Z
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Calcolo chiusura di X}{}
+		Innanzitutto, l'algoritmo prende come input l'insieme di attributi X di cui vogliamo calcolare la chiusura e l'insieme di dipendenze F definito sullo schema di relazione R. L'output dell'algoritmo sarà la variabile Z, che alla fine di questo rappresenterà esattamente l'insieme $X^+$.\\
+		Discutiamo ora i vari passi dell'algoritmo:
+		\begin{enumerate}
+			\item Come primissima cosa, inizializziamo Z ad essere X. Questo perché, per \textit{riflessività}, abbiamo che $X \in X^+$, dunque lo usiamo come \textit{entry point} del nostro algoritmo.
+			
+			\item La variabile S rappresenterà, nel corso dell'algoritmo, gli attributi da aggiungere man mano a Z per farlo crescere e diventare chiusura di X. Tale insieme viene aggiornato ogni volta nel seguente modo:
+			\begin{enumerate}
+				\item S è un insieme di attributi, dunque intanto selezioniamo \textbf{i singoli attributi A}.
+				
+				\item Dobbiamo considerare ogni volta tutte le dipendenze di F, della forma $Y \ra V$, e di queste dipendenze dobbiamo prendere solo quelle in cui si ha $Y \subseteq Z$. Questo perché Z è il nostro insieme finora, dunque siccome Y è il \textbf{determinante} dobbiamo fare in modo di prendere \textbf{tutti gli attributi determinati da Y} (che poi è proprio la definizione di chiusura di un insieme di attributi).
+				
+				\item Gli attributi determinati da Y, infine, vengono presi dall'insieme dei determinati V, ed è per questo che controlliamo anche che $A \in V$.
+			\end{enumerate}
+			
+			\item Apriamo un ciclo while all'interno del quale andremo progressivamente ad aggiornare il valore di Z, unendolo sempre con l'insieme S appena calcolato. La condizione di ingresso del ciclo è $S \not\subset Z$, il che vuol dire che l'esecuzione dell'algoritmo procederà \textbf{solo se S troverà nuovi attributi di cui esaminare a loro volta le dipendenze}.
+		\end{enumerate}
+	\end{algoritmo}
+	
+	Purtroppo, si deve ora dimostrare la correttezza di questo algoritmo prima di poterlo usare effettivamente.
+	\begin{dimostrazione}{Correttezza dell'algoritmo chiusura di X}{}
+		Dobbiamo dimostrare che l'algoritmo, dato in input un insieme X, restituisce effettivamente la chiusura di tale insieme. Prima di procedere con la dimostrazione, definiamo alcune notazioni che useremo:
+		\begin{itemize}
+			\item Con $Z_i, S_i$ definiamo il valore delle variabili Z ed S all'i-esima iterazione del ciclo while. In particolare, si noti come è banale dire che $Z_0 = X$, in quanto viene inizializzato prima del ciclo.
+			
+			\item Denotiamo con $Z_j, S_j$ i valori delle variabili Z ed S all'uscita del ciclo while, e dunque rendendo falsa la condizione $S_j \not\subset Z_j$ e dunque vera $S_j \subseteq Z_j$.
+		\end{itemize}
+		Dobbiamo dimostrare dunque che $Z_j = X^+$, dunque procediamo di nuovo per doppia inclusione.
+		
+		\paragraph{Parte 1: Dimostriamo che $Z_j \subseteq X^+$.} Vogliamo dunque dimostrare che tutti gli attributi A inseriti dall'algoritmo all'interno della variabile Z appartengono effettivamente alla chiusura di X. Per far ciò, lavorando con iterazioni e indici, procediamo per induzione.\\
+		\textbf{Base dell'induzione (i = 0)}. Per definizione di $Z_0 = X$, vale banalmente per riflessività che $X \subseteq X^+$ e dunque il caso base è dimostrato.
+		
+		\textbf{Passo induttivo (i > 0)}. Assumiamo che l'ipotesi sia vera fino ad un dato passo $i-1$, dunque che valga $Z_{i-1} \subseteq X^+$. Sappiamo che $Z_i = Z_{i-1} \cup S_{i-1}$. Preso un generico attributo A aggiunto all'i-esima iterazione, si possono verificare due casi:
+		\begin{itemize}
+			\item $A \in Z_{i-1}$. Siccome era già presente all'iterazione precedente e avevamo che $Z_{i-1} \subseteq X^+$ allora $A \in X^+$.
+			
+			\item Se l'attributo A non apparteneva a $Z_{i-1}$ significa che $A \in S_{i-1}$. Per come viene costruito l'insieme S all'interno dell'algoritmo, l'attributo A proviene da una dipendenza funzionale del tipo $Y \ra V \in F$ per cui devono essere rispettate le seguenti proprietà:
+			\begin{enumerate}
+				\item $Y \subseteq Z_{i-1}$
+				
+				\item $A \in V$
+			\end{enumerate}
+			Siccome $Y \subseteq Z_{i-1}$ e per ipotesi induttiva $Z_{i-1} \subseteq X^+$ allora $Y \subset X^+$. Allora per il lemma visto in precedenza abbiamo che $X \ra Y \in F^+$, ma sappiamo anche che $Y \ra V \in F$, e dunque per transitività vale che $X \ra V \in F^+$. Applicando nuovamente il lemma \textit{al contrario}: siccome sappiamo che $X \ra V \in F^+$, allora $V \subseteq X^+$. Tornando a monte, avevamo dedotto che $A \in V$, ma siccome $V \subseteq X^+$ allora $A \in X^+$.
+		\end{itemize}
+		Abbiamo concluso la prima parte della dimostrazione, muoviamoci alla seconda.
+		
+		\paragraph{Parte 2: Dimostriamo che $X^+ \subseteq Z^j$.} Vogliamo adesso dimostrare che \textbf{tutto ciò che appartiene alla chiusura di X viene effettivamente inserito in Z}.\\
+		Prendiamo un generico $A \in X^+$ e dimostriamo che $A \in Z_j$. Sfruttando la definizione di chiusura di attributi, $A \in X^+ \ra X \ra A \in F^+$, e dunque tale dipendenza deve essere soddisfatta da ogni istanza legale dello schema R. Di nuovo, costruiamo appositamente un'istanza r che ci aiuterà nella dimostrazione:
+		\begin{center}
+			\begin{tikzpicture}[
+				font=\small\sffamily,
+				thick,
+				cell/.style={
+					draw=black,
+					thick,
+					minimum width=0.95cm,
+					minimum height=0.7cm,
+					align=center,
+					inner sep=0pt,
+					font=\bfseries
+				}
+				]
+				% --- RIGA 1 ---
+				\node[cell] (r1c1) at (0, 0)   {1};
+				\node[cell, anchor=west] (r1c2) at (r1c1.east) {1};
+				\node[cell, anchor=west] (r1c3) at (r1c2.east) {$\dots$};
+				\node[cell, anchor=west] (r1c4) at (r1c3.east) {1};
+				\node[cell, anchor=west] (r1c5) at (r1c4.east) {1};
+				\node[cell, anchor=west] (r1c6) at (r1c5.east) {1};
+				\node[cell, anchor=west] (r1c7) at (r1c6.east) {$\dots$};
+				\node[cell, anchor=west] (r1c8) at (r1c7.east) {1};
+				
+				% --- RIGA 2 ---
+				\node[cell, anchor=north] (r2c1) at (r1c1.south) {1};
+				\node[cell, anchor=west]  (r2c2) at (r2c1.east)  {1};
+				\node[cell, anchor=west]  (r2c3) at (r2c2.east)  {$\dots$};
+				\node[cell, anchor=west]  (r2c4) at (r2c3.east)  {1};
+				\node[cell, anchor=west]  (r2c5) at (r2c4.east)  {0};
+				\node[cell, anchor=west]  (r2c6) at (r2c5.east)  {0};
+				\node[cell, anchor=west]  (r2c7) at (r2c6.east)  {$\dots$};
+				\node[cell, anchor=west]  (r2c8) at (r2c7.east)  {0};
+				
+				% --- DELIMITATORI SUPERIORI (senza librerie esterne) ---
+				\draw[thick] ([yshift=4pt]r1c1.north west) -- ([yshift=9pt]r1c1.north west) 
+				-- ([yshift=9pt]r1c4.north east) -- ([yshift=4pt]r1c4.north east);
+				\node[font=\bfseries\normalsize] at ([yshift=18pt]$(r1c1.north west)!0.5!(r1c4.north east)$) {$Z_j$};
+				
+				\draw[thick] ([yshift=4pt]r1c5.north west) -- ([yshift=9pt]r1c5.north west) 
+				-- ([yshift=9pt]r1c8.north east) -- ([yshift=4pt]r1c8.north east);
+				\node[font=\bfseries\normalsize] at ([yshift=18pt]$(r1c5.north west)!0.5!(r1c8.north east)$) {$R - Z_j$};
+			\end{tikzpicture}
+		\end{center}
+		Dimostriamo ora che r è un'istanza legale di R, in modo da poter concludere la dimostrazione dimostrando che r soddisfa $X \ra A$.\\
+		Per essere legale, un'istanza deve soddisfare tutte le dipendenze funzionali del tipo $Y \ra V \in F$. Valutiamo i due possibili casi:
+		\begin{itemize}
+			\item Se $Y \not\subset Z_j$ allora le due tuple sono diverse su $Y$ e dunque la dipendenza è vacuamente soddisfatta.
+			
+			\item Se invece $Y \subseteq Z_j$ allora abbiamo che $t_1[Y] = t_2[Y]$ e dobbiamo dunque dimostrare che sono uguali anche sotto l'attributo W, di cui dobbiamo anche verificarne la natura. Per come abbiamo definito l'insieme $S_j$, per cui all'ultima iterazione sappiamo valere $S_j \subseteq Z_j$, abbiamo che $\forall A \in V, A \in S_j$. Ma siccome vale la catena di uguaglianze $V \subseteq S_j \subseteq Z_j$ allora $A \in Z_j$. Siccome dunque V cade tutto nella regione $Z_j$ allora le due tuple, per come abbiamo definito la nostra relazione, sono uguali anche per l'attributo V, e dunque la relazione è legale.
+		\end{itemize}
+		
+		Abbiamo dimostrato che r è un'istanza legale, e che dunque \textbf{deve soddisfare} ogni dipendenza del tipo $X \ra A \in F^+$. Le due tuple della relazione coincidono su X? \textbf{Certamente!} Per costituzione della relazione, la prima parte contiene gli attributi $A \in Z_j$. Ma siccome sappiamo che $X = Z_0 \subseteq Z_j$ allora $A \in Z_j$, e dunque le due tuple saranno uguali anche su A.
+	\end{dimostrazione}
+	
+	\section{Calcolo delle chiavi di uno schema}
+	Come anticipato, possiamo utilizzare l'algoritmo visto precedentemente per calcolare le chiavi di uno schema. Si rimanda alla definizione di una chiave: Sezione \ref{def:chiave}.\\
+	Il trucchetto è calcolare prima la chiusura di un insieme di attributi, in modo da trovare se questo è almeno superchiave, e poi procedere a tentativi per individuare eventuali sottoinsiemi che sono sempre chiave. Come vedremo con gli esempi a venire, non sempre c'è la necessità di controllare \textbf{tutti} i sottoinsiemi dell'insieme X di partenza: in base ad alcune accortezze si possono dedurre informazioni sulla natura degli attributi e dei sottoinsiemi. Vediamo di seguito alcuni esercizi.
+	\begin{esercizio}{Calcolo chiavi di un'istanza di relazione}{}
+		Supponiamo di avere l'istanza di relazione R = ABCDEGH e l'insieme di dipendenze funzionali $F = \{AB \ra D, G \ra A, G \ra B, H \ra E, H \ra G, D \ra H\}$. Proviamo a trovare le chiavi di questa relazione, che comunichiamo essere 4.\\
+		Purtroppo non c'è una regola che indica dove partire a trovare le chiavi, ma tendenzialmente il consiglio è questo:
+		\begin{itemize}
+			\item Iniziare a calcolare le chiusure \textbf{degli insiemi di attributi che sono parte sinistra di almeno una dipendenza di F}.
+			
+			\item In seguito, in caso non fossero stati esauriti gli attributi, calcolare le chiusure degli attributi \textbf{che non sono mai parte destra di alcuna dipendenza}.
+			
+			\item Possiamo evitare di calcolare la chiusura degli attributi che \textbf{vengono solo determinati}, e dunque appaiono solo come parte destra delle dipendenze, in quanto nel calcolo della chiusura avremo solo l'attributo stesso per riflessività, il che non aggiungerà informazioni utili al calcolo.
+			
+			\item Infine, in caso all'interno di F uno o più attributi \textbf{non dovessero mai comparire né come parte sinistra né come parte destra di una dipendenza, quegli attributi devono necessariamente far parte di ogni chiave}.
+		\end{itemize}
+		
+		Seguendo i precedenti consigli, in particolare il terzo, ci rendiamo conto di una cosa: l'attributo C non appare \textbf{con alcun ruolo} nell'insieme F, e dunque ne deduciamo che C debba far parte di ogni chiave. Partiamo poi dal primo consiglio e iniziamo a calcolare le chiusure:
+		\begin{itemize}
+			\item Come prima, calcoliamo la chiusura di AB, che appare come prima parte sinistra di una dipendenza. Siccome abbiamo scoperto che C deve appartenere ad ogni chiave, lo aggiungiamo ad AB, e dunque calcoliamo $(ABC)^+$. Seguire l'algoritmo precedente sarebbe molto macchinoso (funzionale, ma poco umano, in quanto effettua molte ripetizioni). Un modo più svelto di calcolare la chiusura è il seguente:
+			\begin{enumerate}
+				\item Come prima cosa, inseriamo nella chiusura gli attributi che la compongono. Inizialmente avremo dunque $(ABC)^+ = ABC$.
+				
+				\item Guardiamo adesso l'insieme F e verifichiamo se ci sono degli attributi determinati da uno o più degli attributi che abbiamo inserito nella nostra chiusura temporanea. Vediamo come $AB \ra D$, e dunque possiamo inserirlo all'interno della chiusura, ottenendo $(ABC)^+ = ABCD$.
+				
+				\item L'algoritmo che abbiamo scritto ora ricontrollerebbe anche gli attributi di cui abbiamo già verificato le dipendenze. Ma noi siamo più scaltri, e dunque più veloci. Avendo aggiunto solo l'insieme D, controlliamo solo le dipendenze che partono da D: $D \ra H$, e dunque aggiungiamo H al nostro insieme temporaneo: $(ABC)^+ = ABCDH$.
+				
+				\item Controlliamo quelle uscenti da H, che sono $H \ra E, H \ra G$ e inseriamo entrambi questi attributi nella chiusura: $(ABC)^+ = ABCDHEG$.
+				
+				\item Non vi sono dipendenze uscenti da E, dunque controlliamo quelle uscenti da G: siccome $G \ra B, G \ra A$ puntano ad attributi già inseriti nella chiusura, possiamo fermarci qui. Ma ce ne saremo potuti rendere conto semplicemente osservando che la chiusura di ABC contiene ad ora \textbf{tutti gli attributi di R}, e che dunque non avrebbe avuto senso continuare.
+			\end{enumerate}
+			Ora si dovrebbe controllare che ABC è un insieme minimale che costituisce una chiave. Ma ragionando, sappiamo che ogni chiave deve contenere C. E come vediamo, prendendo singolarmente gli attributi A, B da questi non parte alcuna dipendenza, dunque non possono essere considerati singolarmente chiave solo insieme a C. Ne consegue che \textbf{ABC è una chiave}.
+			
+			\item Il calcolo delle chiavi da adesso in poi sarà più breve, e stiamo per vedere il perché. Abbiamo come seconda dipendenza $G \ra A$ e dunque proviamo a calcolare la chiusura di $CG$.
+			\begin{enumerate}
+				\item Per riflessività abbiamo $(CG)^+ = CG$.
+				
+				\item Sapendo che da C non parte mai nulla, prendiamo ora le dipendenze che hanno G come parte sinistra: $G \ra A, G \ra B$, che ci portano ad aggiungere i due attributi alla nostra chiusura, ottenendo così $(CG)^+ = CGAB$.
+				
+				\item In realtà qui il gioco è finito: siccome abbiamo già scoperto che ABC è una chiave, avendo trovato che $ABC \subseteq CGAB = (CG)^+$ siamo sicuri che il calcolo della chiusura d'ora in poi ci porterà ad ottenere l'intero schema di relazione. 
+			\end{enumerate}
+			Riguardo alla minimalità, siccome ogni chiave deve contenere C, abbiamo che questo è già il minimo sottoinsieme di CG che è al contempo chiave.
+			
+			\item Procediamo con l'attributo H, calcolando dunque $(HC)^+$.
+			\begin{enumerate}
+				\item Riflessività: $(HC)^+ = HC$.
+				
+				\item Aggiungiamo gli attributi che dipendono da H, dunque E, G, ottenendo $(HC)^+ = HCEG$.
+				
+				\item Di nuovo, siccome abbiamo scoperto che CG è chiave e tale insieme appare nella chiusura temporanea di HC, anche HC sarà almeno una superchiave.
+			\end{enumerate}
+			E anzi, per lo stesso discorso fatto prima, HC sarà il sottoinsieme minimale e dunque una chiave.
+			
+			\item Infine, proviamo a partire dall'attributo D, calcolando quindi la chiusura di DC.
+			\begin{enumerate}
+				\item Per riflessività otteniamo $(DC)^+ = DC$.
+				
+				\item Aggiungiamo gli attributi che dipendono da D, avendo $(DC)^+ = DCH$.
+				
+				\item Siccome appare CH, DC è una superchiave, che sarà anche minimale per le stesse argomentazioni presentate per gli altri casi.
+			\end{enumerate}
+		\end{itemize}
+	\end{esercizio}
+	Come si può vedere, il procedimento è di fatto tanto macchinoso quanto di ragionamento: dopo aver calcolato per intero la prima chiusura e aver ottenuto la prima chiave, tutte le altre ne conseguiranno come conseguenza logica, nella maggior parte dei casi.
+	\smallbreak
+	
+	Si vuole adesso lasciare uno strumento che funziona come arma a doppio taglio: un modo per calcolare se una chiave \textbf{è unica all'interno dello schema}.
+	\begin{proposizione}{Test di unicità della chiave}{}
+		Dato uno schema di relazione R, un insieme di dipendenze funzionali F contenente tutte dipendenze della forma $Y \ra V$, possiamo calcolare l'esistenza di una chiave unica X con la seguente formula:
+		\[
+			X := \bigcap_{Y \ra V \in F} (R - (V - Y))
+		\]
+		ottenuto tale insieme di attributi, se $X^+_F = R$ allora X \textbf{è una chiave ed è unica}. Se invece tale uguaglianza non viene rispettata, X non è chiave.
+	\end{proposizione}
+	Tale formula è stata definita come "un'arma a doppio taglio" in quanto, se riuscissimo ad ottenere vera l'uguaglianza $X^+_F = R$ allora avremo trovato la sola e unica chiave nello schema. Se così non fosse, però, avremo sprecato tempo nel calcolare le varie intersezioni e la chiusura finale di attributi.
+	
+	\begin{esempio}{Esempio del test di unicità}{}
+		Sia R = ABCDE e $F = \{AB \ra C, AC \ra B, D \ra E\}$.\\
+		Secondo la formula vista poc'anzi, dobbiamo effettuare $R -(V - Y)$ per ogni dipendenza di F.
+		\begin{enumerate}
+			\item Per la dipendenza $AB \ra C$ otteniamo $X_1 = R - (C - AB) = R - C = ABDE$.
+			
+			\item Per la dipendenza $AC \ra B$ otteniamo $X_2 = R - (B - AC) = R - B = ACDE$.
+			
+			\item Per la dipendenza $D \ra E$ otteniamo $X_1 = R - (E - D) = R - E = ABCD$.
+		\end{enumerate}
+		Effettuando l'intersezione tra i vari risultati otteniamo $X = X_1 \cap X_2 \cap X_3 = ABDE \cap ACDE \cap ABCD = AD$.
+		Provando però a calcolare la chiusura di tale insieme otterremo che $(AD)^+ = ADE \neq R$, e dunque tutta la procedurà si sarà rivelata uno spreco di tempo in quanto AD \textbf{non è chiave}.
+	\end{esempio}
 	
 \end{document}
