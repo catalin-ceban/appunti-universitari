@@ -3144,4 +3144,391 @@
 		\end{enumerate}
 	\end{algoritmo}
 	
+	L'algoritmo è semplice, tuttavia dobbiamo dimostrare formalmente che sia corretto e che la soluzione restituita sia quella ottimale.\\
+	Diamo prima una notazione: poniamo $Sol_k$ pari al valore dell'insieme delle soluzioni all'$k$-esima iterazione del ciclo \texttt{for}.
+	
+	Banalmente notiamo che:
+	\begin{itemize}
+		\item $Sol_0 = \emptyset$ per definizione;
+		\item $Sol_k \subseteq Sol_{k+1}$ per ogni $k$.
+	\end{itemize}
+	
+	Dunque, in generale, l'aggiornamento dell'insieme soluzione ad ogni passo è definito come:
+	\[
+	Sol_{k+1} = \begin{cases}
+		Sol_k \\
+		Sol_k \cup \{\text{sets}[k+1]\}
+	\end{cases}
+	\]
+	
+	\begin{lemma}{Proprietà di ammissibilità della soluzione}{lem_amm}
+		Dobbiamo dimostrare che per ogni $k = 0, \dots, n$ esiste una soluzione ottimale $Sol^*$ tale che:
+		\begin{equation}
+			Sol_k \subseteq Sol^* \tag{1}
+		\end{equation}
+	\end{lemma}
+	
+	\begin{dimostrazione}{Correttezza ed ottimalità della soluzione}{}
+		Per la proprietà (1), per $k = n$, abbiamo che esiste una soluzione ottimale $Sol^*$ per cui $Sol_n \subseteq Sol^*$.
+		Affinché la nostra soluzione $Sol_n$ sia effettivamente ottimale, dovremo avere $Sol_n = Sol^*$.
+		
+		Procediamo per assurdo: assumiamo che $Sol_n \neq Sol^*$. Siccome $Sol_n \subseteq Sol^*$, questo significa che esiste almeno un intervallo $I_i \in Sol^*$ per cui $I_i \notin Sol_n$.
+		
+		Tuttavia giungiamo a una contraddizione:
+		\begin{enumerate}
+			\item Per la (1) sappiamo che $Sol_i \subseteq Sol^*$ per ogni $i = 0, \dots, n$.
+			\item Siccome $Sol_n \subseteq Sol^*$, significa che $Sol_n$ è comunque un insieme che contiene intervalli disgiunti.
+			\item Dato che $I_i \in Sol^*$, esso deve essere disgiunto da tutti gli elementi di $Sol^*$. Essendo $Sol_n \subseteq Sol^*$, tale intervallo $I_i$ dovrebbe essere disgiunto anche da tutti gli intervalli $I_j \in Sol_n$, e dunque l'algoritmo l'avrebbe dovuto selezionare ed inserire in $Sol_n$.
+		\end{enumerate}
+		Otteniamo quindi una \textbf{contraddizione}, dimostrando così che $Sol_n = Sol^*$ è la soluzione ottimale.
+	\end{dimostrazione}
+	
+	Abbiamo dunque dimostrato, mediante la proprietà (1), che il nostro algoritmo produce una soluzione ottimale all'ultima iterazione del ciclo.
+	
+	Dobbiamo adesso dimostrare la (1). Essendo una proposizione che lavora con indici, inclusioni ed insiemi, procediamo \textit{per induzione}.
+	
+	\begin{dimostrazione}{Lemma di ammissibilità della soluzione}{}
+		\begin{itemize}
+			\item \textbf{Caso base ($k = 0$):}\\
+			Abbiamo che $\text{Sol}_0 = \emptyset \subseteq \text{Sol}^*$, il che è chiaramente vero per qualsiasi insieme.
+			
+			\item \textbf{Passo induttivo ($k > 0$):}\\
+			Assumiamo che la (1) sia vera per un certo $k \ge 0$, e che dunque valga l'ipotesi induttiva:
+			\[
+			\text{Sol}_k \subseteq \text{Sol}^*
+			\]
+			A questo punto passiamo al passo $k+1$, per cui dovremo dimostrare che esiste una soluzione ottimale $\text{Sol}^{**}$ (eventualmente diversa da $\text{Sol}^*$, ma comunque di cardinalità massima) per cui vale:
+			\[
+			\text{Sol}_{k+1} \subseteq \text{Sol}^{**}
+			\]
+		\end{itemize}
+		
+		Quando l'algoritmo esamina il nuovo intervallo $I_{k+1}$, possono verificarsi due casi:
+		
+		\begin{enumerate}
+			\item \textbf{L'intervallo $I_{k+1}$ non viene aggiunto} perché si interseca con almeno uno degli intervalli già presenti in $\text{Sol}_k$.
+			Si tratta del caso più semplice, in quanto per definizione avremo che $\text{Sol}_{k+1} = \text{Sol}_k$.
+			Inoltre, per ipotesi induttiva sappiamo che $\text{Sol}_k \subseteq \text{Sol}^*$, e dunque vale anche:
+			\[
+			\text{Sol}_{k+1} \subseteq \text{Sol}^*
+			\]
+			In questo specifico caso, la soluzione ottimale $\text{Sol}^{**}$ che stavamo cercando è proprio $\text{Sol}^*$.
+			
+			\item \textbf{L'intervallo $I_{k+1}$ viene aggiunto.} In tal caso abbiamo:
+			\[
+			\text{Sol}_{k+1} = \text{Sol}_k \cup \{I_{k+1}\}
+			\]
+			Siccome vogliamo dimostrare che per ogni $k$ esiste una soluzione ottimale $\text{Sol}^*$, vediamo come si comporta il nuovo intervallo con la soluzione ottimale:
+			
+			\begin{enumerate}[label=\alph*)]
+				\item \textbf{Se $I_{k+1} \in \text{Sol}^*$}: il gioco è fatto. Per ipotesi induttiva sapevamo che $\text{Sol}_k \subseteq \text{Sol}^*$ e dunque, aggiungendo $I_{k+1}$ (che era già presente nella soluzione ottimale), continua a valere:
+				\[
+				\text{Sol}_{k+1} \subseteq \text{Sol}^*
+				\]
+				Di nuovo avremo $\text{Sol}^{**} = \text{Sol}^*$.
+				
+				\item[\textbf{(b)}] Se invece $I_{k+1} \notin \text{Sol}^*$, significa che $\text{Sol}_{k+1}$ contiene un elemento in più. Tuttavia, siccome per definizione $\text{Sol}^*$ è una soluzione ottimale, essa ha cardinalità massima. Dunque, se $I_{k+1}$ non è presente in $\text{Sol}^*$, è perché si interseca con un qualche intervallo di $\text{Sol}^*$.
+				
+				Siccome per ipotesi induttiva sappiamo che $\text{Sol}_k \subseteq \text{Sol}^*$, avendo l'algoritmo scelto di aggiungere $I_{k+1}$, significa che tale intervallo \textbf{non si interseca con nessuno} di quelli presenti in $\text{Sol}_k$.
+				
+				Poiché $I_{k+1}$ non è presente neanche in $\text{Sol}^*$, si ha necessariamente che gli intervalli che intersecano $I_{k+1}$ si trovano nell'insieme $\text{Sol}^* \setminus \text{Sol}_k$. Saranno quindi gli intervalli $I_j$ \textbf{non ancora scoperti dall'algoritmo}, per i quali vale:
+				\[
+				j > k+1 \quad \text{e} \quad b_j \ge b_{k+1}
+				\]
+				
+				Inoltre, esiste un \textbf{unico} intervallo $I_j$ che interseca $I_{k+1}$. Per intersecarsi, venendo scoperto successivamente, $I_j$ deve necessariamente contenere l'estremo $b_{k+1}$. Ma siccome $I_j \in \text{Sol}^* \setminus \text{Sol}_k \subseteq \text{Sol}^*$, non possono esistere due intervalli intersecanti all'interno della soluzione ottimale.
+				
+				\paragraph{Costruzione della nuova soluzione:}
+				Possiamo costruire una nuova soluzione ottimale rimuovendo $I_j$ e aggiungendo al suo posto $I_{k+1}$:
+				\[
+				\text{Sol}^{**} = (\text{Sol}^* \setminus \{I_j\}) \cup \{I_{k+1}\}
+				\]
+				e dunque otteniamo che:
+				\[
+				\text{Sol}_{k+1} = \text{Sol}_k \cup \{I_{k+1}\} \subseteq \text{Sol}^{**}
+				\]
+			\end{enumerate}
+		\end{enumerate}
+	\end{dimostrazione}
+	
+	\section{Alberi di copertura}
+	Vediamo un altro problema di tipo greedy.
+	
+	\begin{definizione}{Albero di copertura e MST}{def_mst}
+		Sia $G$ un grafo non diretto e connesso con funzione di peso $w$ sugli archi.
+		Un \textbf{albero di copertura} è un albero che contiene tutti i vertici del grafo $G$.
+		
+		Il problema dell'\textbf{Albero di Copertura di Peso Minimo} (o \textbf{MST}, dall'inglese \emph{Minimum Spanning Tree}) consiste nel trovare un sottografo connesso $H$ di $G$ tale che:
+		\begin{itemize}
+			\item $H$ contenga tutti i vertici di $G$;
+			\item $H$ minimizzi il peso totale degli archi.
+		\end{itemize}
+	\end{definizione}
+	
+	\begin{osservazione}{Struttura della soluzione}{}
+		La soluzione del problema è sempre un albero. Infatti, se nel sottografo $H$ fosse presente un ciclo, potremmo tranquillamente rimuovere un qualsiasi arco appartenente a tale ciclo senza disconnettere il sottografo, riducendo ulteriormente il peso totale.\\
+		Inoltre, se il grafo non fosse connesso, sarebbe possibile trovare un albero contenente tutti i nodi.
+	\end{osservazione}
+	
+	Presentiamo di seguito due idee fondamentali basate sull'approccio greedy per la risoluzione di questo problema.
+	
+	\paragraph{Idea 1.} Una prima idea consiste nell'ordinare tutti gli archi del grafo in ordine crescente di peso e considerarli uno alla volta, aggiungendo l'arco corrente alla soluzione purché esso non generi un ciclo.
+	\newpage
+	\begin{lstlisting}[language=Python, caption={Algoritmo di Kruskal}]
+		def Kruskal(G, w):
+			# Ordinare tutti gli archi in ordine crescente per peso
+			sol = set()
+			for i in range(1, m + 1):
+				if sol union {e_i} non contiene cicli:
+					sol.add(e_i)
+			return sol
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Algoritmo di Kruskal}{}
+		\begin{enumerate}
+			\item \textbf{Ordinamento degli archi}: Si ordinano preliminarmente tutti gli $m$ archi del grafo in ordine crescente di peso ($e_1, e_2, \dots, e_m$).
+			\item \textbf{Inizializzazione}: Si predispone un insieme vuoto \texttt{sol} che conterrà gli archi dell'albero di copertura finale.
+			\item \textbf{Selezione greedy}: Si scorrono gli archi uno alla volta. Per ciascun arco $e_i$, si verifica se la sua inclusione nell'insieme \texttt{sol} crea un ciclo. In caso negativo, $e_i$ viene aggiunto a \texttt{sol}.
+			\item \textbf{Restituzione}: Al termine del ciclo su tutti gli archi, la procedura restituisce l'insieme \texttt{sol}.
+		\end{enumerate}
+	\end{algoritmo}
+	
+	
+	\paragraph{Idea 2.} La seconda idea consiste in una leggera modifica dell'algoritmo di Dijkstra. Si fa crescere un unico albero a partire da un vertice sorgente $v$, aggiungendo a ogni passo l'arco di peso minimo uscente dall'insieme dei vertici già esplorati.
+	
+	\begin{lstlisting}[language=Python, caption={Algoritmo di Prim}]
+		def Prim(G, w, v):
+			R = {v}
+			sol = set()
+			while R != V(G):
+				uv = arco di peso minimo uscente da R
+				sol.add(uv)
+				R.add(v)
+			return sol
+	\end{lstlisting}
+	
+	\begin{algoritmo}{Algoritmo di Prim}{}
+		\begin{enumerate}
+			\item \textbf{Inizializzazione}: Si sceglie un vertice iniziale arbitrario $v$, si definisce l'insieme dei nodi raggiunti $R = \{v\}$ e si inizializza l'insieme degli archi della soluzione $\texttt{sol} = \emptyset$.
+			\item \textbf{Espansione dell'albero}: Finché l'insieme dei nodi visitati $R$ non comprende tutti i vertici del grafo ($R \neq V(G)$):
+			\begin{itemize}
+				\item Si individua l'arco $uv$ di peso minimo tra quelli uscenti da $R$ (ovvero con $u \in R$ e $v \notin R$).
+				\item Si aggiunge l'arco $uv$ all'insieme \texttt{sol}.
+				\item Si aggiunge il nuovo vertice $v$ all'insieme $R$.
+			\end{itemize}
+			\item \textbf{Restituzione}: Una volta coperti tutti i vertici, si restituisce l'insieme di archi \texttt{sol}.
+		\end{enumerate}
+	\end{algoritmo}
+	% --- NEW PAGE (59) ---
+	
+	Per dimostrare la correttezza di questi algoritmi, dobbiamo verificare che la soluzione $Sol$ produca un \textbf{albero}, ovvero una struttura che sia aciclica e connessa.
+	
+	\begin{enumerate}
+		\item \textbf{Aciclicità}
+		\begin{itemize}
+			\item \textbf{Algoritmo di Kruskal:} È banale, poiché ad ogni passo ci assicuriamo di inserire un arco solo se \textbf{non} forma un ciclo con gli archi già selezionati.
+			
+			\item \textbf{Algoritmo di Prim:} È impossibile formare un ciclo poiché ogni volta prendiamo l'arco di peso minimo che \textit{esce} dal taglio $R$ verso un nuovo nodo non ancora esplorato. Aggiungendo sempre un nuovo elemento, non è possibile creare alcun ciclo.
+		\end{itemize}
+		
+		\item \textbf{Connessione}
+		
+		Partendo dall'ipotesi che il grafo di partenza sia connesso:
+		\begin{itemize}
+			\item \textbf{Algoritmo di Kruskal:} Consideriamo al più tutti gli archi del grafo. Essendo il grafo connesso, è garantita l'esistenza di un cammino da $x$ a $y$ per ogni $x, y \in V(G)$. Se un arco viene scartato perché formerebbe un ciclo, l'arco non si aggiunge, ma la connessione tra i nodi sarà comunque garantita da un percorso alternativo già presente.
+			
+			\item \textbf{Algoritmo di Prim:} Siccome iteriamo su tutti i nodi e aggiungiamo ogni volta un arco uscente, essendo il grafo connesso, come prima è garantita l'esistenza di un cammino tra qualsiasi coppia di vertici $x$ e $y$.
+		\end{itemize}
+	\end{enumerate}
+	
+	Dimostriamo ora la correttezza dei due algoritmi, verificando che ciascuno produca un albero di copertura di peso minimo. Partiamo dall'algoritmo di Kruskal.
+	
+	Definiamo $Sol_i$ come l'insieme degli archi selezionati all' $i$-esima iterazione, con $Sol_0 = \emptyset$.
+	
+	\begin{lemma}{Invariante dell'algoritmo di Kruskal}{prop_invariante_kruskal}
+		Per ogni $i = 0, \dots, m$, esiste una soluzione ottimale $Sol^*$ tale che:
+		\[
+		Sol_i \subseteq Sol^*
+		\]
+	\end{lemma}
+	
+	Dunque, per l'invariante enunciata, per $i = m$ si ha che $Sol_m$ è una soluzione ottimale.
+	
+	\begin{dimostrazione}{Correttezza dell'algoritmo di Kruskal}{dim_kruskal}
+		Per l'invariante descritta nella Proposizione, esiste una soluzione ottimale $Sol^*$ che contiene $Sol_m$.
+		Se $Sol_m$ e $Sol^*$ sono entrambe soluzioni ottimali, allora sono alberi di copertura con peso minimo; di conseguenza, essendo alberi di copertura, essi contengono entrambi tutti i nodi del grafo.
+	\end{dimostrazione}
+	
+	\begin{dimostrazione}{Dimostrazione del lemma di invarianza di Kruskal}{}
+		Di nuovo, avendo usato il lemma per dimostrare che la soluzione ultima sarà quella ottimale, dobbiamo dimostrare che \textit{esiste} tale soluzione ottimale, e che è sempre conforme alle operazioni compiute dal nostro algoritmo.
+		\begin{itemize}
+			\item \textbf{Caso base ($i = 0$):}\\
+			All'inizio dell'algoritmo la soluzione parziale è vuota:
+			\[
+			\text{Sol}_0 = \emptyset \subseteq \text{Sol}^* \quad \text{sempre vera}
+			\]
+			
+			\item \textbf{Passo induttivo ($i > 0$):}\\
+			Per l'ipotesi induttiva assumiamo che $\text{Sol}_i \subseteq \text{Sol}^*$. Per come è definito l'algoritmo, la soluzione al passo successivo è data da:
+			\[
+			\text{Sol}_{i+1} = \begin{cases}
+				\text{Sol}_i \\
+				\text{Sol}_i \cup \{e_{i+1}\}
+			\end{cases}
+			\]
+		\end{itemize}
+		
+		Analizziamo i possibili casi per $\text{Sol}_{i+1}$:
+		\begin{enumerate}
+			\item Se $\text{Sol}_{i+1} = \text{Sol}_i$, poiché per ipotesi induttiva $\text{Sol}_i \subseteq \text{Sol}^*$, la dimostrazione è immediata.
+			\item Se $\text{Sol}_{i+1} = \text{Sol}_i \cup \{e_{i+1}\}$ ed $e_{i+1} \in \text{Sol}^*$, allora banalmente $\text{Sol}_{i+1} \subseteq \text{Sol}^*$.
+		\end{enumerate}
+		
+		Rimane da analizzare il caso in cui l'arco selezionato dall'algoritmo non appartenga alla soluzione ottima di riferimento, ovvero $e_{i+1} \notin \text{Sol}^*$.
+		
+		Osserviamo che $e_{i+1}$ non appartiene a $\text{Sol}^*$ in quanto $\text{Sol}^*$ è già un albero di copertura, dunque contiene già tutti i nodi. L'aggiunta di un qualsiasi arco ad esso creerebbe un ciclo, rendendo la struttura non più un albero.
+		
+		Tuttavia, se l'algoritmo ha selezionato l'arco $e_{i+1}$, significa che esso non crea alcun ciclo in $\text{Sol}_{i+1}$. Considerando l'insieme $\text{Sol}^* \cup \{e_{i+1}\}$, si viene a formare un unico ciclo semplice $C$. In tale ciclo deve esistere almeno un arco $f \notin \text{Sol}_i$ (con $f \neq e_{i+1}$) appartenente a $\text{Sol}^*$.
+		
+		Definiamo quindi una nuova soluzione $\text{Sol}^{**}$:
+		\[
+		\text{Sol}^{**} = (\text{Sol}^* \setminus \{f\}) \cup \{e_{i+1}\}
+		\]
+		
+		Tale soluzione rimane un albero di copertura valido poiché:
+		\begin{itemize}
+			\item L'insieme $\text{Sol}^* \cup \{e_{i+1}\}$ possiede un unico ciclo $C$.
+			\item Rimuovendo l'arco $f \in C$, la struttura $\text{Sol}^{**}$ perde il ciclo rimanendo comunque connessa.
+		\end{itemize}
+		Di conseguenza, $\text{Sol}^{**}$ è anch'esso un albero di copertura ottimo.\\
+		
+		Ci manca da verificare che $w(\text{Sol}^{**}) \le w(\text{Sol}^*)$.
+		
+		Siccome abbiamo ottenuto $\text{Sol}^{**}$ togliendo l'arco $f$ e aggiungendo $e_{i+1}$, ciò equivale a dimostrare che:
+		\[
+		f = e_j, \quad \text{con } j > i+1
+		\]
+		
+		E questo perché se $j \le i$, allora $\text{Sol}_i \cup \{f\}$ non creerebbe cicli, dato che $\text{Sol}_i \cup \{f\} \subseteq \text{Sol}^*$. Inoltre, per come è strutturato l'algoritmo, $f$ sarebbe dovuto essere aggiunto prima di $e_{i+1}$, ma così non è stato e dunque:
+		\[
+		w(f) \ge w(e_{i+1}) \implies \text{Sol}^{**} \text{ è una soluzione ottimale}
+		\]
+	\end{dimostrazione}
+	
+	Dimostriamo adesso la correttezza dell'algoritmo di Prim.
+	\begin{dimostrazione}{Correttezza dell'algoritmo di Prim}{}
+		Definiamo la sequenza delle soluzioni parziali $\text{Sol}_i$ come in precedenza e utilizziamo la medesima proprietà con $i = 0, \dots, m$.
+		
+		\begin{itemize}
+			\item \textbf{Caso base} ($i = 0$): si dimostra analogamente al caso precedente.
+			\item \textbf{Passo induttivo} ($i > 0$): assumiamo per ipotesi induttiva che $\text{Sol}_i \subseteq \text{Sol}^*$.
+		\end{itemize}
+		
+		Al passo $(i+1)$-esimo aggiungiamo sempre un nuovo arco di peso minimo, dunque:
+		\[
+		\text{Sol}_{i+1} = \text{Sol}_i \cup \{e_{i+1}\}
+		\]
+		
+		Di nuovo, abbiamo due scenari possibili:
+		\begin{itemize}
+			\item Se $e_{i+1} \in \text{Sol}^* \implies \text{Sol}_{i+1} \subseteq \text{Sol}^*$.
+			\item Se $e_{i+1} \notin \text{Sol}^*$, proviamo ad aggiungerlo; tuttavia, ciò non è possibile direttamente poiché, essendo $\text{Sol}^*$ una soluzione ottimale (ovvero un albero di copertura contenente già tutti i nodi), l'aggiunta di un ulteriore arco genererebbe un ciclo.
+		\end{itemize}
+		
+		Dobbiamo quindi trovare un arco $f$ da sostituire ad $e_{i+1}$. Tale arco $f$ sarà un qualsiasi arco uscente dal taglio $Z$ e appartenente al ciclo creatosi. Ne segue che:
+		\[
+		w(f) \ge w(e_{i+1})
+		\]
+		poiché $e_{i+1}$ è stato scelto dall'algoritmo come l'arco di peso minimo uscente da $Z$.
+		
+		Di conseguenza:
+		\[
+		w(\text{Sol}^* \setminus \{f\} \cup \{e_{i+1}\}) \le w(\text{Sol}^*)
+		\]
+		e allora ponendo $\text{Sol}^{**} = \text{Sol}^* \setminus \{f\} \cup \{e_{i+1}\}$, si ha che $\text{Sol}^{**} \supseteq \text{Sol}_{i+1}$ è anch'essa una soluzione ottimale.
+	\end{dimostrazione}
+	
+	\begin{esercizio}{Modifica dei pesi e mantenimento dell'MST}{es_modifica_pesi_mst}
+		Sia $G = (V, E)$ un grafo non orientato e pesato con funzione peso $w: E \to \mathbb{R}$, e sia $T$ un albero di copertura di peso minimo (MST) per $G$.
+		\begin{enumerate}
+			\item Se raddoppiamo il peso di ogni arco, ossia definendo $w'(e) = 2w(e)$ per ogni $e \in E$, $T$ rimane un albero di copertura di peso minimo?
+			\item Se aggiungiamo $1$ al peso di ogni arco, ossia definendo $w'(e) = w(e) + 1$ per ogni $e \in E$, $T$ rimane un albero di copertura di peso minimo?
+		\end{enumerate}
+	\end{esercizio}
+	
+	\begin{dimostrazione}{Dimostrazione della conservazione dell'ottimalità}{dim_conservazione_mst}
+		\begin{enumerate}
+			\item \textbf{Raddoppio del peso degli archi:}
+			
+			Sì, $T$ rimane di peso minimo. Sia $T'$ un qualsiasi albero di copertura di $G$. Vogliamo dimostrare che $w'(T) \le w'(T')$.
+			
+			Per definizione di peso di un albero di copertura rispetto alla nuova funzione peso $w'$:
+			\[
+			w'(T) = \sum_{e \in E(T)} w'(e) = 2 \sum_{e \in E(T)} w(e) = 2 w(T)
+			\]
+			Poiché $T$ è un MST per $G$ rispetto alla funzione peso originale $w$, per ogni albero di copertura $T'$ vale $w(T) \le w(T')$. Moltiplicando ambo i membri per $2$, otteniamo:
+			\[
+			w'(T) = 2 w(T) \le 2 w(T') = w'(T')
+			\]
+			Di conseguenza, $T$ risulta essere un MST anche rispetto a $w'$.
+			
+			\item \textbf{Aggiunta di una costante al peso degli archi:}
+			
+			Sì, $T$ rimane di peso minimo per lo stesso principio. Poiché $G$ ha $n = |V|$ vertici, qualunque albero di copertura contiene esattamente $n - 1$ archi. Il peso di un qualsiasi albero di copertura $T'$ rispetto a $w'$ è:
+			\[
+			w'(T') = \sum_{e \in E(T')} (w(e) + 1) = \sum_{e \in E(T')} w(e) + \sum_{e \in E(T')} 1 = w(T') + (n - 1)
+			\]
+			Poiché il termine $(n - 1)$ viene aggiunto uniformemente al peso di ogni albero di copertura, l'ordinamento relativo tra i pesi degli alberi non varia. Essendo $w(T) \le w(T')$, si ha:
+			\[
+			w(T) + (n - 1) \le w(T') + (n - 1) \implies w'(T) \le w'(T')
+			\]
+		\end{enumerate}
+	\end{dimostrazione}
+	Nonostante questo teorema fosse stato fornito come esercizio, enuncia una proprietà fondamentale che \textit{non valeva} per i cammini minimi ed invece vale per gli alberi di copertura.
+	
+	\begin{osservazione}{MST su grafi con pesi negativi}{oss_mst_pesi_negativi}
+		Consideriamo un grafo $G$ non orientato e pesato in cui la funzione peso $w$ ammette anche valori \textbf{negativi}. Vogliamo determinare un MST per $G$.
+		
+		Per risolvere questo problema possiamo procedere in due modi:
+		\begin{itemize}
+			\item \textbf{Utilizzo diretto di Kruskal o Prim:} È possibile utilizzare direttamente gli algoritmi classici di Kruskal o Prim. Nelle rispettive dimostrazioni di correttezza non viene mai sfruttata la proprietà che i pesi siano strettamente positivi; pertanto gli algoritmi rimangono corretti anche con pesi negativi (è sufficiente ricontrollare i passaggi formali della dimostrazione).
+			
+			\item \textbf{Traslazione dei pesi:} In alternativa, possiamo individuare una costante opportunamente grande $C$ tale che $w(e) + C > 0$ per ogni arco $e \in E$. Definito il nuovo peso $w'(e) = w(e) + C$, applicando il risultato del punto 2 dell'esercizio precedente, l'aggiunta della costante $C$ a ogni arco preserva la struttura dell'MST. Di conseguenza, possiamo eseguire Kruskal o Prim sui pesi positivi $w'$ senza dover ricontrollare la dimostrazione di correttezza.
+		\end{itemize}
+	\end{osservazione}
+	
+	\begin{esercizio}{Maximum Spanning Tree}{}
+		Supponiamo di voler individuare un albero di copertura di \textbf{peso massimo} (Maximum Spanning Tree) in un grafo $G$ non orientato e pesato.
+		
+		Anche in questo caso vi sono due strategie possibili:
+		\begin{itemize}
+			\item \textbf{Modifica degli algoritmi standard:} Possiamo adattare gli algoritmi di Kruskal o Prim selezionando ad ogni passo l'arco di peso massimo (ad esempio ordinando gli archi in ordine decrescente in Kruskal), richiedendo di ricontrollare la dimostrazione di correttezza.
+			
+			\item \textbf{Riconduzione al problema del minimo:} Moltiplicando tutti i pesi per $-1$ (definendo $w'(e) = -w(e)$ per ogni $e \in E$), ci riconduciamo direttamente al problema del minimo albero di copertura sul grafo con pesi invertiti, infatti:
+			\[
+			\max_{T} \sum_{e \in E(T)} w(e) \iff \min_{T} \sum_{e \in E(T)} (-w(e))
+			\]
+		\end{itemize}
+	\end{esercizio}
+	
+	\begin{teorema}{Unicità dell'MST}{}
+		Sia $G = (V, E)$ un grafo non orientato con pesi sugli archi tutti distinti. Allora esiste un unico albero di copertura minimo (MST).
+	\end{teorema}
+	
+	\begin{dimostrazione}{}{}
+		Procediamo per assurdo, supponendo che esistano due alberi di copertura minimi distinti $T_1$ e $T_2$.
+		
+		Consideriamo l'insieme degli archi che appartengono alla differenza simmetrica tra i due alberi, ovvero $(T_1 \setminus T_2) \cup (T_2 \setminus T_1)$. Sia $uv$ l'arco di peso minimo appartenente a tale insieme. Senza perdita di generalità, supponiamo che $uv \in T_2$.
+		
+		Aggiungendo l'arco $uv$ all'albero $T_1$, si crea necessariamente un ciclo $C$ all'interno del grafo $T_1 \cup \{uv\}$.
+		
+		Poiché $T_1$ e $T_2$ sono alberi distinti, deve esistere nel ciclo $C$ almeno un arco $xy$ tale che $xy \notin T_1 \cap T_2$. Se tutti gli archi di $C$ appartenessero a $T_1 \cap T_2$, allora $T_2$ conterrebbe un ciclo, il che contraddirebbe l'ipotesi che $T_2$ sia un albero.
+		
+		Consideriamo ora il nuovo albero $T' = (T_1 \cup \{uv\}) \setminus \{xy\}$. Poiché $uv$ è l'arco di peso minimo nella differenza simmetrica e i pesi sono tutti distinti, abbiamo che $w(uv) < w(xy)$. Di conseguenza, il peso totale dell'albero $T'$ risulta strettamente minore del peso di $T_1$:
+		\[
+		w(T') = w(T_1) + w(uv) - w(xy) < w(T_1)
+		\]
+		Questo risultato contraddice l'ipotesi iniziale che $T_1$ fosse un albero di copertura minimo. Pertanto, l'ipotesi che esistano due MST distinti deve essere falsa.
+	\end{dimostrazione}
+	
 \end{document}

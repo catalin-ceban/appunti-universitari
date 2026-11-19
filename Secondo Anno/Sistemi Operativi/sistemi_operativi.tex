@@ -2532,6 +2532,7 @@
 	L'unica soluzione che il sistema operativo può attuare per garantire l'allocazione è la \textbf{compattazione} (o \textbf{deframmentazione}) della memoria, che consiste nel unire una dopo l'altra tutte le aree di memoria occupate e lasciare alla fine un unico blocco libero contiguo.
 	
 	\section{La paginazione della memoria (paging)}
+	\label{sez:paging}
 	Il problema della frammentazione esterna è dato da un semplice fatto: i segmenti di memoria relativi ad ogni area hanno dimensione diversa. Ed è \textbf{matematicamente impossibile} trovare una soluzione che non causi questi buchi in memoria, sotto queste circostanze. Bisogna dunque trovare una soluzione matematicamente compatibile: è così che nasce la tecnica del \textbf{paging}, cioè la suddivisione sia della memoria virtuale sia della memoria fisica in blocchi contigui detti \textbf{pagine} (per la memoria virtuale) oppure \textbf{frame} (per la memoria fisica), che avranno la stessa dimensione per permettere ad ogni pagina di finire dentro ogni frame.
 	
 	\begin{osservazione}{Perché questo risolve il problema?}{}
@@ -3747,5 +3748,368 @@
 	\end{lstlisting}
 	
 	Un altro metodo è quello di definire un ordinamento sui lock da acquisire per i vari thread. Ricordiamoci che deadlock $\Rightarrow$ ciclo esiste nel grafo. Se noi impostiamo dunque un ordinamento che forza ogni thread ad acquisire il lock successivo, ordinando i lock in ordine crescente, otteniamo una struttura \textit{lineare, non più ciclica}, con dunque l'impossibilità di creare un deadlock. Si tratta esattamente della strategia utilizzata per risolvere il problema dei filosofi a cena, dove abbiamo "rotto la simmetria" del tavolo circolare.
+	
+	\subsection{Evitamento del deadlock}
+	Esiste un altro modo per combattere il problema del deadlock: evitandolo. Si tratta del caso dell'\textbf{algoritmo del banchiere}, secondo il cui ogni thread dichiara in anticipo di quante risorse avrà bisogno \textit{al massimo} e tenendo traccia istante per istante di quante risorse saranno garantite ad ogni thread. Il punto chiave di questo algoritmo è quello di procedere a concedere le risorse solo quando si sarà sicuri di \textbf{non poter finire in una situazione di stallo}. Il come farlo viene spiegato con l'esempio reale proposto di seguito.
+	\smallbreak
+	
+	Supponiamo di avere una risorsa R disponibile in una quantità massima di 12. Stipuliamo poi la seguente tabella per cui indichiamo, al generico istante di tempo $t$, quale processo ha quante risorse (\texttt{ALLOC}), il massimo di risorse richiedibili dichiarato dal processo (\texttt{MAX}) e quante ne mancano per il completamento (\texttt{NEED}).
+	\begin{tabella}{|c|c|c|c|}
+		& ALLOC & MAX & NEED \\\hline
+		A & 5     & 10  & 5    \\
+		B & 2     & 4   & 2    \\
+		C & 2     & 9   & 7    \\
+	\end{tabella}
+	A questo punto, conoscendo queste informazioni, l'algoritmo procede nel seguente modo:
+	\begin{enumerate}
+		\item In base al numero di risorse attualmente occupate da tutti i processi (dunque la somma dei valori \texttt{ALLOC} per ogni processo) calcoliamo quante risorse ci sono disponibili nel sistema. Nel nostro caso di esempio queste saranno \texttt{AVAILABLE = R - (ALLOC\_A + ALLOC\_B + ALLOC\_C) = 12 - (5 + 2 + 2) = 3}.
+		
+		\item Si scorre la lista di tutti i thread memorizzati, controllando per ognuno se \texttt{NEED <= AVAILABLE}. Scorrendo a partire dall'alto, abbiamo che il thread B soddisfa il requisito.
+		
+		\item Concediamo al thread B i permessi di cui ha bisogno (\texttt{AVAILABLE - NEED = 3 - 2 = 1}) e così facendo abbiamo \texttt{AVAILABLE = 1} e B può terminare la sua task.
+		
+		\item A questo punto, ripetiamo il processo con i restanti thread considerando però che, avendo B finito la sua task, avremo di nuovo a disposizione tutti i suoi permessi. Dunque \texttt{AVAILABLE = AVAILABLE + MAX\_B = 1 + 4 = 5}.
+		
+		\item Si continua con l'algoritmo andando ad esaminare per gli altri thread...
+	\end{enumerate}
+	Ora una parte fondamentale di questo procedimento: se dopo aver eseguito i vari passi si riesce a delineare una \textbf{sequenza di esecuzione corretta}, che dunque faccia terminare l'esecuzione a tutti i thread senza che alcuno si blocchi, diciamo che lo stato dei thread è uno \textbf{stato sicuro}.
+	
+	\begin{definizione}{Stato sicuro}{}
+		Lo stato di esecuzione di uno o più thread si dice \textbf{sicuro} se esiste \textbf{almeno una sequenza che fa terminare l'esecuzione a tutti i thread}, senza farne bloccare alcuno.
+	\end{definizione}
+	In generale con "stato" intendiamo il valore delle variabili associate ad ogni registro all'istante di tempo $t$, e dunque nel nostro esempio lo stato è rappresentato dalla tabella in cui abbiamo inserito i valori dei parametri. Infatti l'algoritmo appena descritto è detto anche \textbf{Safety Algorithm}. Tale algoritmo si occupa solo di \textbf{simulare} che le risorse vengano attribuite al thread da eseguire, in quanto non possiamo essere certi che la sequenza che stiamo esaminando ci porti al completamento di tutti i thread.\\
+	Ovviamente, non tutti gli stati sono sicuri. Vediamo nell'esempio seguente uno stato da cui non c'è via di uscita per trovare una sequenza sicura (sempre con R = 12).
+	\begin{tabella}{|c|c|c|c|}
+		& ALLOC & MAX & NEED \\\hline
+		A & 5     & 10  & 5    \\
+		B & 2     & 4   & 2    \\
+		C & 3     & 9   & 6    \\
+	\end{tabella}
+	Se provassimo ad attuare il \textit{Safety Algorithm} anche qui avremo che come prima verrà eseguito B. Si passerà poi ad uno stato in cui si avranno disponibili 4 risorse (12 risorse totali, nello stato rappresentato dalla tabella abbiamo \texttt{AVAILABLE = 2}. Attribuendo quelle 2 risorse a B rimaniamo con \texttt{AVAILABLE = 0} ma poi, al completamento di B, \texttt{AVAILABLE = 4}). Siccome nessun thread ha \texttt{NEED <= 4}, non esiste alcuna sequenza buona e dunque quello presentato nella precedente tabella \textit{non è uno stato sicuro}.
+	
+	\begin{osservazione}{Numero di risorse condivisibili}{}
+		Come spesso accade in casi reali, i vari thread possono condividere risorse di tipo distinto. In tal caso non possiamo più memorizzare un singolo valore per thread per i parametri \texttt{ALLOC, MAX} e \texttt{NEED}, bensì dobbiamo memorizzare un array di lunghezza \texttt{N}, dove \texttt{N} è il numero di risorse distinte. In seguito i controllo e le operazioni verranno fatte sugli array di risorse, ma sono operazioni banali.
+	\end{osservazione}
+	
+	Tutto questo discorso sul deadlock è stato fatto per fornire un'infarinatura teorica sull'argomento. Nella realtà dei fatti, i sistemi \textit{ignorano} il problema del deadlock, in quanto si verifica in situazioni molto specifiche ed estremamente rare. Strutture come le basi di dati devono ad esempio correttamente gestire i deadlock a causa delle transazioni (unità di esecuzione atomiche), mentre nella maggior parte dei sistemi reali è proprio la prevenzione/evitamento che costa la maggior parte del costo computazionale.
+	
+	\chapter{La persistenza}
+	Introduciamo adesso uno degli ultimi macro-argomenti del corso, nonché un'altra delle criticità fondamentali che un sistema operativo deve gestire: la \textbf{persistenza}, ovvero la capacità di mantenere memorizzati in modo \textbf{permanente} i dati all'interno dell'elaboratore e di comunicare con i dispositivi di I/O in modo efficiente.\\
+	Nel primo capitolo introduttivo abbiamo già parlato della piramide delle memorie: memorie meno capienti sono fisicamente collocate \textit{vicino} alla CPU, collegate attraverso bus di sistema, in modo da garantire una trasmissione dei dati nell'ordine dei nanosecondi; memorie invece in grado di memorizzare una quantità maggiore di dati hanno invece tempi di accesso, lettura e scrittura più lenti, e dunque devono in qualche modo essere gestite in modo diverso. Il ruolo del Sistema Operativo in questo caso deve essere quello di saper gestire in modo differente la comunicazione con i dispositivi di I/O (ricordiamo che dispositivi di memorizzazione di massa fanno parte di questi), in quanto chiaramente non possono essere trattati allo stesso modo delle memorie classiche.
+	\begin{definizione}{Memory-Mapped I/O (MMIO)}{}
+		Lo standard per gli elaboratori moderni è quello di \textbf{riservare per ogni dispositivo esterno un range di indirizzi}, in modo che il controller di quel dispositivo sappia quando entrare in azione. Nel pratico questo si verifica quando un processo prova ad operare una \texttt{load/store} fornendo un preciso indirizzo. A quel punto il bus degli indirizzi farà viaggiare tale indirizzo di memoria verso l'area corretta di smistamento: se tale indirizzo appartiene al range della memoria RAM, allora il dato viene cercato in memoria RAM; se invece appartiene a qualche device di I/O, verrà smistato in quello del cui range fa parte e poi si occuperò il controller di gestire l'operazione richiesta.\\
+		Per chi ha praticità con i costrutti elettronici, è presente una specie di decoder collegato al bus degli indirizzi che per ogni indirizzo mandato lo associa al range corrispondente.\\
+		Tendenzialmente, tale fase di assegnazione dei range viene fatta durante la fase di \textbf{Boot} o "avviamento" del nucleo del Sistema Operativo.\\
+		Per i dispositivi collegati in seguito, come memorie USB oppure hard disk esterni, il range viene assegnato dal SO al momento del collegamento.
+	\end{definizione}
+	
+	\section{Il protocollo canonico di comunicazione}
+	Per comunicare con i dispositivi di I/O il Sistema Operativo non ha bisogno di conoscerne tutti i dettagli implementativi. Ecco perché la comunicazione tra i due viene implementata a livello teorico con il cosiddetto \textbf{dispositivo canonico}.\\
+	Questa rappresentazione teorica prevede che tutti i dispositivi hardware esterni siano composti da due sezioni:
+	\begin{itemize}
+		\item Una sezione interna (\textbf{Internals}) che è la parte complessa e nascosta del dispositivo, dove sono definite le varie operazioni che esso può compiere.
+		
+		\item Una sezione esterna (\textbf{Interface}) che è proprio quella usata dal SO per comunicare col dispositivo. Al sistema non interessano i dettagli implementativi delle operazioni, ma semplicemente delle informazioni generiche sul dispositivo: il suo stato (contenuto nel registro \texttt{STATUS}), le operazioni implementate (\texttt{COMMAND}) ed eventuali dati memorizzati al suo interno (\texttt{DATA}).
+	\end{itemize}
+	Tuttavia non è il kernel direttamente ad interfacciarsi con i dispositivi bensì degli speciali pezzi di software dedicati ad ogni famiglia di dispositivi chiamati \textbf{driver}. Questi sono sostanzialmente delle porzioni di codice che risiedono dentro il kernel e che "parlano la lingua" della famiglia di dispositivi che devono gestire.\\
+	Per conciliare questo protocollo canonico di comunicazione, manca un "algoritmo" che, per questa versione base e teorica, è molto semplice: la CPU attende (fa \textit{spinning} ma, nel caso dei device I/O si dice \textbf{polling}) finché il dispositivo non sarà pronto, lo istruisce delle operazioni da compiere e successivamente continua a fare polling in attesa della risposta. Tuttavia, come abbiamo già imparato parlando di concorrenza, lasciare la CPU in attesa attiva non è mai una buona cosa: primo, perché non sappiamo quanto questa possa durare, secondo perché staremo sprecando cicli di clock magari fondamentali per altri processi. Abbiamo già visto, parlando dello scheduling, come un processo in attesa di un dispositivo di I/O venga messo in stato \texttt{BLOCKED} e dunque lasci spazio all'esecuzione di altri dispositivi. Successivamente, verrà svegliato solo con l'emissione, da parte del DMA Controller (il dispositivo hardware che si occupa di gestire le operazioni I/O al posto della CPU), di un segnale di interruzione (\textbf{interrupt}).
+	\begin{osservazione}{Polling vs. Interrupt}{}
+		Ci sono casi e casi in cui conviene scegliere se gestire una comunicazione mediante polling della CPU o mediante interrupt. Intuitivamente, la decisione si basa su una stima di quanto possa durare l'attesa per una risposta: se l'attesa è molto elevata allora si predilige l'uso degli interrupt; viceversa si preferisce il polling. Ovviamente con "tempi di attesa" ci si paragona ai tempi della CPU, che vanno nell'ordine dei nanosecondi.\\
+		In genere, come abbiamo visto per i lock a due fasi, spesso si sceglie un approccio ibrido: polling per un breve periodo di tempo (nella speranza di poter ottenere subito una risposta) e poi attesa di interruzione.
+	\end{osservazione}
+	
+	\section{Direct Memory Access (DMA)}
+	Come abbiamo già accennato in passato, non possiamo fare in modo che sia la CPU da sola ad occuparsi di gestire tutti i trasferimenti di dati dai/ai dispositivi esterni (approccio chiamato \textbf{Programmed I/O}), in quanto si sprecherebbero tantissimi cicli di clock (immaginiamo se fosse la CPU a doversi occupare di spostare 4GB di dati da un hard disk progressivamente in RAM). Si è scelto dunque, come sempre, di predisporre un dispositivo hardware per l'adempimento di tale compito: tale dispositivo è il \textbf{Direct Memory Access (DMA)}.\\
+	L'approccio risulta adesso altrettanto semplice: la CPU si occupa solo di \textit{istruire il DMA} sulle operazioni da compiere e dove compierle, e poi sarà lui a fare il "lavoro sporco".
+	\begin{figure}[htbp]
+		\centering
+		% --- MINIPAGE SINISTRA: Programmed I/O ---
+		\begin{minipage}[t]{0.48\textwidth}
+			\centering
+			\begin{tikzpicture}[
+				font=\small\sffamily,
+				thick,
+				>=stealth,
+				box/.style={
+					draw=black,
+					thick,
+					rounded corners=3pt,
+					minimum width=2.4cm,
+					minimum height=0.9cm,
+					align=center,
+					font=\bfseries
+				},
+				stepnum/.style={
+					circle,
+					fill=black,
+					text=white,
+					font=\scriptsize\bfseries,
+					inner sep=1.5pt,
+					minimum size=0.42cm
+				}
+				]
+				% Titolo
+				\node[font=\bfseries\normalsize] (title) at (2.2, 4.3) {Programmed I/O};
+				
+				% Blocchi
+				\node[box] (cpu) at (2.2, 3.3) {CPU};
+				\node[box] (dev) at (0.0, 0.0) {Device};
+				\node[box] (ram) at (4.4, 0.0) {RAM};
+				
+				% Frecce e numeri
+				\draw[->, very thick] (dev.north) -- ([xshift=-0.5cm]cpu.south)
+				node[midway, left=6pt, stepnum] {1};
+				
+				\draw[->, very thick] ([xshift=0.5cm]cpu.south) -- (ram.north)
+				node[midway, right=6pt, stepnum] {2};
+			\end{tikzpicture}
+		\end{minipage}
+		\hfill
+		% --- MINIPAGE DESTRA: Direct Memory Access (DMA) ---
+		\begin{minipage}[t]{0.48\textwidth}
+			\centering
+			\begin{tikzpicture}[
+				font=\small\sffamily,
+				thick,
+				>=stealth,
+				box/.style={
+					draw=black,
+					thick,
+					rounded corners=3pt,
+					minimum width=2.4cm,
+					minimum height=0.9cm,
+					align=center,
+					font=\bfseries
+				},
+				stepnum/.style={
+					circle,
+					fill=black,
+					text=white,
+					font=\scriptsize\bfseries,
+					inner sep=1.5pt,
+					minimum size=0.42cm
+				}
+				]
+				% Titolo
+				\node[font=\bfseries\normalsize] (title) at (2.2, 4.3) {Direct Memory Access (DMA)};
+				
+				% Blocchi
+				\node[box] (cpu) at (2.2, 3.3) {CPU};
+				\node[box] (dev) at (0.0, 0.0) {Device};
+				\node[box] (ram) at (4.4, 0.0) {RAM};
+				
+				% Freccia 1: CPU -> Device
+				\draw[->, very thick] ([xshift=-0.4cm]cpu.south) -- ([xshift=-0.2cm]dev.north)
+				node[midway, left=6pt, stepnum] {1};
+				
+				% Freccia 3: Device -> CPU (tratteggiata)
+				\draw[->, very thick, dashed] ([xshift=0.3cm]dev.north) -- ([xshift=0.3cm]cpu.south)
+				node[midway, right=6pt, stepnum] {3};
+				
+				% Freccia 2: Device -> RAM
+				\draw[->, very thick] (dev.east) -- (ram.west)
+				node[midway, above=5pt, stepnum] {2};
+			\end{tikzpicture}
+		\end{minipage}
+		\caption{Comparazione tra la gestione Programmed I/O e col DMA Controller.}
+	\end{figure}
+	
+	\begin{osservazione}{Gestione di multiple richieste}{}
+		Supponiamo di dover gestire richieste molto frequenti ma non abbastanza frequenti da richiedere il polling. Ciò richiederebbe l'invio di un segnale di interrupt alla CPU per ogni richiesta completata. In tal modo, la CPU verrebbe "bombardata" di interruzioni, sprecando così altrettanto tempo a gestirle. La soluzione si trova nei cosiddetti \textbf{descriptor rings}, ovvero degli Array circolari in cui vengono memorizzate risposte provenienti da uno stesso dispositivo in modo che queste vengano poi gestite \textit{in batch} (cioè "tutte insieme") mandando una singola interruzione.
+	\end{osservazione}
+	
+	\begin{proposizione}{Scatter-Gather DMA}{}
+		Ricordando il discorso del paging fatto quando si parlava della virtualizzazione della memoria (vedi Sezione \ref{sez:paging}), anche il DMA Controller deve essere istruito di conseguenza. Se per ogni processo gli si conferisse solo un indirizzo fisico di inizio e un'ampiezza di tale spazio di indirizzamento, esso potrebbe accedere solo ad una parte dei dati del programma. Con la tecnica \textbf{Scatter-Gather}, invece, al DMA viene data una lista delle pagine utilizzate da ogni processo (detta appunto lista di \textit{Scatter-Gather}) in modo che possa accedere a tutte le pagine di memoria che, per definizione, potrebbero anche non essere aree contigue.
+	\end{proposizione}
+	
+	\section{Gli Hard Disk}
+	Finora abbiamo percepito gli Hard-Disk come queste "scatole nere di memoria" molto lente a fornire i dati. Nel corso di questa sezione andremo a vedere più nello specifico come sono costruiti e perché le operazioni richiedono un tempo così elevato.\\
+	E' però importante specificare come, grazie al principio dell'astrazione, il Sistema Operativo non veda \textit{nulla} di tutto ciò che stiamo per descrivere: per lui qualsiasi memoria esterna è un Array di blocchi numerati (0, 1, ..., N - 1) chiamati \textbf{Logical Block Addressing}.
+	
+	\subsection{La struttura fisica di un Hard Disk}
+	L'Hard Disk non è altro che un complesso dispositivo elettromeccanico progettato per spostare una testina di lettura/scrittura sopra una specifica area magnetica.\\
+	Le componenti principali sono:
+	\begin{itemize}
+		\item \textbf{Piatti (Platters)}, ovvero degli effettivi \textbf{dischi rigidi sovrapposti l'uno all'altro} ma separati da una pellicola magnetica. Ogni piatto ha due \textbf{superfici (surfaces)}, una superiore e una inferiore.
+		
+		\item \textbf{Fuso (Spindle)}, il \textbf{perno centrale che fa ruotare i dischi} ad una velocità costante, misurata in \textit{Rotazioni Per Minuto (RPM)}.
+		
+		\item \textbf{Tracce (Tracks)}, anelli concentrici disegnati su ogni piatto, come quelli di un vinile.
+		
+		\item \textbf{Cilindro (Cylinder)}, l'insieme di tutte le \textbf{tracce che si trovano alla stessa distanza dal fuso ma su piatti diversi}.
+		
+		\item \textbf{Testina (Head)}, ovvero l'effettivo sensore che si occupa di leggere/scrivere i bit. Ve n'è una per ogni superficie.
+		
+		\item \textbf{Settore (Sector)}, la più piccola sezione leggibile o scrivibile di una traccia, che si trova su un piatto.
+	\end{itemize}
+	A parole è un po' confusionario, però con la seguente figura si spera di rendere meglio il concetto.
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			font=\small\sffamily,
+			thick,
+			>=stealth
+			]
+			% =====================================================================
+			% VISTA DALL'ALTO (SINISTRA)
+			% =====================================================================
+			\node[font=\bfseries\normalsize] at (0, 3.3) {Vista dall'alto};
+			
+			% Disco esterno e tracce concentriche
+			\draw[very thick, fill=black!4] (0, 0) circle (2.8cm);
+			\foreach \r in {1.0, 1.45, 1.9, 2.35} {
+				\draw[thin, black!40] (0, 0) circle (\r cm);
+			}
+			
+			% Raggi dei settori (anello esterno)
+			\foreach \a in {0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330} {
+				\draw[thin, black!35] (\a:1.9cm) -- (\a:2.8cm);
+			}
+			% Raggi dei settori (anello interno)
+			\foreach \a in {0, 45, 90, 135, 180, 225, 270, 315} {
+				\draw[thin, black!35] (\a:1.0cm) -- (\a:1.9cm);
+			}
+			
+			% Settore evidenziato (senza colori: sfumatura grigia e bordo nero)
+			\filldraw[fill=black!20, draw=black, thick]
+			(120:2.35cm) arc (120:150:2.35cm) -- (150:2.8cm) arc (150:120:2.8cm) -- cycle;
+			
+			% Mandrino centrale (spindle)
+			\filldraw[fill=black!25, draw=black, thick] (0, 0) circle (0.55cm);
+			\node[font=\scriptsize\bfseries] at (0, 0) {fuso};
+			
+			% Freccia di rotazione
+			\draw[->, very thick] (150:3.15cm) arc (150:108:3.15cm);
+			\node[align=left, anchor=east, font=\footnotesize] at (-2.5, 2.7) {\textbf{rotazione}\\(7.200 RPM)};
+			
+			% Etichette Sector e Track con linee puntatrici
+			\node[anchor=west, font=\footnotesize\bfseries] (lbl_sec) at (2.8, 2.9) {settore};
+			\draw[thin] (135:2.58cm) -- (lbl_sec.west);
+			
+			\node[anchor=west, font=\footnotesize\bfseries] (lbl_trk) at (2.8, 2.1) {anello};
+			\draw[thin] (35:2.12cm) -- (lbl_trk.west);
+			
+			% Braccio e testina (head)
+			\draw[line width=3.5pt, black!75] (3.4, -2.3) -- (1.75, -1.25);
+			\filldraw[fill=white, draw=black, very thick] (3.4, -2.3) circle (0.35cm);
+			\fill[black] (1.75, -1.25) circle (3.5pt);
+			
+			\node[font=\footnotesize\bfseries, above right=2pt] at (1.75, -1.25) {testina};
+			
+			% =====================================================================
+			% SEPARATORE VERTICALE TRATTEGGIATO
+			% =====================================================================
+			\draw[dashed, black!45] (4.7, -3.2) -- (4.7, 3.2);
+			
+			% =====================================================================
+			% VISTA LATERALE (DESTRA)
+			% =====================================================================
+			\node[font=\bfseries\normalsize] at (8.2, 3.3) {Vista laterale};
+			
+			% Mandrino verticale (spindle)
+			\filldraw[fill=black!20, draw=black, thick, rounded corners=1pt] (5.6, -2.6) rectangle (5.9, 2.7);
+			\node[font=\footnotesize\bfseries, anchor=north] at (5.75, -2.7) {fuso};
+			
+			% 3 Piatti (platter)
+			\foreach \y in {1.7, 0.1, -1.5} {
+				\filldraw[fill=black!10, draw=black, thick, rounded corners=1.5pt] (5.9, \y-0.13) rectangle (10.3, \y+0.13);
+			}
+			\node[font=\footnotesize\bfseries, anchor=south west] at (6.1, 1.9) {piatto};
+			
+			% Gruppi braccio + testine (6 testine, 2 per piatto)
+			\filldraw[fill=black!75, draw=black, thick, rounded corners=1.5pt] (10.8, -2.1) rectangle (11.2, 2.5);
+			\foreach \hy in {2.05, 1.35, 0.45, -0.25, -1.15, -1.85} {
+				\draw[line width=2.2pt, black!65] (10.8, \hy) -- (9.8, \hy);
+				\fill[black] (9.8, \hy) circle (2.8pt);
+			}
+			\node[font=\footnotesize\bfseries, align=center, anchor=north] at (11.0, -2.2) {gruppo\\braccio unico};
+			
+			% Cilindro (riquadro tratteggiato)
+			\draw[dashed, very thick, rounded corners=2pt] (8.6, -2.0) rectangle (9.3, 2.7);
+			
+		\end{tikzpicture}
+	\end{figure}
+	
+	\begin{osservazione}{Velocità degli anelli}{}
+		In fisica, la velocità angolare di un corpo è direttamente proporzionale alla distanza dal centro della superficie. Nel caso degli Hard Disk, questo fenomeno si ripete per gli anelli: quelli più vicini al centro saranno più lenti, mentre quelli più lontani più veloci.\\
+		Tale comportamento è intenzionale, e infatti il driver dell'Hard Disk si occupa di mappare la tripla (superficie, traccia, settore) nell'LBA che verrà poi visto dal Sistema Operativo. Gli LBA più bassi saranno quelli sugli anelli più esterni.
+	\end{osservazione}
+	
+	Tutti gli Hard Disk moderni sono dotati di una memoria RAM integrata (\textbf{DRAM Cache}) che gli permette di effettuare operazioni di scrittura molto più rapidamente. Questo perché il segnale di "completata scrittura" non verrà più emesso quando l'operazione sarà stata effettivamente completata, bensì quando il dato da scrivere avrà raggiunto la RAM.
+	
+	\subsection{L'accesso ai dati}
+	Il tempo totale per completare una richiesta di I/O su un Hard Disk è descritto dalla seguente formula:
+	\[
+		T_{HDD} = T_{seek} + T_{rot} + T_{transfer}
+	\]
+	dove:
+	\begin{itemize}
+		\item T$_{seek}$ è il tempo impiegato dalla testina per muoversi sull'anello corretto.
+		
+		\item T$_{rot}$ è il tempo impiegato affinché la rotazione dell'HD porti il settore desiderato direttamente sotto la testina.
+		
+		\item T$_{transfer}$ è il tempo effettivamente necessario affinché i dati passino da disco a testina.
+	\end{itemize}
+	
+	La formula per ricavare il tempo di rotazione è $T_{rot} = \frac{60}{RPM}$. Se si vuole il tempo di rotazione medio, basta prendere la metà del valore risultante.\\
+	\begin{esempio}{Lettura di 4KB da disco rigido}{}
+		Drive: $7200\text{ RPM}$, seek medio $4\text{ ms}$, $100\text{ MB/s}$.
+		\[
+		T_{\text{seek}} = 4\text{ ms} \qquad T_{\text{rot}} = \frac{1}{2} \cdot 8.33 = 4.17\text{ ms} \qquad T_{\text{transfer}} = \frac{4096\text{ B}}{100\text{ MB/s}} = 0.04\text{ ms}
+		\]
+		\[
+		T_{\text{total}} = 4 + 4.17 + 0.04 = 8.21\text{ ms}
+		\]
+		\begin{itemize}
+			\item Il \textbf{99.5\%} del tempo è impiegato per il posizionamento.
+			\item Il drive può trasferire a $100\text{ MB/s}$, ma un flusso di letture casuali da $4\text{ KB}$ raggiunge solo \textbf{0.5 MB/s}: $200\times$ in meno.
+		\end{itemize}
+	\end{esempio}
+	
+	\begin{osservazione}{Lettura casuale vs. Lettura sequenziale}{}
+		Si noti che, per la formula appena descritta, il tempo di lettura di più dati posizionati in sequenza risulta \textbf{molto più rapida} rispetto alla lettura di dati in maniera casuale. Questo perché, per una lettura casuale, il tempo di ricerca e rotazione può essere massimo, ovvero che ruota tutto il piatto e cerca tutti i settori, mentre per una lettura sequenziale dovranno essere effettuate solo delle piccolissime rotazioni affinché ci si possa spostare al settore adiacente in cui sono contenuti il resto dei dati.\\
+		Si noti come questa risulta essere una descrizione più che azzeccata del principio di \textit{località spaziale} introdotto all'inizio del corso.
+	\end{osservazione}
+	Sapendo ciò, il Sistema Operativo deve agire di conseguenza:
+	\begin{itemize}
+		\item Sapendo che più gli anelli sono esterni, maggiore è la velocità, deve priorizzare richieste più massicce di dati (circa di 800KB) e dunque dovrà \textbf{raggruppare i dati da leggere} e \textbf{raggruppare quelli da scrivere}.
+		
+		\item Posizionare i dati dei file in blocchi \textbf{fisicamente contigui}.
+	\end{itemize}
+	
+	\subsection{L'ordine delle operazioni conta}
+	Come si è visto nell'esempio precedente, la gran parte del tempo consumata dai dischi rigidi in fase di lettura e scrittura non è per le operazioni di trasferimento dei dati, bensì per il \textbf{ritrovamento delle aree di memoria su cui operare}, in quanto le componenti fisiche (quali la testina e il fuso) hanno ovviamente dei limiti tecnici. Il compito del Sistema Operativo è, dunque, mitigare il più possibile questi problemi. In che modo? \textbf{Servendo richieste adiacenti tra loro}, in modo da \textbf{ridurre al minimo il tempo di attesa meccanica}.\\
+	Anche in questo caso si parla di \textit{scheduling}, in quanto si deve decidere in modo ottimale come servire le richieste dei vari processi. Tale decisione ha fatto nascere il cosiddetto \textbf{I/O Scheduler}, che si occupa proprio di scegliere il prossimo processo da "servire" in memoria. I parametri su cui si basa questo scheduler sono i seguenti:
+	\begin{itemize}
+		\item Massimizzazione del numero di richieste servite al secondo, \textbf{servendo richieste adiacenti} in modo da ridurre al minimo gli spostamenti della testina.
+		
+		\item \textbf{Ridurre il tempo medio di una richiesta} in coda.
+		
+		\item \textbf{Evitare} che una richiesta rimanga bloccata all'infinito (\textbf{starvation}).
+		
+		\item Garantire che tutti i \textbf{processi vengano serviti in modo equo}, senza che un processo monopolizzi il disco.
+	\end{itemize}
+	
+	\subsubsection*{Gli algoritmi di I/O Scheduling}
+	In realtà, gli algoritmi di I/O scheduling seguono bene o male gli stessi principi di quelli già visti dei processi: è impossibile massimizzare tutti i parametri, e dunque si deve scegliere l'algoritmo che funge da compromesso migliore per le nostre esigenze.
+	\begin{description}
+		\item [First Come, First Served (FCFS).] Si tratta dell'equivalente del FIFO per i processi: viene gestita una normale coda in cui il primo ad aver fatto richiesta sarà anche il primo ad essere servito. Il vantaggio principale è, come sempre, il fatto che ci sia una \textbf{perfetta equità} tra la distribuzione delle richieste, tuttavia c'è anche la possibilità che la \textbf{testina faccia zig zag} da una parte all'altra del disco, e dunque \textbf{non si ottimizzi in alcun modo il tempo di accesso}.
+		
+		\item[Shortest Seek Time First.] E' l'equivalente del SJF per i processi, e possiede dunque gli stessi pregi e difetti: \textbf{minimizza il movimento della testina}, in quanto va a servire tutti quelli con settori adiacenti (o comunque il più vicini possibili); causa però \textbf{starvation}, in quanto richieste "lontane" potrebbero non essere mai toccate se continuano ad arrivarne di vicine.
+		
+		\item[SCAN.] La testina \textbf{si muove in una direzione, servendo man mano tutte le richieste che incontra lungo il cammino fino a raggiungere l'estremità del disco, per poi invertire la marcia e servire quelle al ritorno}. Questo algoritmo elimina il problema della starvation, ma introduce un'\textbf{iniquità} in quanto le tracce che si trovano al centro del disco verranno visitate due volte, al contrario della singola volta di quelle più esterne.
+		
+		\item[C-SCAN.] Elimina il problema di doppia-visita dell'algoritmo SCAN, \textbf{servendo le richieste in una sola direzione}: una volta raggiunta la traccia più esterna incontrata nella prima passata, la testina si rimette velocemente alla traccia 0 e continua lungo il percorso. Garantisce equità, elimina la starvation, ma ogni volta effettua quel \textbf{viaggio di ritorno a vuoto}.
+		
+		\item[LOOK.] Versione ottimizzata di SCAN che non \textbf{arriva} fino alla fine del disco, ma \textbf{fino all'ultima richiesta presente e poi fa retromarcia} percorrendo le stesse tracce già visitate ma al contrario, fino all'inizio.
+		
+		\item[C-LOOK.] Versione ottimizzata di LOOK e C-SCAN, che implementa la logica di \textbf{LOOK di arrivare all'ultima richiesta} e solo allora tornare indietro, ma stavolta utilizza la logica di \textbf{C-SCAN per tornare indietro} non ripercorrendo tutti il cammino bensì \textbf{spostando la testina alla prima richiesta disponibile a partire dalla traccia 0}.
+	\end{description}
+	
+	Tuttavia, non è tutto oro quel che luccica. Come sempre, la soluzione al problema non è mai semplice. Questo perché stiamo considerando come unica variabile in gioco il movimento della testina, ma sappiamo benissimo che anche il fuso permette ai dischi di muoversi, e anche ad una velocità estremamente elevata.\\
+	Ecco perché, nella realtà, il vero algoritmo migliore non è nessuno di quelli visti finora, bensì è l'algoritmo \textbf{Shortest Positioning Time First (SPTF)}, che sceglie come prossima la richiesta che minimizza la somma $T_{seek} + T_{rot}$.
+	\smallbreak
+	
+	Un'altra acuta osservazione sarebbe la seguente. Abbiamo già detto che il Sistema Operativo non conosce e \textit{non deve} conoscere la struttura fisica dell'Hard Disk, per mantenere il principio di astrazione. E dunque dev'essere proprio quest'ultimo ad occuparsi di implementare l'algoritmo SPTF (tramite i propri circuiti interni e il DMA controller), mentre il SO si occuperà solamente di decidere \textit{quali} richieste inviare, \textit{quando} inviarle e di garantire l'equità tra queste evitando la starvation.
 	
 \end{document}

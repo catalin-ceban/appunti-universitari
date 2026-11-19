@@ -4245,4 +4245,261 @@
 		Provando però a calcolare la chiusura di tale insieme otterremo che $(AD)^+ = ADE \neq R$, e dunque tutta la procedurà si sarà rivelata uno spreco di tempo in quanto AD \textbf{non è chiave}.
 	\end{esempio}
 	
+	\chapter{La terza forma normale}
+	Tutti i matematicismi introdotti finora servono all'unico scopo di \textit{progettare una base di dati \textbf{buona}}. Ma esattamente, cosa vuol dire "buona"? Possiamo individuare dei parametri che caratterizzano una base di dati in modo da renderla buona? In realtà si, e nel corso di questo capitolo vedremo quali questi sono: ci muoveremo al fine di ottenere una base in \textbf{terza forma normale}.\\
+	Partiamo con degli esempi pratici, ed individuiamone le anomalie: supponiamo di voler modellare una base di dati che tenga traccia degli studenti (con i loro dati) e degli esami da loro superati (includendo i dati degli esami).
+	
+	\paragraph{Ipotesi 1.} Supponiamo di inserire tutti questi i dati all'interno di \textit{una singola} tabella \texttt{Curriculum}. Lo schema di relazione sarà dunque \texttt{Curriculum(Matr, CF, Cogn, Nome, DataN, Com, Prov, C\#, Tit, Doc, DataE, Voto)}. Possiamo aspettarci dunque che un esempio di istanza di relazione sia il seguente:
+	\begin{tabella}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+		Matr & CF  & Cogn    & Nome  & DataN & ComN  & ProvN & C\# & TitC    & DocC  & DataE & Voto \\\hline
+		01   & ... & Rossi   & Mario & ...   & Tolfa & Roma  & 10  & Fisica  & Pippo & ...   & ...  \\
+		02   & ... & Bianchi & Paolo & ...   & Tolfa & Roma  & 10  & Fisica  & Pippo & ...   & ...  \\
+		01   & ... & Rossi   & Mario & ...   & Tolfa & Roma  & 20  & Chimica & Pluto & ...   & ...  \\
+	\end{tabella}
+	Vediamo subito un primo problema di questa rappresentazione: la \textbf{ridondanza}. I dati di uno studente vengono ripetuti ogni qualvolta tale studente abbia superato un esame, risultando dunque in uno spreco \textit{enorme} di risorse sul disco.\\
+	Conseguenze della ridondanza sono 3 tipi di anomalie che caratterizzano una base di dati mal-progettata:
+	\begin{description}
+		\item [Anomalia di aggiornamento:] se volessimo modificare il valore di un attributo riguardante lo studente, dovremmo modificare \textbf{tutte} le tuple in cui compare tale studente. Discorso analogo vale per gli esami. Inoltre, nessuno vieterebbe di modificare lo studente di matricola \texttt{01} nella terza riga mettendogli nome "Lorenzo", in quanto non si può sapere quale sia il nome corretto dello studente, producendo dunque dati \textbf{inconsistenti}.
+		
+		\item[Anomalia di inserimento:] non è possibile inserire i dati di uno studente che non ha ancora superato alcun esame (es: una matricola). Si potrebbe inserire una riga per lo studente e tutti valori \texttt{NULL} per i dati relativi ad un esame, ma questo sprecherebbe molto spazio su disco. Si può inoltre fare un'osservazione simile a quella fatta precedentemente: per come è progettata ora la base di dati, nessuno vieterebbe ad un inserimento di inserire un corso etichettato come \texttt{10, Analisi}. A quanto si può leggere dall'esempio, sembrerebbe che il codice \texttt{10} sia riservato al corso di fisica, ma di nuovo non viene effettuato alcun controllo a riguardo.
+		
+		\item[Anomalia di cancellazione:] eliminando una riga relativa ad uno studente, potremmo eliminare tutti i dati relativi ad un esame (in caso questo non fosse mai presente in altre tuple) e viceversa.
+	\end{description}
+	Proviamo dunque a correggere la nostra struttura con una seconda ipotesi.
+	\paragraph{Ipotesi 2.} Supponiamo di aver progettato il seguente schema a tre relazioni: \texttt{Studente(Matr, CF, Cogn, Nome, DataN, Com, Prov), Corso(C\#, Tit, Doc), Esame(Matr, C\#, Data, Voto)}. Si tratta di una struttura simile ad una già vista in precedenza, e dunque ci aspettiamo di ottenere una base di dati corretta, tuttavia...\\
+	Andando ad analizzare la tabella \texttt{Studente} potremmo avere la seguente istanza di relazione:
+	\begin{tabella}{|c|c|c|c|c|c|c|}
+		Matr & CF  & Cogn    & Nome  & Data & Com   & Prov \\\hline
+		01   & ... & Rossi   & Mario & ...  & Tolfa & Roma \\
+		02   & ... & Bianchi & Paolo & ...  & Tolfa & Roma \\
+	\end{tabella}
+	Vediamo come, ogni qualvolta sia presente il comune "Tolfa" allora ci sia bisogno di ripetere il nome di provincia "Roma". Il che non è errato in se, in quanto è normale che il comune appartenga alla provincia. Il problema è che si verificano, per quella coppia di attributi, le stesse anomalie viste poco fa (attenzione: stiamo operando secondo l'ipotesi che \textbf{non} esistano comuni con lo stesso nome ma in provincie diverse).\\
+	La soluzione sarebbe dunque, come nella transizione Ipotesi 1 $\ra$ Ipotesi 2, separare gli attributi \texttt{Com, Prov} in un nuova tabella.
+	\smallbreak
+	
+	Diciamo che uno schema di relazione è \textbf{buono} se non presenta alcuna delle anomalie viste in precedenza. Vediamo dunque come ci stiamo muovendo verso una "separazione dei concetti in relazioni distinte", in modo da tenere una specie di "indipendenza" tra i dati. Ovviamente, per la natura del modello relazionale e per le necessità di una base di dati, le informazioni presenti in più tabelle \textbf{dovranno} essere condivise in qualche modo. Ma per fortuna abbiamo il vincolo di chiave esterna definito dai database relazionali che fa proprio al caso nostro: stabilisce un collegamento tra due relazioni mediante un attributo con lo stesso dominio, facendo in modo che all'interno di \texttt{slave.attributo} non possano esserci valori non presenti in \texttt{master.attributo}. Certo, questo richiederà di effettuare operazioni più complicate e articolate come delle \texttt{JOIN}, però si tratta di un piccolo prezzo da pagare per evitare sprechi di memoria su disco e garantire l'integrità delle informazioni nella base di dati.
+	\smallbreak
+	
+	Parlando adesso in modo più formale, andiamo ad analizzare lo schema di relazione della seconda ipotesi fatta prima. Apparentemente non ci sono problemi, ma ci siamo resi conto che la coppia \texttt{(Com, Prov)} causava le varie anomalie che rendono uno schema problematico. Andando a ragionare nell'ottica delle \textit{dipendenze funzionali di una relazione}, vediamo nel dettaglio quelle della relazione studente. Innanzitutto è bene precisare che al fine di rendere \textit{buono} uno schema di relazione si deve essere individuata una chiave: nel caso del nostro esempio sia \texttt{Matr} questa chiave.\\
+	Ad ogni matricola corrispondono:
+	\begin{itemize}
+		\item Un solo codice fiscale: Matr $\ra$ CF.
+		
+		\item Un solo nome: Matr $\ra$ Nome.
+		
+		\item Un solo cognome: Matr $\ra$ Cogn.
+		
+		\item Una sola data di nascita: Matr $\ra$ DataN.
+		
+		\item Un solo comune di nascita: Matr $\ra$ Com.
+		
+		\item Una sola provincia di nascita: Matr $\ra$ Prov.
+	\end{itemize}
+	Come ci si potrebbe aspettare, essendo \texttt{Matr} chiave dello schema \texttt{Studente}, determina tutti gli attibuti della relazione. Il problema è che adesso abbiamo in realtà \textit{un'altra} dipendenza funzionale che non abbiamo scritto, che guarda caso è proprio quella problematica:
+	\begin{center}
+		Com $\ra$ Prov
+	\end{center}
+	(sempre secondo l'assunzione che non esistano due comuni con lo stesso nome in provincie diverse).\\
+	Quest'osservazione ci porta direttamente a dare la definizione formale di \textbf{terza forma normale (3NF)}.
+	\begin{definizione}{Terza forma normale (3NF)}{}
+		Dato uno schema di relazione R e un insieme di dipendenze funzionali F su R, R si dice \textbf{in terza forma normale} se $\forall X \ra A \in F^+, A \notin X$ (dunque escludiamo dipendenze banali) vale \textbf{una} delle seguenti proprietà:
+		\begin{enumerate}
+			\item A \textbf{appartiene ad una chiave}, e si dice dunque \textbf{attributo primo}, oppure
+			\item X \textbf{contiene una chiave}
+		\end{enumerate}
+	\end{definizione}
+	La definizione è solo la formalizzazione di tutte le osservazioni che abbiamo fatto finora, e sostanzialmente ci sta dicendo che tutte le dipendenze funzionali \textbf{non banali} presenti nell'insieme di \textbf{tutte} le dipendenze funzionali dello schema di relazione devono essere del tipo:
+	\begin{enumerate}
+		\item Il \textbf{determinato} \textbf{appartiene ad una chiave}, oppure
+		\item Il \textbf{determinante} \textbf{è una chiave}, oppure una superchiave.
+	\end{enumerate}
+	
+	\begin{osservazione}{Attenzione a dove prendiamo le dipendenze}{}
+		Sarebbe errato scrivere $X \ra A \in F$, in quanto all'interno di F non è detto che ci siano \textit{tutte} le possibili dipendenze funzionali dello schema di relazione, e dunque non potrò neanche applicare la regola della composizione per unire tutte le dipendenze in una unica, in quanto non essendo in $F^+$ non posso applicare gli assiomi di Armstrong.\\
+		Per ragioni simili, scegliamo da $F^+$ tutte le dipendenze che come parte destra hanno un \textit{singleton}, ovvero un singolo attributo, in modo da poter applicare la composizione in seguito.
+	\end{osservazione}	
+	
+	\begin{osservazione}{La natura di A}{}
+		E' inoltre molto importante la condizione $A \notin X$ in quanto ricordiamo che, per riflessività, in $F^+$ sono presenti \textit{tutte} le dipendenze funzionali possibili, anche quelle banali. Se considerassimo anche dipendenze di questo tipo nella definizione, potremmo ritrovarci a dover esaminare una della forma $B \ra B$ che non rispetta nessuna delle due condizioni che definiscono la 3NF e quindi potremmo trarre la (probabile) errata conclusione che lo schema di relazione non sia in 3NF.
+	\end{osservazione}
+	
+	\begin{esempio}{Esempio di schemi in 3NF}{}
+		Sia dato lo schema di relazione:
+		\[
+		R = (\text{Città}, \text{Via}, \text{CAP})
+		\]
+		con insieme di dipendenze funzionali:
+		\[
+		F = \{ \text{Città}, \text{Via} \to \text{CAP}, \quad \text{CAP} \to \text{Città} \}
+		\]
+		Le chiavi candidate di $R$ sono $K_1 = \{\text{Città}, \text{Via}\}$ e $K_2 = \{\text{CAP}, \text{Via}\}$, poiché entrambi gli insiemi hanno chiusura uguale all'intero schema $R$. Di conseguenza, tutti gli attributi dello schema sono \textbf{attributi primi}.
+		
+		Verifichiamo le dipendenze non banali in $F^+$:
+		\begin{itemize}
+			\item $\text{Città}, \text{Via} \to \text{CAP}$: il determinante $\{\text{Città}, \text{Via}\}$ è una superchiave.
+			\item $\text{CAP} \to \text{Città}$: il determinante $\{\text{CAP}\}$ non è superchiave, ma il determinato $\text{Città}$ appartiene a $K_1$ ed è pertanto un attributo primo.
+		\end{itemize}
+		Poiché ogni dipendenza non banale rispetta almeno una delle due condizioni della definizione, lo schema $R$ \textbf{è in 3NF}.
+		
+		\smallbreak
+		Sia invece dato lo schema di relazione seguente:
+		\[
+		R = (\text{Matricola}, \text{Nome}, \text{CodiceDip}, \text{SedeDip})
+		\]
+		con insieme di dipendenze funzionali:
+		\[
+		F = \{ \text{Matricola} \to \text{Nome}, \quad \text{Matricola} \to \text{CodiceDip}, \quad \text{CodiceDip} \to \text{SedeDip} \}
+		\]
+		L'unica chiave candidata dello schema è $K = \{\text{Matricola}\}$, poiché $\text{Matricola}^+ = R$. L'unico attributo primo è dunque $\text{Matricola}$, mentre $\text{Nome}$, $\text{CodiceDip}$ e $\text{SedeDip}$ sono attributi non primi.
+		
+		Analizzando la dipendenza non banale $\text{CodiceDip} \to \text{SedeDip} \in F^+$:
+		\begin{itemize}
+			\item il determinante $\text{CodiceDip}$ non contiene alcuna chiave (non è superchiave);
+			\item il determinato $\text{SedeDip}$ non appartiene ad alcuna chiave (non è un attributo primo).
+		\end{itemize}
+		Entrambe le condizioni della definizione sono violate: lo schema $R$ \textbf{non è in 3NF}.
+	\end{esempio}
+	
+	Ci sarebbe in realtà un'ulteriore definizione di terza forma normale, che però si basa su due definizioni che non abbiamo ancora dato: vediamo di seguito le \textbf{dipendenze parziali} e \textbf{transitive}.
+	\begin{definizione}{Dipendenza parziale}{}
+		Siano R uno schema di relazione ed F un insieme di dipendenze funzionali su R. Una dipendenza $X \ra A \in F^+, A \notin X$ si dice \textbf{parziale} se \textbf{A non è primo ed X è contenuto propriamente in una chiave}.
+		\smallbreak
+		
+		Un esempio pratico: supponiamo di avere uno schema Esame = (Matricola, Corso, Voto, NomeMatricola) e di avere (Matricola, Corso) come chiave. Come ci si può immaginare, vale la dipendenza Matricola $\ra$ NomeMatricola. Tuttavia, dato che Matricola $\subset$ (Matricola, Corso) e NomeMatricola \textbf{non} è un attributo primo, tale dipendenza è \textit{parziale}.
+	\end{definizione}
+	
+	\begin{definizione}{Dipendenza transitiva}{}
+		Siano R uno schema di relazione ed F un insieme di dipendenze funzionali su R. Una dipendenza $X \ra A \in F^+, A \notin X$ si dice \textbf{transitiva} se \textbf{A non è primo} e \textbf{per ogni chiave K si ha che X non è contenuto propriamente in K e K-X = 0}. In parole semplici, l'attributo A è determinato da un attributo X che non è chiave. Ma essendo K chiave, vuol dire che determina tutti gli attributi della relazione, X incluso. Si crea dunque la catena K $\ra$ X $\ra$ A, da cui il nome \textit{transitiva}.\\
+		Esempi di dipendenze transitive si possono trovare in tutti i casi visti prima di relazioni che \textbf{violavano} la 3NF.
+	\end{definizione}
+	
+	Come ci si può immaginare dalle seguenti definizioni...
+	\begin{definizione}{Terza forma normale: definizione alternativa}{}
+		Uno schema di relazione R con insieme di dipendenze funzionali F si dice \textbf{in terza forma normale} se e solo se nell'insieme di dipendenze $F^+$ \textbf{non sono presenti né dipendenze parziali né dipendenze transitive}.
+	\end{definizione}
+	
+	Da notare come queste due definizioni siano \textit{equivalenti}, in quanto una esclude l'altra.\\
+	Tutto questo discorso sulle terze forme normali ci fa capire come una buona base di dati contenga \textbf{tutte tabelle in terza forma normale}. Abbiamo poi visto negli esempi precedenti come, quando volevamo portare una tabella in 3NF, finivamo per "decomporre" la tabella, portando gli attributi coinvolti nelle dipendenze funzionali "dannose" (si intende "dannose per la 3NF") in una nuova relazione.
+	\begin{proposizione}{Decomposizioni soddisfacenti di relazioni}{}
+		Nonostante il processo di decomposizione di relazioni verrà formalizzato più avanti, si noti che la decomposizione di una relazione in più risulti \textit{corretta} quando è possibile ricostruire tutte le informazioni della tabella originale mediante operazioni di JOIN NATURALE. Occorre inoltre preservare, oltre alle informazioni rappresentate inizialmente, anche le dipendenze funzionali che si avevano, in quanto rappresentano degli effettivi \textit{vincoli restrittivi} sui valori degli attributi.
+	\end{proposizione}
+	Si noti come, progettando correttamente una base di dati a partire dall'inizio, raramente si incorrerà in trasformazioni del genere e operazioni per rincorrere la terza forma normale. Tuttavia si tratta di un procedimento definito anche per migliorare basi di dati i cui schemi sono già stati definiti, oppure addirittura in cui sono già presenti dati: in tal caso, mediante la decomposizione, non si dovranno definire solo i nuovi schemi di relazione, ma anche ri-definire i vincoli esistenti (FOREIGN KEY, TRIGGER, ...).
+	
+	\begin{definizione}{Terza forma normali di Boyce-Codd}{}
+		Una relazione R si dice \textbf{in forma normale di Boyce-Codd (BCNF)} quando in essa \textbf{ogni determinante è una superchiave}, dunque non sono ammesse dipendenze funzionali in cui i determinanti non sono chiavi.\\
+		Una relazione in BCNF è anche in 3NF, ma non è vero il contrario (la classica 3NF consente anche dipendenze in cui il determinante X non è una superchiave mentre il determinato vi appartiene). 
+	\end{definizione}
+	
+	\begin{esempio}{Comparazione tra 3NF e BCNF}{}
+		Sia dato lo schema di relazione:
+		\[
+		R = (\text{Studente}, \text{Materia}, \text{Docente})
+		\]
+		con insieme di dipendenze funzionali:
+		\[
+		F = \{ \text{Studente}, \text{Materia} \to \text{Docente}, \quad \text{Docente} \to \text{Materia} \}
+		\]
+		Le chiavi candidate di $R$ sono $K_1 = \{\text{Studente}, \text{Materia}\}$ e $K_2 = \{\text{Studente}, \text{Docente}\}$; pertanto tutti gli attributi dello schema sono \textbf{attributi primi}.
+		
+		\begin{itemize}
+			\item \textbf{Verifica 3NF:} La dipendenza $\text{Studente}, \text{Materia} \to \text{Docente}$ ha una superchiave come determinante; la dipendenza $\text{Docente} \to \text{Materia}$ non ha una superchiave a sinistra, ma il determinato $\text{Materia}$ è un attributo primo. Lo schema \textbf{è in 3NF}.
+			\item \textbf{Verifica BCNF:} Nella dipendenza non banale $\text{Docente} \to \text{Materia}$, il determinante $\{\text{Docente}\}$ non è una superchiave. Lo schema \textbf{non è in BCNF} e presenta ridondanza, come mostrato nell'istanza seguente:
+		\end{itemize}
+		
+		\begin{tabella}{|c|c|c|}
+			\textbf{Studente} & \textbf{Materia} & \textbf{Docente} \\\hline
+			Marco & Analisi 1 & Prof. Rossi \\
+			Giulia & Analisi 1 & Prof. Rossi \\
+			Luca & Fisica 1 & Prof. Bianchi \\
+		\end{tabella}
+		
+		Decomponiamo lo schema $R$ in due relazioni $R_1$ e $R_2$ per eliminare la violazione della BCNF:
+		\[
+		R_1 = (\text{Docente}, \text{Materia}) \quad \text{con } F_1 = \{ \text{Docente} \to \text{Materia} \}
+		\]
+		\[
+		R_2 = (\text{Studente}, \text{Docente}) \quad \text{con } F_2 = \emptyset
+		\]
+		In $R_1$ l'unica dipendenza ha come determinante $\{\text{Docente}\}$, che è chiave candidata; in $R_2$ non vi sono dipendenze non banali e la chiave è $\{\text{Studente}, \text{Docente}\}$. Entrambi gli schemi \textbf{sono in BCNF} e la decomposizione è senza perdita (poiché $R_1 \cap R_2 = \{\text{Docente}\}$ è chiave per $R_1$), sebbene si perda la conservazione diretta della dipendenza $\text{Studente}, \text{Materia} \to \text{Docente}$.
+		
+		\begin{tabella}{|c|c|}
+			\textbf{Docente} & \textbf{Materia} \\\hline
+			Prof. Rossi & Analisi 1 \\
+			Prof. Bianchi & Fisica 1 \\
+		\end{tabella}
+		
+		\begin{tabella}{|c|c|}
+			\textbf{Studente} & \textbf{Docente} \\\hline
+			Marco & Prof. Rossi \\
+			Giulia & Prof. Rossi \\
+			Luca & Prof. Bianchi \\
+		\end{tabella}
+	\end{esempio}
+	
+	\chapter{La normalizzazione delle tabelle}
+	Come abbiamo visto nello scorso capitolo, quando una relazione non è in terza forma normale possono verificarsi problemi di ridondanza, inconsistenza e incongruenza dei dati; per non citare le anomalie di inserimento, aggiornamento e cancellazione che abbiamo sempre visto essere caratteristiche di una relazione non in 3NF. Abbiamo poi visto, mediante alcuni esempi, come fosse possibile decomporre una relazione non buona in più relazioni, ognuna rispettante la 3NF. La \textbf{creazione di una relazione buona} (e in generale di una buona base di dati) \textbf{limita anche al minimo la necessità di scrivere trigger} di controllo sulla modifica dei dati (qualora questi non siano strettamente necessari e legati a dei "vincoli di buonsenso"), che sono operazioni in realtà estremamente onerose per la base di dati.\\
+	Ricordando anche quanto accennato in precedenza, decomporre in modo corretto una relazione vuol dire che \textbf{tutte le informazioni dello schema originale dovranno essere nuovamente disponibili mediante operazione di JOIN}.\\
+	Vediamo qui sotto un ulteriore esempio di decomposizione di schema:
+	\begin{figure}[htbp]
+		\centering
+		\begin{tikzpicture}[
+			font=\small\sffamily,
+			thick,
+			entity/.style={
+				draw=black,
+				thick,
+				minimum width=3.2cm,
+				minimum height=1.1cm,
+				align=center,
+				font=\bfseries\normalsize
+			},
+			attr/.style={
+				circle,
+				draw=black,
+				fill=white,
+				minimum size=0.26cm,
+				inner sep=0pt
+			},
+			keyattr/.style={
+				circle,
+				draw=black,
+				fill=black,
+				minimum size=0.26cm,
+				inner sep=0pt
+			}
+			]
+			% Entità centrale
+			\node[entity] (prod) at (0, 0) {Prodotto};
+			
+			% Attributo chiave (in alto)
+			\node[keyattr] (cod) at (0, 1.4) {};
+			\draw[very thick] (prod.north) -- (cod);
+			\node[font=\bfseries, above=4pt] at (cod.north) {Codice};
+			
+			% Attributi a sinistra
+			\node[attr] (nf) at (-2.6, 1.1) {};
+			\draw[very thick] ([yshift=0.3cm]prod.west) -- (nf);
+			\node[font=\bfseries, above left=2pt] at (nf.north) {NomeFornitore};
+			
+			\node[attr] (ind) at (-2.8, 0.0) {};
+			\draw[very thick] (prod.west) -- (ind);
+			\node[font=\bfseries, left=6pt] at (ind.west) {Indirizzo};
+			
+			\node[attr] (piva) at (-2.6, -1.1) {};
+			\draw[very thick] ([yshift=-0.3cm]prod.west) -- (piva);
+			\node[font=\bfseries, below left=2pt] at (piva.south) {PartitaIVAFornitore};
+			
+			% Attributi a destra
+			\node[attr] (np) at (2.6, 1.0) {};
+			\draw[very thick] ([yshift=0.25cm]prod.east) -- (np);
+			\node[font=\bfseries, align=center, right=6pt] at (np.east) {Nome\\prodotto};
+			
+			\node[attr] (prz) at (2.6, -1.0) {};
+			\draw[very thick] ([yshift=-0.25cm]prod.east) -- (prz);
+			\node[font=\bfseries, right=6pt] at (prz.east) {Prezzo};
+			
+		\end{tikzpicture}
+	\end{figure}
+	Nonostante la chiave della relazione \texttt{Prodotto} sia \texttt{Codice}, notiamo alcune dipendenze funzionali transitive o parziali, come ad esempio PartitaIVAFornitore $\ra$ NomeFornitore, Indirizzo. L'idea che abbiamo seguito in precedenza era dunque di prendere questi attributi che rappresentano "concetti diversi rispetto alla relazione di partenza" e portarli in un'altra relazione, che contiene come chiave l'attributo determinante e come altri attributi i determinati. Otterremo così due schemi: \texttt{Prodotto(Codice, NomeProdotto, Prezzo), Fornitore(PartitaIVA, NomeFornitore, Indirizzo)}. Il dilemma sta adesso nel come ricostruire lo schema in modo che si preservino le informazioni mediante JOIN. Partendo dal modello concettuale si può fare semplicemente effettuando una lettura più accurata della realtà di riferimento e dunque definendo le opportune associazioni tra le entità, tuttavia abbiamo bisogno di un metodo \textit{matematico e sicuro} per operare tale decomposizione in modo corretto.
+	
 \end{document}
